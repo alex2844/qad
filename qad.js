@@ -283,7 +283,8 @@ var Qad={
 				s = $('/script');
 				s.src = '//maps.googleapis.com/maps/api/js?v=3.exp&libraries=places&callback=document.geo';
 				$('body').add(s);
-			}
+			}else
+			  document.geo();
 		}
 	},
 	/*random: function(min, max, num=1) {

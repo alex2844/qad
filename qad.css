@@ -394,6 +394,9 @@ ul p {
 div.float {
 	width: 32%;
 }
+div.min {
+  width: 25%;
+}
 article {
 	padding: 8px;
 }
@@ -714,6 +717,9 @@ input:not([readonly]):focus, input[type=password]:focus, input[type=search]:focu
 		/* width: 100%; */
 		width: 98%;
 	}
+  div.min {
+    width: 45%;
+  }
 	body[data-menu] {
 		width: 100%;
 		float: none;
