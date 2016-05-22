@@ -19,7 +19,36 @@
 	content: attr(data-content);
 }
 *[onclick] {
-	cursor: pointer;
+  cursor: pointer;
+}
+*[data-effect] {
+  overflow: hidden;
+  position: relative;
+}
+*[data-effect] h3 {
+  position: absolute;
+  color: #757575;
+  top: 0;
+  left: 0;
+  text-shadow: -2px -1px 5px #fff;
+  background: rgba(255,255,255,0.3);
+  outline: solid rgba(255,255,255,0.3) 10000px;
+  opacity: 0;
+  margin: 10%;
+  text-transform: uppercase;
+}
+*[data-effect]:hover h3 {
+  opacity: 1;
+}
+*[data-effect=zoom] * {
+  -webkit-transition: all 0.5s linear;
+    transition: all 0.5s linear;
+  -webkit-transform: scale3d(1, 1, 1);
+    transform: scale3d(1, 1, 1);
+}
+*[data-effect=zoom] *:hover {
+  -webkit-transform: scale3d(1.2, 1.2, 1);
+    transform: scale3d(1.2, 1.2, 1);
 }
 a {
 	text-decoration: none;
@@ -327,6 +356,12 @@ dialog h2 {
 	color: @color;
 	box-shadow: none;
 	margin: 8px 16px;
+}
+.card.left {
+	width: 27%;
+}
+.card.right {
+	width: 68%;
 }
 dialog {
 	width: 80%;
@@ -720,6 +755,12 @@ input:not([readonly]):focus, input[type=password]:focus, input[type=search]:focu
   div.min {
     width: 45%;
   }
+	.card.left {
+		width: 100%;
+	}
+	.card.right {
+		width: 100%;
+	}
 	body[data-menu] {
 		width: 100%;
 		float: none;
