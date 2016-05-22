@@ -255,6 +255,15 @@ footer {
 footer a {
 	color: #757575;
 }
+.copyright {
+  outline:none;
+}
+.copyright div {
+  width: 20%;
+  height: 67px;
+  margin-top: -26px;
+  cursor: default;
+}
 section {
 	padding: 5px;
 	margin: 0px 16px;
