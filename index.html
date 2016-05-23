@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
 	<link rel="icon" type="image/png" href="data/images/icon.png" />
 	<meta charset="utf-8" />
@@ -66,13 +66,33 @@
          }
       }else if (document.querySelector('meta[name="home"]'))
          location.href = document.querySelector('meta[name="home"]').content;
-      if (typeof(t) == 'object')
+      if (typeof(t) == 'object') {
          document.querySelector('.template').innerHTML = document.querySelector('.template').innerHTML.replace('none','block').replace('{color}',t.color).replace('{title}',t.title).replace('{msg}',t.msg).replace('{url}',t.url).replace('{button}',t.button);
+         if (document.querySelector('html').lang != navigator.language) {
+            document.cookie = 'googtrans=/'+document.querySelector('html').lang+'/'+navigator.language+';domain=;path=/';
+            function googleTranslateElementInit() {
+               new google.translate.TranslateElement({pageLanguage: document.querySelector('html').lang}, 'google_translate_element');
+            }
+            (function(s,o,g,a,m){
+               a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+            })(document,'script','https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit');
+         }
+      }
    </script>
    <style>
+html {
+   height: inherit !important;
+}
 body {
    font-family: "RobotoDraft","Roboto",sans-serif;
    background: #f1f1f1;
+   top: 0 !important;
+}
+.template {
+   display: table-cell;
+   vertical-align: middle;
+   height: 95vh;
+   width: 100vw;
 }
 .card {
    border-radius: 0.125rem;
