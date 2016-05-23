@@ -894,6 +894,23 @@ window.addEventListener('load',function() {
 		ga('create', Qad.$('meta[name="analytics"]').content, 'auto');
 		ga('send', 'pageview');
 	}
+	if (Qad.$('html').lang) {
+      var script = Qad.$('/script');
+      document.translate = function() {
+         if (Qad.$('#google_translate')) {
+            Qad.$('#google_translate').$('&#xE8E2').attr('class','material-icons');
+         }
+         new google.translate.TranslateElement({
+            pageLanguage: Qad.$('html').lang,
+            layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+            gaTrack: true,
+            gaId: Qad.$('meta[name="analytics"]').content
+         }, 'google_translate');
+      }
+      script.src = '//translate.google.com/translate_a/element.js?cb=document.translate';
+      console.log(script.src);
+      Qad.$('head').add(script);
+	}
 	if (navigator.serviceWorker && !Qad.$('html[dev]')) {
 		navigator.serviceWorker.register('/service-worker.js?'+location.pathname,{scope: location.pathname}).then(function(sw) {
 			console.log('◕‿◕');

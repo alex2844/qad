@@ -55,6 +55,7 @@ body {
 	animation-name: reset, fade-in;
 	animation-duration: 1.5s;
 	animation-timing-function: ease-in;
+	top: 0px !important;
 }
 h1 {
 	text-align: center;
@@ -269,9 +270,31 @@ section {
 	color: #fff;
 	text-transform: none;
 	line-height: normal;
-  font-feature-settings: 'liga';
+   font-feature-settings: 'liga';
 	animation: scroll 1s infinite alternate;
 	-webkit-animation: scroll 1s infinite alternate;
+}
+#google_translate {
+   position: relative;
+   overflow: hidden;
+}
+#google_translate .goog-te-gadget {
+   position: absolute;
+}
+#google_translate .goog-te-gadget, #google_translate .goog-te-gadget-simple {
+   height: 100%;
+   width: 100%;
+   top: 0;
+   left: 0;
+   background: 0;
+   border: 0;
+}
+#google_translate img, #google_translate span, .goog-te-banner-frame, .goog-tooltip {
+   display: none !important;
+}
+.goog-text-highlight {
+   background: 0;
+   box-shadow: none;
 }
 table, .card {
 	/* display: inline-block; */
