@@ -230,6 +230,14 @@ var Qad={
 			data = JSON.stringify(data);
 		return data;
 	},
+   find: function(a,v) {
+      if (a.indexOf)
+         return a.indexOf(v);
+      for (var i = 0; i < a.length; i++)
+         if (a[i] === v)
+            return i;
+      return -1;
+   },
 	for: function (i,o) {
 		//console.log(i.length);
 		if (typeof(i) == 'object' && i.length)
@@ -830,12 +838,20 @@ window.addEventListener('load',function() {
 		});
 	}
 	if (Qad.$('.menu')) {
-	   menu = function(e) {
+      menu = function(e) {
          if (e.target.id == Qad.$('ul[open]').attr('for'))
             return;
-			pos = Qad.$('ul[open]').pos();
-			if (e.y < pos.top || e.x < pos.left || e.y > pos.top+pos.height || e.x > pos.left+pos.width)
-			   Qad.$('#'+Qad.$('ul[open]').attr('for')).click();
+         pos = Qad.$('ul[open]').pos();
+         if (e.y < pos.top || e.x < pos.left || e.y > pos.top+pos.height || e.x > pos.left+pos.width) {
+            Qad.$('#'+Qad.$('ul[open]').attr('for')).click();
+            return;
+         }else{
+            Qad.$('#'+Qad.$('ul[open]').attr('for')).click();
+            if (e.target.parentNode.parentNode.className == 'select') {
+               Qad.$('input#utc').$(e.target.innerHTML);
+               console.log(Qad.find(e.target.parentNode.querySelectorAll('li'),e.target));
+            }
+			}
 		}
       Qad.for('.menu', function(el){
          if (el.tagName != 'UL')

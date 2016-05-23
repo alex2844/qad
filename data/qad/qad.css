@@ -681,52 +681,58 @@ input[type=range].progress::-webkit-slider-thumb {
 	height: 0px;
 	-webkit-appearance: none;
 }
-.input {
+.select, .input {
 	position: relative;
 	padding: 20px 0 0;
 	width: 200px;
 }
-.input label {
+.select label, .input label {
 	position: absolute;
 	font-size: 12px;
 	top: 0;
 	color: rgba(0, 0, 0, 0.26);
 	transition: all .2s;
 }
-input[type=text], input[type=password], input[type=search], input[type=email], textarea {
-	background: 0;
-	width: 200px;
-	outline: none;
-	border: 0;
-	font-size: 16px;
-	padding: 4px 0;
-	color: rgb(117, 117, 117);
+input[type=text],
+   input[type=password],
+   input[type=search],
+   input[type=email],
+   input[type=tel],
+   textarea {
+   	background: 0;
+   	width: 200px;
+   	outline: none;
+   	border: 0;
+   	font-size: 16px;
+   	padding: 4px 0;
+   	color: rgb(117, 117, 117);
 }
-input:not([readonly])[type=text], input[type=password], input[type=search], input[type=email], textarea {
+.input input:not([readonly])[type=text], .select input[type=text], input[type=password], input[type=search], input[type=email], input[type=tel], textarea {
 	border-bottom: 1px solid rgba(0, 0, 0, 0.12);
 }
-.input input[type=text], .input input[type=password], .input input[type=search], .input input[type=email], .input textarea {
+.select input, .input input, .input textarea {
 	width: inherit;
 }
-input:not([readonly]):focus, input[type=password]:focus, input[type=search]:focus, input[type=email]:focus, textarea:focus {
+.input input:not([readonly]):focus, input[type=password]:focus, input[type=search]:focus, input[type=email]:focus, input[type=tel]:focus, textarea:focus {
 	border-bottom: 2px solid @color;
 }
-.input input[type=text]:focus + label, .input input[type=text]:focus:invalid + label,
-	.input input[type=email]:focus + label, .input input[type=email]:focus:invalid + label,
-	.input input[type=password]:focus + label, .input input[type=password]:focus:invalid + label,
+.select input:focus + label, .select input:focus:invalid + label,
+   .input input:focus + label, .input input:focus:invalid + label,
 	.input textarea:focus + label, .input textarea:focus:invalid + label {
 		font-size: 12px;
 		top: 0;
 		color: @color;
 }
-.input input[type=text]:invalid + label,
-	.input input[type=email]:invalid + label,
-	.input input[type=password]:invalid + label,
+.select input:invalid + label,
+   .input input:invalid + label,
 	.input textarea:invalid + label {
 		left: 0;
 		top: 24px;
 		font-size: 16px;
 		pointer-events: none;
+}
+.select ul.menu {
+   width: inherit;
 }
 #notification span {
 	margin-left: 20px;
