@@ -15,41 +15,10 @@
         url(@location/data/fonts/roboto.woff) format('woff'),
         url(@location/data/fonts/roboto.ttf) format('truetype');
 }
-*[data-content]:after {
-	content: attr(data-content);
+span, div.float, div:after, div:before {
+	display: inline-block;
 }
-*[onclick] {
-  cursor: pointer;
-}
-*[data-effect] {
-  overflow: hidden;
-  position: relative;
-}
-*[data-effect] h3 {
-  position: absolute;
-  color: #757575;
-  top: 0;
-  left: 0;
-  text-shadow: -2px -1px 5px #fff;
-  background: rgba(255,255,255,0.3);
-  outline: solid rgba(255,255,255,0.3) 10000px;
-  opacity: 0;
-  margin: 10%;
-  text-transform: uppercase;
-}
-*[data-effect]:hover h3 {
-  opacity: 1;
-}
-*[data-effect=zoom] * {
-  -webkit-transition: all 0.5s linear;
-    transition: all 0.5s linear;
-  -webkit-transform: scale3d(1, 1, 1);
-    transform: scale3d(1, 1, 1);
-}
-*[data-effect=zoom] *:hover {
-  -webkit-transform: scale3d(1.2, 1.2, 1);
-    transform: scale3d(1.2, 1.2, 1);
-}
+div.tabs, body:not([data-panel]) #header-panel, body[data-panel] button#menu, .template, iframe.load, dialog:not([open]), #slider span:not([open]) {display: none;}
 a {
 	text-decoration: none;
 	color: @color;
@@ -87,10 +56,6 @@ body {
 	animation-duration: 1.5s;
 	animation-timing-function: ease-in;
 }
-span, div.float, div:after, div:before {
-	display: inline-block;
-}
-div.tabs, body:not([data-panel]) #header-panel, body[data-panel] button#menu, .template, iframe.load, dialog:not([open]), #slider span:not([open]) {display: none;}
 h1 {
 	text-align: center;
     text-transform: uppercase;
@@ -245,6 +210,15 @@ button#menu + nav a, nav.panel a {
 button#menu + nav a:hover, nav.panel a:hover {
 	background: #f1f1f1;
 }
+ul.menu {
+   position: absolute;
+   margin: 0;
+   background: #fff;
+   border-radius: .125rem;
+   box-shadow: 0 2px 2px 0 rgba(0,0,0,.14),0 3px 1px -2px rgba(0,0,0,.2),0 1px 5px 0 rgba(0,0,0,.12);
+   display: none;
+   z-index: 1;
+}
 footer {
 	text-align: center;
 	background: #fff;
@@ -300,7 +274,7 @@ section {
 	-webkit-animation: scroll 1s infinite alternate;
 }
 table, .card {
-	display: inline-block;
+	/* display: inline-block; */
 	background-color: #fff;
 	border-radius: 0.125rem;
 	box-shadow: 0 2px 2px 0 rgba(0,0,0,.14),0 3px 1px -2px rgba(0,0,0,.2),0 1px 5px 0 rgba(0,0,0,.12);
@@ -344,6 +318,7 @@ table, .card {
 .card h2 i, dialog h2 i {
 	float: right;
 	margin-right: 10px;
+	cursor: pointer;
 }
 dialog h2 {
 	margin: -24px 0 0 -24px;
@@ -715,6 +690,7 @@ input:not([readonly]):focus, input[type=password]:focus, input[type=search]:focu
 }
 .input input[type=text]:focus + label, .input input[type=text]:focus:invalid + label,
 	.input input[type=email]:focus + label, .input input[type=email]:focus:invalid + label,
+	.input input[type=password]:focus + label, .input input[type=password]:focus:invalid + label,
 	.input textarea:focus + label, .input textarea:focus:invalid + label {
 		font-size: 12px;
 		top: 0;
@@ -722,6 +698,7 @@ input:not([readonly]):focus, input[type=password]:focus, input[type=search]:focu
 }
 .input input[type=text]:invalid + label,
 	.input input[type=email]:invalid + label,
+	.input input[type=password]:invalid + label,
 	.input textarea:invalid + label {
 		left: 0;
 		top: 24px;
@@ -755,6 +732,54 @@ input:not([readonly]):focus, input[type=password]:focus, input[type=search]:focu
 ::-webkit-scrollbar-thumb {
 	background-color: @color;
 	border-radius: 10px;
+}
+[data-content]:after {
+	content: attr(data-content);
+}
+[onclick] {
+  cursor: pointer;
+}
+[data-effect] {
+  overflow: hidden;
+  position: relative;
+}
+[data-effect] h3 {
+  position: absolute;
+  color: #757575;
+  top: 0;
+  left: 0;
+  text-shadow: -2px -1px 5px #fff;
+  background: rgba(255,255,255,0.3);
+  outline: solid rgba(255,255,255,0.3) 10000px;
+  opacity: 0;
+  margin: 10%;
+  text-transform: uppercase;
+}
+[data-effect]:hover h3 {
+  opacity: 1;
+}
+[data-effect=zoom] * {
+  -webkit-transition: all 0.5s linear;
+    transition: all 0.5s linear;
+  -webkit-transform: scale3d(1, 1, 1);
+    transform: scale3d(1, 1, 1);
+}
+[data-effect=zoom] *:hover {
+  -webkit-transform: scale3d(1.2, 1.2, 1);
+    transform: scale3d(1.2, 1.2, 1);
+}
+[data-center] {
+   display: block;
+   margin: 0 auto;
+}
+[data-left] {
+   float: left;
+}
+ul.menu[data-right] {
+   right: 0;
+}
+[data-right] {
+   float: right;
 }
 @media all and (max-width: 650px) {
 	div.float {

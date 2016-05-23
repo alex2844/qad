@@ -18,7 +18,7 @@ var Qad={
 					if (iframe.length > 1 && document.querySelector(iframe[0]))
 						return $(document.querySelector(iframe[0]).contentDocument.querySelector(el.replace(iframe[0]+' ','')));
 				}
-				obj=document.querySelector(el);
+            obj=document.querySelector(el);
 			}else
 				obj=el;
 		}else{
@@ -71,7 +71,9 @@ var Qad={
 			var left = box.left + scrollLeft - clientLeft;
 			return {
 				top: Math.round(top),
-				left: Math.round(left)
+				left: Math.round(left),
+				width: Math.round(box.width),
+				height: Math.round(box.height)
 			};
 		}
 		obj.$ = function(html) {
@@ -777,8 +779,8 @@ window.addEventListener('load',function() {
 	delete locarray[(locarray.length-1)];
 	location.pwd = locarray.join('/').slice(0,-1);
 	window.requestFileSystem = window.requestFileSystem || window.webkitRequestFileSystem;
-	//if (typeof console !=="undefined" && console.log)
-		//sconsole.info("%c Сюда вставлять не что не надо, иначе откроете доступ к своему аккаунту!",'color:red;font-weight:bold;font-style:italic;font-size:16px;');
+	if (typeof console !=="undefined" && console.log)
+		console.info("%c Сюда вставлять не что не надо, иначе откроете доступ к своему аккаунту!",'color:red;font-weight:bold;font-style:italic;font-size:16px;');
 	if ($('button#menu + nav')) {
 		menu = function(e) {
 			if (e.x > 300)
@@ -828,6 +830,32 @@ window.addEventListener('load',function() {
 				e.preventDefault();
 			}
 		});
+	}
+	if ($('.menu')) {
+	   menu = function(e) {
+         if (e.target.id == $('ul[open]').attr('for'))
+            return;
+			pos = $('ul[open]').pos();
+			if (e.y < pos.top || e.x < pos.left || e.y > pos.top+pos.height || e.x > pos.left+pos.width)
+			   $('#'+$('ul[open]').attr('for')).click();
+		}
+      $$.for('.menu', function(el){
+         if (el.tagName != 'UL')
+            el.onclick = function(e){
+               if ($('ul[for='+el.id+']')) {
+                  if ($('ul[for='+el.id+']').style['display'] == 'block') {
+                     $('html').on('mouse',null,'menu');
+                     $('ul[for='+el.id+']').style['display'] = '';
+                     $('ul[for='+el.id+']').attr('open',false);
+                  }else{
+                     $('html').on('mouse',menu,'menu');
+                     $('ul[for='+el.id+']').style['display'] = 'block';
+                     $('ul[for='+el.id+']').attr('open',true);
+                  }
+                  e.preventDefault();
+               }
+            }
+      });
 	}
 	inc = document.querySelectorAll('#button-float button');
 	if (inc.length > 0) {
