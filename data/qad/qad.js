@@ -842,16 +842,9 @@ window.addEventListener('load',function() {
          if (e.target.id == Qad.$('ul[open]').attr('for'))
             return;
          pos = Qad.$('ul[open]').pos();
-         if (e.y < pos.top || e.x < pos.left || e.y > pos.top+pos.height || e.x > pos.left+pos.width) {
+         if ((e.y < pos.top || e.x < pos.left || e.y > pos.top+pos.height || e.x > pos.left+pos.width) && e.target.tagName != 'LI') {
             Qad.$('#'+Qad.$('ul[open]').attr('for')).click();
-            return;
-         }else{
-            Qad.$('#'+Qad.$('ul[open]').attr('for')).click();
-            if (e.target.parentNode.parentNode.className == 'select') {
-               Qad.$('input#utc').$(e.target.innerHTML);
-               console.log(Qad.find(e.target.parentNode.querySelectorAll('li'),e.target));
-            }
-			}
+         }
 		}
       Qad.for('.menu', function(el){
          if (el.tagName != 'UL')

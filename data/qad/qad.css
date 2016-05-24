@@ -747,7 +747,6 @@ input[type=text],
 label.checkbox {
    position: relative;
    margin: .5rem;
-   line-height: 135%;
    cursor: pointer;
    font-size: 16px;
 }
@@ -817,7 +816,7 @@ input.checkbox:after {
 [data-content]:after {
 	content: attr(data-content);
 }
-[onclick] {
+[onclick], li[id] {
   cursor: pointer;
 }
 [data-effect] {
