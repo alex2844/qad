@@ -923,11 +923,12 @@ window.addEventListener('load',function() {
 	}
 	if (typeof main == 'function')
 		main();
-	if (Qad.$('iframe.load') && typeof load == 'function')
+	if (Qad.$('iframe.load') && typeof load == 'function') {
 		load(Qad.$('iframe.load body').innerHTML);
 		Qad.$('iframe.load').onload = function() {
 			load(Qad.$('iframe.load body').innerHTML);
 		}
+	}
 });
 var $$ = Qad;
 var $ = $$.$;
