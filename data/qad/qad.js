@@ -622,8 +622,10 @@ var Qad={
 						dir: 'auto',
 						actions: (typeof(title)!='string'?title.actions:[])
 					}
-					document.sw.showNotification((typeof(title)=='string'?title:title.title),notification);
-					//new Notification((typeof(title)=='string'?title:title.title),notification);
+					if (document.sw)
+                  document.sw.showNotification((typeof(title)=='string'?title:title.title),notification);
+               else
+                  new Notification((typeof(title)=='string'?title:title.title),notification);
 				}
 			});
 		}
