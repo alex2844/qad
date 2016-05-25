@@ -122,9 +122,11 @@ class Qad{
             if ($p2 != 'id')
                $p3 = self::$nosql->get($p1.':'.$p2.':'.$p3);
             if (empty($p4))
-               return json_encode(self::$nosql->hgetall($p1.':id:'.$p3));
+               $ret = self::$nosql->hgetall($p1.':id:'.$p3);
             else
-               return json_encode(self::$nosql->hmget($p1.':id:'.$p3,$p4));
+               $ret = self::$nosql->hmget($p1.':id:'.$p3,$p4);
+            if ($ret)
+               return json_encode($ret);
             break;
          }
          case 'update': {
