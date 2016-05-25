@@ -126,7 +126,7 @@ class Qad{
             else
                $ret = self::$nosql->hmget($p1.':id:'.$p3,$p4);
             if ($ret)
-               return json_encode($ret);
+               return json_encode(['id'=>$p3,'response'=>$ret]);
             break;
          }
          case 'update': {
