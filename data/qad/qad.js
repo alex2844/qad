@@ -1,6 +1,7 @@
 var Qad={
 	dev: false,
 	event: {},
+	passport: {},
 	$$: function(id) {
 		return document.querySelectorAll(id);
 	},
@@ -781,11 +782,24 @@ window.onpopstate = function() {
 }
 */
 window.addEventListener('load',function() {
+   var locarray = location.href.split('/');
+   delete locarray[(locarray.length-1)];
+   location.pwd = locarray.join('/').slice(0,-1);
+   if (Qad.$('meta[name="passport"]') && Qad.session.get('passport.'+Qad.$('meta[name="passport"]').content.split(',')[2])) {
+      console.log(
+         Qad.$('meta[name="passport"]').content.split(',')
+      )
+      Qad.passport = JSON.parse(decodeURIComponent(Qad.session.get('passport.'+Qad.$('meta[name="passport"]').content.split(',')[2])));
+      if (!Qad.passport.type)
+         Qad.passport.type = 1;
+   }else
+      Qad.passport.type = 0;
+   if (Qad.$('meta[name="passport"]') && Qad.passport.type != Qad.$('meta[name="passport"]').content.split(',')[0]) {
+      location.href = Qad.$('meta[name="passport"]').content.split(',')[1];
+      return;
+   }
 	if (Qad.$()['actions'] && typeof(actions)!='undefined')
 		actions[Qad.$()['actions']]();
-	var locarray = location.href.split('/');
-	delete locarray[(locarray.length-1)];
-	location.pwd = locarray.join('/').slice(0,-1);
 	window.requestFileSystem = window.requestFileSystem || window.webkitRequestFileSystem;
 	if (typeof console !=="undefined" && console.log)
 		console.info("%c Сюда вставлять не что не надо, иначе откроете доступ к своему аккаунту!",'color:red;font-weight:bold;font-style:italic;font-size:16px;');

@@ -19,6 +19,23 @@ class Qad{
 		return true;
 	}
 
+   public function passport($data,$key='') {
+      if (!is_array($data))
+         $data = json_decode($data,true);
+      $data = [
+         'id' => $data['id'],
+         'type' => $data['response']['type'],
+         'email' => $data['response']['email'],
+         'login' => $data['response']['login'],
+         'first_name' => $data['response']['first_name'],
+         'last_name' => $data['response']['last_name'],
+         'utc' => $data['response']['utc'],
+         'update' => time()
+      ];
+      $data = json_encode($data);
+      setcookie('passport.'.$key, $data, time()+60*60*24*30, '/');
+      return $data;
+   }
 	public function mail($to, $subject, $message, $headers='') {
 		if ($headers == '')
 			$headers= "MIME-Version: 1.0\r\nContent-type: text/html; charset=utf-8\r\nFrom: ".$this->smtp_from."\r\n";
