@@ -107,6 +107,20 @@ class Qad{
 	}
 	public function nosql($exec,$p1='',$p2='',$p3='',$p4='') {
       switch($exec) {
+         case 'get': {
+            $value = self::$nosql->get($p1);
+            if (($result = @unserialize($value)) === false)
+               return $value;
+            return $result;
+            break;
+         }
+         case 'set': {
+            if (is_array($p2))
+               $p2 = serialize($p2);
+            self::$nosql->set($p1, $p2);
+            self::$nosql->save();
+            break;
+         }
          case 'delete': {
             $w = self::$nosql->hgetall($p1.':id:'.$p2);
             foreach ($w as $k=>$v)
