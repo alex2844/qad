@@ -783,12 +783,10 @@ window.onpopstate = function() {
 */
 window.addEventListener('load',function() {
    var locarray = location.href.split('/');
+   location.file = (locarray[(locarray.length-1)]?locarray[(locarray.length-1)]:'index.html');
    delete locarray[(locarray.length-1)];
    location.pwd = locarray.join('/').slice(0,-1);
    if (Qad.$('meta[name="passport"]') && Qad.session.get('passport.'+Qad.$('meta[name="passport"]').content.split(',')[2])) {
-      console.log(
-         Qad.$('meta[name="passport"]').content.split(',')
-      )
       Qad.passport = JSON.parse(decodeURIComponent(Qad.session.get('passport.'+Qad.$('meta[name="passport"]').content.split(',')[2])));
       if (!Qad.passport.type)
          Qad.passport.type = 1;
