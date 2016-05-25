@@ -6,7 +6,11 @@ class Qad{
 	public $smtp_from;
 	public $smtp_host = 'ssl://smtp.gmail.com';
 	public $smtp_port = 465;
-
+	public $redis;
+	static public $nosql;
+   public function alert() {
+      echo'test';
+   }
 	private function _parseServer($socket, $response) {
 		$responseServer = '';
 		while (@substr($responseServer, 3, 1) != ' ') {
@@ -103,6 +107,66 @@ class Qad{
 			else
 				return false;
 		}
+	}
+	public function nosql($exec,$p1='',$p2='',$p3='',$p4='') {
+      switch($exec) {
+         case 'delete': {
+            $w = self::$nosql->hgetall($p1.':id:'.$p2);
+            foreach ($w as $k=>$v)
+               if (self::$nosql->exists($p1.':'.$k.':'.$v))
+                  self::$nosql->del($p1.':'.$k.':'.$v);
+            $res = self::$nosql->del($p1.':id:'.$p2);
+            self::$nosql->save();
+            return $res;
+            break;
+         }
+         case 'select': {
+            global $redis;
+            if ($p2 != 'id')
+               $p3 = self::$nosql->get($p1.':'.$p2.':'.$p3);
+            if (empty($p4))
+               return self::$nosql->hgetall($p1.':id:'.$p3);
+            else
+               return self::$nosql->hmget($p1.':id:'.$p3,$p4);
+            break;
+         }
+         case 'update': {
+            foreach ($p3 as $k=>$v) {
+               $o = self::$nosql->hmget($p1.':id:'.$p2,[$k])[$k];
+               if (self::$nosql->exists($p1.':'.$k.':'.$o)) {
+                  self::$nosql->del($p1.':'.$k.':'.$o);
+                  self::$nosql->set($p1.':'.$k.':'.$v, $p2);
+               }
+            }
+            $res = self::$nosql->hmset($p1.':id:'.$p2, $p3);
+            self::$nosql->save();
+            return $res;
+            break;
+         }
+         case 'insert': {
+            $id = self::$nosql->incr($p1.':id');
+            foreach ($p2 as $k=>$v)
+               if (substr($k,0,1) == '/') {
+                  $p2[substr($k,1)] = $v;
+                  unset($p2[$k]);
+                  self::$nosql->set($p1.':'.substr($k,1).':'.$v, $id);
+               }
+            $res = self::$nosql->hmset($p1.':id:'.$id, $p2);
+            self::$nosql->save();
+            return $res;
+            break;
+         }
+         default: {
+            try {
+               self::$nosql = new Redis();
+               self::$nosql->connect('localhost',6379);
+               self::$nosql->setOption(Redis::OPT_PREFIX,$exec.'.');
+            } catch(RedisException $e) {
+               exit('Connect error');
+            }
+            break;
+         }
+      }
 	}
 	public function rest($serviceClass) {
 		if (array_key_exists('method', array_change_key_case($_REQUEST, CASE_LOWER))) {
