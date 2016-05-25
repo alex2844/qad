@@ -6,11 +6,8 @@ class Qad{
 	public $smtp_from;
 	public $smtp_host = 'ssl://smtp.gmail.com';
 	public $smtp_port = 465;
-	public $redis;
 	static public $nosql;
-   public function alert() {
-      echo'test';
-   }
+	
 	private function _parseServer($socket, $response) {
 		$responseServer = '';
 		while (@substr($responseServer, 3, 1) != ' ') {
