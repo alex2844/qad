@@ -114,7 +114,7 @@ class Qad{
                   self::$nosql->del($p1.':'.$k.':'.$v);
             $res = self::$nosql->del($p1.':id:'.$p2);
             self::$nosql->save();
-            return $res;
+            return json_encode(['status'=>$res]);
             break;
          }
          case 'select': {
@@ -122,9 +122,9 @@ class Qad{
             if ($p2 != 'id')
                $p3 = self::$nosql->get($p1.':'.$p2.':'.$p3);
             if (empty($p4))
-               return self::$nosql->hgetall($p1.':id:'.$p3);
+               return json_encode(self::$nosql->hgetall($p1.':id:'.$p3));
             else
-               return self::$nosql->hmget($p1.':id:'.$p3,$p4);
+               return json_encode(self::$nosql->hmget($p1.':id:'.$p3,$p4));
             break;
          }
          case 'update': {
@@ -137,7 +137,7 @@ class Qad{
             }
             $res = self::$nosql->hmset($p1.':id:'.$p2, $p3);
             self::$nosql->save();
-            return $res;
+            return json_encode(['status'=>$res]);
             break;
          }
          case 'insert': {
@@ -148,15 +148,19 @@ class Qad{
                   unset($p2[$k]);
                   self::$nosql->set($p1.':'.substr($k,1).':'.$v, $id);
                }
-            $res = self::$nosql->hmset($p1.':id:'.$id, $p2);
+            self::$nosql->hmset($p1.':id:'.$id, $p2);
             self::$nosql->save();
-            return $res;
+            return json_encode(['id'=>$id]);
             break;
          }
          default: {
             try {
                self::$nosql = new Redis();
-               self::$nosql->connect('localhost',6379);
+               if (empty($p1))
+                  $p1 = 'localhost:6379';
+               self::$nosql->connect($p1);
+               if (!empty($p2))
+                  self::$nosql->auth($p2);
                self::$nosql->setOption(Redis::OPT_PREFIX,$exec.'.');
             } catch(RedisException $e) {
                exit('Connect error');
