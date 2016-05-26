@@ -43,13 +43,14 @@ var Qad={
 			return;
 		}
 		obj.attr = function(key, value) {
-			if (value == false)
+			if (typeof(value) == 'boolean' && value == false)
 				obj.removeAttribute(key);
-			else if (value) {
+			else if (typeof(value) == 'undefined')
+				return obj.getAttribute(key);
+			else{
 				obj.setAttribute(key,value);
 				return value
-			}else
-				return obj.getAttribute(key);
+			}
 		}
 		obj.resize = function() {
 			if (obj.tagName == 'IFRAME') {
