@@ -723,7 +723,8 @@ label.input span {
 	transition: all .2s;
 }
 .input input, .input textarea, .input select {
-	width: inherit;
+	/* width: inherit; */
+	width: 100%;
 }
 .input input:not([readonly]):focus,
    select:focus,
@@ -857,15 +858,44 @@ label.checkbox {
   -webkit-transform: scale3d(1.2, 1.2, 1);
     transform: scale3d(1.2, 1.2, 1);
 }
+[data-tooltip]{
+   display: inline;
+   position: relative;
+}
+[data-tooltip]:hover:after{
+   content: attr(data-tooltip);
+   bottom: 36px;
+   left: 20%;
+   padding: 5px 15px;
+   position: absolute;
+   background: rgba(97,97,97,.9);
+   border-radius: 2px;
+   color: #fff;
+   display: inline-block;
+   font-size: 10px;
+   font-weight: 500;
+   line-height: 14px;
+   max-width: 170px;
+   text-align: center;
+}
+#button-float [data-tooltip]:hover:after{
+   left: -200%;
+}
 [data-center] {
    display: block;
    margin: 0 auto;
+}
+footer [data-left] {
+   padding-left: 95px;
 }
 [data-left] {
    float: left;
 }
 ul.menu[data-right] {
    right: 0;
+}
+footer [data-right] {
+   padding-right: 95px;
 }
 [data-right] {
    float: right;

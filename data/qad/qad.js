@@ -87,11 +87,9 @@ var Qad={
 			}else{
 				if (html && html.indexOf('+') == 0)
 					obj.innerHTML += html.slice(1);
-				else if (html && html.indexOf('-') == 0) {
-				   console.log(obj.innerHTML);
+				else if (html && html.indexOf('-') == 0)
 					obj.innerHTML = obj.innerHTML.replace(html.slice(1),'');
-				   console.log(obj.innerHTML);
-				}else if (html)
+				else if (html)
 					obj.innerHTML = html;
 				else
 					return obj.innerHTML;
