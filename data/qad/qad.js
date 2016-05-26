@@ -937,7 +937,8 @@ window.addEventListener('load',function() {
 		},function(){
 			console.log('ಠ_ಠ');
 		});
-	}
+	}else if (Qad.$('html[dev]') && Qad.$()['dev'])
+	   new Function('return '+decodeURIComponent(Qad.$()['dev']))();
 	if (typeof main == 'function')
 		main();
 	if (Qad.$('iframe.load') && typeof load == 'function') {
