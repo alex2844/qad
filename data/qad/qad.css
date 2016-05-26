@@ -436,6 +436,9 @@ ul p {
 div.float {
 	width: 32%;
 }
+div.middle {
+  width: 50%;
+}
 div.min {
   width: 25%;
 }
@@ -901,13 +904,13 @@ footer [data-right] {
    float: right;
 }
 @media all and (max-width: 650px) {
-	div.float {
+	div.middle, div.float {
 		/* width: 100%; */
 		width: 98%;
 	}
-  div.min {
-    width: 45%;
-  }
+   div.min {
+      width: 45%;
+   }
 	.card.left {
 		width: 100%;
 	}
