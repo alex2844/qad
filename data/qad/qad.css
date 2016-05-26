@@ -681,18 +681,6 @@ input[type=range].progress::-webkit-slider-thumb {
 	height: 0px;
 	-webkit-appearance: none;
 }
-.input {
-	position: relative;
-	padding: 20px 0 0;
-	width: 200px;
-}
-.input label {
-	position: absolute;
-	font-size: 12px;
-	top: 0;
-	color: rgba(0, 0, 0, 0.26);
-	transition: all .2s;
-}
 input[type=text],
    input[type=password],
    input[type=search],
@@ -717,32 +705,49 @@ input[type=text],
    textarea {
 	   border-bottom: 1px solid rgba(0, 0, 0, 0.12);
 }
+label.input {
+	position: relative;
+	padding: 20px 0 0;
+	width: 200px;
+	display: block;
+}
+label.input span {
+	position: absolute;
+	font-size: 12px;
+	top: 0;
+	color: @color;
+	transition: all .2s;
+}
 .input input, .input textarea, .input select {
 	width: inherit;
 }
 .input input:not([readonly]):focus,
-   input[type=password]:focus,
-   input[type=search]:focus,
-   input[type=email]:focus,
-   input[type=tel]:focus,
    select:focus,
    textarea:focus {
 	   border-bottom: 2px solid @color;
 }
-.input input:focus + label, .input input:focus:invalid + label,
-	.input select:focus + label, .input select:focus:invalid + label,
-	.input textarea:focus + label, .input textarea:focus:invalid + label {
+.input input[pattern]:invalid + span,
+.input input:focus + span, .input input:focus:invalid + span,
+	.input select:focus + span, .input select:focus:invalid + span,
+	.input textarea:focus + span, .input textarea:focus:invalid + span {
 		font-size: 12px;
 		top: 0;
 		color: @color;
 }
-.input input:invalid + label,
-   .input select:invalid + label,
-	.input textarea:invalid + label {
+.input input:invalid + span,
+   .input select:invalid + span,
+	.input textarea:invalid + span {
 		left: 0;
 		top: 24px;
 		font-size: 16px;
 		pointer-events: none;
+	   color: rgba(0, 0, 0, 0.26);
+}
+.input input[pattern]:focus:invalid + span {
+   color: #F44336;
+}
+.input input[pattern]:focus:valid + span {
+   color: #4CAF50;
 }
 label.checkbox {
    position: relative;
