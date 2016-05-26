@@ -19,12 +19,12 @@ class Qad{
 		return true;
 	}
 
-   public function passport($data,$key='') {
+   public function passport($data,$key='',$scope='') {
       if (!is_array($data))
          $data = json_decode($data,true);
-      $data = [
+      $passport = [
          'id' => $data['id'],
-         'type' => $data['response']['type'],
+         'type' => ($data['response']['type']?$data['response']['type']:1),
          'email' => $data['response']['email'],
          'login' => $data['response']['login'],
          'first_name' => $data['response']['first_name'],
@@ -32,9 +32,12 @@ class Qad{
          'utc' => $data['response']['utc'],
          'update' => time()
       ];
-      $data = json_encode($data);
-      setcookie('passport.'.$key, $data, time()+60*60*24*30, '/');
-      return $data;
+      if ($scope)
+         for ($i=0; $i<count($scope); ++$i)
+            $passport['scope'][$scope[$i]] = $data['response'][$scope[$i]];
+      $passport = json_encode($passport);
+      setcookie('passport.'.$key, $passport, time()+60*60*24*30, '/');
+      return $passport;
    }
 	public function mail($to, $subject, $message, $headers='') {
 		if ($headers == '')
