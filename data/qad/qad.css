@@ -750,7 +750,7 @@ label.checkbox {
    cursor: pointer;
    font-size: 16px;
 }
-input.checkbox:before {
+.checkbox input:before {
    -webkit-transition: all 0.3s ease-in-out;
    -moz-transition: all 0.3s ease-in-out;
    transition: all 0.3s ease-in-out;
@@ -764,7 +764,7 @@ input.checkbox:before {
    border: 2px solid #f2f2f2;
    cursor: pointer;
 }
-input.checkbox:checked:before {
+.checkbox input:checked:before {
    -webkit-transform: rotate(-45deg);
    -moz-transform: rotate(-45deg);
    -ms-transform: rotate(-45deg);
@@ -776,7 +776,7 @@ input.checkbox:checked:before {
    border-right-style: none;
    top: 0;
 }
-input.checkbox:after {
+.checkbox input:after {
    content: "";
    position: absolute;
    top: -0.125rem;
