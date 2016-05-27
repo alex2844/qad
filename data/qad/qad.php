@@ -141,7 +141,7 @@ class Qad{
                   }
                }
             }
-            return $arr;
+            return json_encode($arr);
             break;
          }
          case 'get': {
