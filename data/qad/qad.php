@@ -133,7 +133,10 @@ class Qad{
                if ($p3 == '')
                   $p3 = 0;
                for (; $p3<count($a); ++$p3) {
-                  $arr[] = $a[$p3];
+                  $arr[] = str_replace([
+                     str_replace('*','',$p1),
+                     self::$nosql->getOption(Redis::OPT_PREFIX)
+                  ],'',$a[$p3]);
                   if ($p2 != '') {
                      --$p2;
                      if ($p2 == 0)
