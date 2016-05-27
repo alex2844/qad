@@ -785,7 +785,7 @@ window.onpopstate = function() {
 }
 */
 window.addEventListener('load',function() {
-   var locarray = location.href.split('/');
+   var locarray = location.href.split('#')[0].split('/');
    location.file = (locarray[(locarray.length-1)]?locarray[(locarray.length-1)]:'index.html');
    delete locarray[(locarray.length-1)];
    location.pwd = locarray.join('/').slice(0,-1);
