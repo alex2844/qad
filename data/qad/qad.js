@@ -78,23 +78,31 @@ var Qad={
 				height: Math.round(box.height)
 			};
 		}
-		obj.$ = function(html) {
-			if (obj.tagName == 'INPUT') {
-				if (html)
-					obj.value = html;
-				else
-					return obj.value;
-			}else{
-				if (html && html.indexOf('+') == 0)
-					obj.innerHTML += html.slice(1);
-				else if (html && html.indexOf('-') == 0)
-					obj.innerHTML = obj.innerHTML.replace(html.slice(1),'');
-				else if (html)
-					obj.innerHTML = html;
-				else
-					return obj.innerHTML;
-			}
-			return obj;
+		obj.$ = function(html,offset) {
+         if (obj.tagName == 'INPUT' || obj.tagName == 'TEXTAREA')
+            val = obj.value;
+         else
+            val = obj.innerHTML;
+         if (html && html.indexOf('+') == 0)
+				val += html.slice(1);
+			else if (html && html.indexOf('-') == 0)
+				val = val.replace(html.slice(1),'');
+			else if (html && html.indexOf('~') == 0) {
+			   html = html.slice(1);
+            var endIndex, range, doc = el.ownerDocument;
+            endIndex = obj.selectionEnd;
+            obj.value = val.slice(0, endIndex) + html + val.slice(endIndex);
+            obj.selectionStart = obj.selectionEnd = endIndex + html.length+(offset?offset:0);
+            obj.focus();
+            return;
+			}else if (html)
+				val = html;
+			else
+				return val;
+         if (obj.tagName == 'INPUT' || obj.tagName == 'TEXTAREA')
+            obj.value = val;
+         else
+            obj.innerHTML = val;
 		}
 		obj.status = function(s) {
 			tmp = obj.innerHTML;
