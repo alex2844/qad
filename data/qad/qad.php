@@ -127,6 +127,23 @@ class Qad{
 	}
 	public function nosql($exec,$p1='',$p2='',$p3='',$p4='') {
       switch($exec) {
+         case 'search': {
+            $it = NULL;
+            while($a = self::$nosql->scan($it,self::$nosql->getOption(Redis::OPT_PREFIX).$p1)) {
+               if ($p3 == '')
+                  $p3 = 0;
+               for (; $p3<count($a); ++$p3) {
+                  $arr[] = $a[$p3];
+                  if ($p2 != '') {
+                     --$p2;
+                     if ($p2 == 0)
+                        break;
+                  }
+               }
+            }
+            return $arr;
+            break;
+         }
          case 'get': {
             $value = self::$nosql->get($p1);
             if (($result = @unserialize($value)) === false)
@@ -198,6 +215,7 @@ class Qad{
                if (!empty($p2))
                   self::$nosql->auth($p2);
                self::$nosql->setOption(Redis::OPT_PREFIX,$exec.'.');
+               return self::$nosql;
             } catch(RedisException $e) {
                exit('Connect error');
             }
