@@ -263,7 +263,51 @@ var Qad={
 		else
 			return false;
 	},
-	geo: {
+   geo: {
+      id: {},
+      label: function(d) {
+         label = function(d) {
+            if (typeof(d.position.lat) != 'function')
+               d.position = new google.maps.LatLng(d.position);
+            if (typeof(this.setValues) == 'function')
+               this.setValues(d);
+         };
+         label.prototype = new google.maps.OverlayView;
+         label.prototype.changed = function() {
+            var canvas = this.canvas;
+            if (!canvas) return;
+            var style = canvas.style;
+            var text = this.get('text');
+            var ctx = canvas.getContext('2d');
+            ctx.font = this.get('size')+'px sans-serif';
+            ctx.fillStyle = this.get('color');
+            ctx.textBaseline = 'top';
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 4;
+            ctx.strokeText(text, 4, 4);
+            ctx.fillText(text, 4, 4);
+            style.marginLeft = (this.get('left')?this.get('left'):'-15')+'px';
+            style.marginTop = (this.get('top')?this.get('top'):'-15')+'px';
+         };
+         label.prototype.onAdd = function() {
+            this.canvas = document.createElement('canvas');
+            this.canvas.style.position = 'absolute';
+            this.changed();
+            var panes = this.getPanes();
+            panes.mapPane.appendChild(this.canvas);
+         };
+         label.prototype.draw = function() {
+            var projection = this.getProjection();
+            if (!projection)
+               return;
+            var latLng = (this.get('position'));
+            var pos = projection.fromLatLngToDivPixel(latLng);
+            var style = this.canvas.style;
+            style['top'] = pos.y+'px';
+            style['left'] = pos.x+'px';
+         };
+         return new label(d);
+      },
 		maps: function(address,zoom,id) {
 			document.geo = function() {
 				var geocoder = new google.maps.Geocoder();
@@ -272,6 +316,8 @@ var Qad={
 					scrollwheel: false,
 					zoom: zoom
 				});
+				if (id)
+				   Qad.geo.id[id] = map;
 				if (typeof(address) == 'object')
 					var marker = new google.maps.Marker({
 						map: map,
