@@ -346,7 +346,9 @@ table, .card {
 	height: initial;
 	background: @color;
 	margin: 0;
-	padding: 8px 0;
+	/* padding: 8px 0; */
+   padding: 16px;
+   box-sizing: border-box;
 }
 .card h2 i, dialog h2 i {
 	float: right;
