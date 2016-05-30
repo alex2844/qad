@@ -256,7 +256,7 @@ var Qad={
 			if (a[i] === v)
 				return i;
 		return -1;
-	}
+	},
 	for: function (i,o) {
 		//console.log(i.length);
 		if (typeof(i) == 'object' && i.length)
