@@ -211,6 +211,16 @@ button#menu + nav a, nav.panel a {
 button#menu + nav a:hover, nav.panel a:hover {
 	background: #f1f1f1;
 }
+button.menu {
+   border-radius: 50%;
+   width: 32px;
+   min-width: 32px;
+   padding: 0;
+   height: 32px;
+}
+button.menu:hover {
+   background-color: rgba(158,158,158,.2);
+}
 ul.menu {
    position: absolute;
    margin: 0;
