@@ -162,11 +162,15 @@ class Qad{
             break;
          }
          case 'delete': {
-            $w = self::$nosql->hgetall($p1.':id:'.$p2);
-            foreach ($w as $k=>$v)
-               if (self::$nosql->exists($p1.':'.$k.':'.$v))
-                  self::$nosql->del($p1.':'.$k.':'.$v);
-            $res = self::$nosql->del($p1.':id:'.$p2);
+            if (self::$nosql->exists($p1))
+               self::$nosql->del($p1);
+            if (!empty($p2)) {
+               $w = self::$nosql->hgetall($p1.':id:'.$p2);
+               foreach ($w as $k=>$v)
+                  if (self::$nosql->exists($p1.':'.$k.':'.$v))
+                     self::$nosql->del($p1.':'.$k.':'.$v);
+               $res = self::$nosql->del($p1.':id:'.$p2);
+            }
             self::$nosql->save();
             return json_encode(['status'=>$res]);
             break;
