@@ -36,7 +36,7 @@ class Qad{
          for ($i=0; $i<count($scope); ++$i)
             $passport['scope'][$scope[$i]] = $data['response'][$scope[$i]];
       $passport = json_encode($passport);
-      setcookie('passport.'.$key, $passport, time()+60*60*24*30, '/');
+      setcookie('passport'.($key!=''?'.'.$key:''), $passport, time()+60*60*24*30, '/');
       return $passport;
    }
 	public function mail($to, $subject, $message, $headers='') {

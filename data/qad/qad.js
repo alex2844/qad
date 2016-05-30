@@ -35,7 +35,6 @@ var Qad={
 			obj.appendChild(el);
 			return el;
 		}
-		//Qad.$('#result').remove();
 		obj.empty = function() {
 			obj.classList.remove('template');
 			obj.value = null;
