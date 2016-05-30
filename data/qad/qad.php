@@ -176,7 +176,6 @@ class Qad{
             break;
          }
          case 'select': {
-            global $redis;
             if ($p2 != 'id')
                $p3 = self::$nosql->get($p1.':'.$p2.':'.$p3);
             if (empty($p4))
