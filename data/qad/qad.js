@@ -1,3 +1,12 @@
+/*
+=====================================================
+Qad Framework (qad.js)
+-----------------------------------------------------
+https://pcmasters.ml/
+-----------------------------------------------------
+Copyright (c) 2016 Alex Smith
+=====================================================
+*/
 var Qad={
 	dev: false,
 	event: {},
@@ -19,7 +28,7 @@ var Qad={
 					if (iframe.length > 1 && document.querySelector(iframe[0]))
 						return Qad.$(document.querySelector(iframe[0]).contentDocument.querySelector(el.replace(iframe[0]+' ','')));
 				}
-            obj=document.querySelector(el);
+				obj=document.querySelector(el);
 			}else
 				obj=el;
 		}else{
@@ -78,30 +87,30 @@ var Qad={
 			};
 		}
 		obj.$ = function(html,offset) {
-         if (obj.tagName == 'INPUT' || obj.tagName == 'TEXTAREA')
-            val = obj.value;
-         else
-            val = obj.innerHTML;
-         if (html && html.indexOf('+') == 0)
+			if (obj.tagName == 'INPUT' || obj.tagName == 'TEXTAREA')
+				val = obj.value;
+			else
+				val = obj.innerHTML;
+			if (html && html.indexOf('+') == 0)
 				val += html.slice(1);
 			else if (html && html.indexOf('-') == 0)
 				val = val.replace(html.slice(1),'');
 			else if (html && html.indexOf('~') == 0) {
-			   html = html.slice(1);
-            var endIndex, range, doc = el.ownerDocument;
-            endIndex = obj.selectionEnd;
-            obj.value = val.slice(0, endIndex) + html + val.slice(endIndex);
-            obj.selectionStart = obj.selectionEnd = endIndex + html.length+(offset?offset:0);
-            obj.focus();
-            return;
+				html = html.slice(1);
+				var endIndex, range, doc = el.ownerDocument;
+				endIndex = obj.selectionEnd;
+				obj.value = val.slice(0, endIndex) + html + val.slice(endIndex);
+				obj.selectionStart = obj.selectionEnd = endIndex + html.length+(offset?offset:0);
+				obj.focus();
+				return;
 			}else if (html)
 				val = html;
 			else
 				return val;
-         if (obj.tagName == 'INPUT' || obj.tagName == 'TEXTAREA')
-            obj.value = val;
-         else
-            obj.innerHTML = val;
+			if (obj.tagName == 'INPUT' || obj.tagName == 'TEXTAREA')
+				obj.value = val;
+			else
+				obj.innerHTML = val;
 		}
 		obj.status = function(s) {
 			tmp = obj.innerHTML;
@@ -182,30 +191,29 @@ var Qad={
 			return obj.cloneNode(true);
 		}
 		obj.template = function(d) {
-		  if (!obj.shab)
-		    obj.shab = obj.innerHTML;
-		  obj.innerHTML = '';
-		  for (key in d)
-		    obj.innerHTML += obj.shab.replace(/{(.*?)}/gim, function(m,v) {
-		      if (!d[key])
-		        return;
-		      else if (v == '@')
-		        return key;
-		      else if (v.indexOf('@') == 0)
-		        return d[key][v.replace('@','')];
-		      else{
-		        v = v.replace(/@(.*?);/gim, function(p) {
-		          p = p.replace(';','');
-		          if (p == '@')
-    		        return key;
-    		      else if (p.indexOf('@') == 0)
-    		        return d[key][p.replace('@','')];
-		        });
-		        //return eval(v);
-		        return new Function('return '+v)();
-		      }
-		    });
-		  obj.style['display'] = 'table-row-group';
+			if (!obj.shab)
+				obj.shab = obj.innerHTML;
+			obj.innerHTML = '';
+			for (key in d)
+				obj.innerHTML += obj.shab.replace(/{(.*?)}/gim, function(m,v) {
+					if (!d[key])
+						return;
+					else if (v == '@')
+						return key;
+					else if (v.indexOf('@') == 0)
+						return d[key][v.replace('@','')];
+					else{
+						v = v.replace(/@(.*?);/gim, function(p) {
+							p = p.replace(';','');
+							if (p == '@')
+								return key;
+							else if (p.indexOf('@') == 0)
+								return d[key][p.replace('@','')];
+						});
+						return new Function('return '+v)();
+					}
+				});
+			obj.style['display'] = 'table-row-group';
 		}
 		obj.parent = obj.parentNode;
 		return obj;
@@ -241,14 +249,14 @@ var Qad={
 			data = JSON.stringify(data);
 		return data;
 	},
-   find: function(a,v) {
-      if (a.indexOf)
-         return a.indexOf(v);
-      for (var i = 0; i < a.length; i++)
-         if (a[i] === v)
-            return i;
-      return -1;
-   },
+	find: function(a,v) {
+		if (a.indexOf)
+			return a.indexOf(v);
+		for (var i = 0; i < a.length; i++)
+			if (a[i] === v)
+				return i;
+		return -1;
+	}
 	for: function (i,o) {
 		//console.log(i.length);
 		if (typeof(i) == 'object' && i.length)
@@ -262,51 +270,51 @@ var Qad={
 		else
 			return false;
 	},
-   geo: {
-      id: {},
-      label: function(d) {
-         label = function(d) {
-            if (typeof(d.position.lat) != 'function')
-               d.position = new google.maps.LatLng(d.position);
-            if (typeof(this.setValues) == 'function')
-               this.setValues(d);
-         };
-         label.prototype = new google.maps.OverlayView;
-         label.prototype.changed = function() {
-            var canvas = this.canvas;
-            if (!canvas) return;
-            var style = canvas.style;
-            var text = this.get('text');
-            var ctx = canvas.getContext('2d');
-            ctx.font = this.get('size')+'px sans-serif';
-            ctx.fillStyle = this.get('color');
-            ctx.textBaseline = 'top';
-            ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = 4;
-            ctx.strokeText(text, 4, 4);
-            ctx.fillText(text, 4, 4);
-            style.marginLeft = (this.get('left')?this.get('left'):'-15')+'px';
-            style.marginTop = (this.get('top')?this.get('top'):'-15')+'px';
-         };
-         label.prototype.onAdd = function() {
-            this.canvas = document.createElement('canvas');
-            this.canvas.style.position = 'absolute';
-            this.changed();
-            var panes = this.getPanes();
-            panes.mapPane.appendChild(this.canvas);
-         };
-         label.prototype.draw = function() {
-            var projection = this.getProjection();
-            if (!projection)
-               return;
-            var latLng = (this.get('position'));
-            var pos = projection.fromLatLngToDivPixel(latLng);
-            var style = this.canvas.style;
-            style['top'] = pos.y+'px';
-            style['left'] = pos.x+'px';
-         };
-         return new label(d);
-      },
+	geo: {
+		id: {},
+		label: function(d) {
+			label = function(d) {
+				if (typeof(d.position.lat) != 'function')
+					d.position = new google.maps.LatLng(d.position);
+				if (typeof(this.setValues) == 'function')
+					this.setValues(d);
+			};
+			label.prototype = new google.maps.OverlayView;
+			label.prototype.changed = function() {
+				var canvas = this.canvas;
+				if (!canvas) return;
+				var style = canvas.style;
+				var text = this.get('text');
+				var ctx = canvas.getContext('2d');
+				ctx.font = this.get('size')+'px sans-serif';
+				ctx.fillStyle = this.get('color');
+				ctx.textBaseline = 'top';
+				ctx.strokeStyle = '#ffffff';
+				ctx.lineWidth = 4;
+				ctx.strokeText(text, 4, 4);
+				ctx.fillText(text, 4, 4);
+				style.marginLeft = (this.get('left')?this.get('left'):'-15')+'px';
+				style.marginTop = (this.get('top')?this.get('top'):'-15')+'px';
+			};
+			label.prototype.onAdd = function() {
+				this.canvas = document.createElement('canvas');
+				this.canvas.style.position = 'absolute';
+				this.changed();
+				var panes = this.getPanes();
+				panes.mapPane.appendChild(this.canvas);
+			};
+			label.prototype.draw = function() {
+				var projection = this.getProjection();
+				if (!projection)
+					return;
+				var latLng = (this.get('position'));
+				var pos = projection.fromLatLngToDivPixel(latLng);
+				var style = this.canvas.style;
+				style['top'] = pos.y+'px';
+				style['left'] = pos.x+'px';
+			};
+			return new label(d);
+		},
 		maps: function(address,zoom,id) {
 			document.geo = function() {
 				var geocoder = new google.maps.Geocoder();
@@ -487,17 +495,16 @@ var Qad={
 		if (Qad.session.get('oauth-token-'+provider))
 			params.access_token = Qad.session.get('oauth-token-'+provider);
 		if (location.origin.indexOf('chrome-extension')==-1) {
-		  var script = Qad.$('/script');
-		  script.src = method+'?callback=document.api.callback&'+Qad.http_build_query(params);
-		  console.log(script.src);
-		  Qad.$('head').add(script);
+			var script = Qad.$('/script');
+			script.src = method+'?callback=document.api.callback&'+Qad.http_build_query(params);
+			Qad.$('head').add(script);
 		}else{
-		  var xhr = new XMLHttpRequest();
-		  xhr.open('GET', method+'?'+Qad.http_build_query(params));
-		  xhr.onload = function () {
-		    document.api.callback(JSON.parse(xhr.responseText));
-		  }
-		  xhr.send();
+			var xhr = new XMLHttpRequest();
+			xhr.open('GET', method+'?'+Qad.http_build_query(params));
+			xhr.onload = function () {
+				document.api.callback(JSON.parse(xhr.responseText));
+			}
+			xhr.send();
 		}
 	},
 	fs: {
@@ -680,9 +687,9 @@ var Qad={
 						actions: (typeof(title)!='string'?title.actions:[])
 					}
 					if (document.sw)
-                  document.sw.showNotification((typeof(title)=='string'?title:title.title),notification);
-               else
-                  new Notification((typeof(title)=='string'?title:title.title),notification);
+						document.sw.showNotification((typeof(title)=='string'?title:title.title),notification);
+					else
+						new Notification((typeof(title)=='string'?title:title.title),notification);
 				}
 			});
 		}
@@ -783,10 +790,10 @@ var Qad={
 								Qad.$('body').style['display'] = 'block';
 							},500);
 						},null,function(){
-  						add = Qad.$('/style');
-  						add.innerHTML = style;
-  						Qad.$('head').add(add);
-  						Qad.$('body').style['display'] = 'block';
+							add = Qad.$('/style');
+							add.innerHTML = style;
+							Qad.$('head').add(add);
+							Qad.$('body').style['display'] = 'block';
 						});
 				}
 				xhr.onerror = function() {
@@ -838,20 +845,20 @@ window.onpopstate = function() {
 }
 */
 window.addEventListener('load',function() {
-   var locarray = location.href.split('#')[0].replace(location.search,'').split('/');
-   location.file = (locarray[(locarray.length-1)]?locarray[(locarray.length-1)]:'index.html');
-   delete locarray[(locarray.length-1)];
-   location.pwd = locarray.join('/').slice(0,-1);
-   if (Qad.$('meta[name="passport"]') && Qad.session.get('passport.'+Qad.$('meta[name="passport"]').content.split(',')[2])) {
-      Qad.passport = JSON.parse(decodeURIComponent(Qad.session.get('passport.'+Qad.$('meta[name="passport"]').content.split(',')[2])));
-      if (!Qad.passport.type)
-         Qad.passport.type = 1;
-   }else
-      Qad.passport.type = 0;
-   if (Qad.$('meta[name="passport"]') && Qad.passport.type != Qad.$('meta[name="passport"]').content.split(',')[0]) {
-      location.href = Qad.$('meta[name="passport"]').content.split(',')[1];
-      return;
-   }
+	var locarray = location.href.split('#')[0].replace(location.search,'').split('/');
+	location.file = (locarray[(locarray.length-1)]?locarray[(locarray.length-1)]:'index.html');
+	delete locarray[(locarray.length-1)];
+	location.pwd = locarray.join('/').slice(0,-1);
+	if (Qad.$('meta[name="passport"]') && Qad.session.get('passport.'+Qad.$('meta[name="passport"]').content.split(',')[2])) {
+		Qad.passport = JSON.parse(decodeURIComponent(Qad.session.get('passport.'+Qad.$('meta[name="passport"]').content.split(',')[2])));
+		if (!Qad.passport.type)
+			Qad.passport.type = 1;
+	}else
+		Qad.passport.type = 0;
+	if (Qad.$('meta[name="passport"]') && Qad.passport.type != Qad.$('meta[name="passport"]').content.split(',')[0]) {
+		location.href = Qad.$('meta[name="passport"]').content.split(',')[1];
+		return;
+	}
 	if (Qad.$()['actions'] && typeof(actions)!='undefined')
 		actions[Qad.$()['actions']]();
 	window.requestFileSystem = window.requestFileSystem || window.webkitRequestFileSystem;
@@ -908,31 +915,30 @@ window.addEventListener('load',function() {
 		});
 	}
 	if (Qad.$('.menu')) {
-      menu = function(e) {
-         if (e.target.id == Qad.$('ul[open]').attr('for'))
-            return;
-         pos = Qad.$('ul[open]').pos();
-         if ((e.y < pos.top || e.x < pos.left || e.y > pos.top+pos.height || e.x > pos.left+pos.width) && e.target.tagName != 'LI') {
-            Qad.$('#'+Qad.$('ul[open]').attr('for')).click();
-         }
+		menu = function(e) {
+			if (e.target.id == Qad.$('ul[open]').attr('for'))
+				return;
+			pos = Qad.$('ul[open]').pos();
+			if ((e.y < pos.top || e.x < pos.left || e.y > pos.top+pos.height || e.x > pos.left+pos.width) && e.target.tagName != 'LI')
+				Qad.$('#'+Qad.$('ul[open]').attr('for')).click();
 		}
-      Qad.for('.menu', function(el){
-         if (el.tagName != 'UL')
-            el.onclick = function(e){
-               if (Qad.$('ul[for='+el.id+']')) {
-                  if (Qad.$('ul[for='+el.id+']').style['display'] == 'block') {
-                     Qad.$('html').on('mouse',null,'menu');
-                     Qad.$('ul[for='+el.id+']').style['display'] = '';
-                     Qad.$('ul[for='+el.id+']').attr('open',false);
-                  }else{
-                     Qad.$('html').on('mouse',menu,'menu');
-                     Qad.$('ul[for='+el.id+']').style['display'] = 'block';
-                     Qad.$('ul[for='+el.id+']').attr('open',true);
-                  }
-                  e.preventDefault();
-               }
-            }
-      });
+		Qad.for('.menu', function(el){
+			if (el.tagName != 'UL')
+				el.onclick = function(e){
+					if (Qad.$('ul[for='+el.id+']')) {
+						if (Qad.$('ul[for='+el.id+']').style['display'] == 'block') {
+							Qad.$('html').on('mouse',null,'menu');
+							Qad.$('ul[for='+el.id+']').style['display'] = '';
+							Qad.$('ul[for='+el.id+']').attr('open',false);
+						}else{
+							Qad.$('html').on('mouse',menu,'menu');
+							Qad.$('ul[for='+el.id+']').style['display'] = 'block';
+							Qad.$('ul[for='+el.id+']').attr('open',true);
+						}
+						e.preventDefault();
+					}
+				}
+		});
 	}
 	inc = document.querySelectorAll('#button-float button');
 	if (inc.length > 0) {
@@ -967,21 +973,19 @@ window.addEventListener('load',function() {
 		ga('send', 'pageview');
 	}
 	if (Qad.$('html').lang) {
-      var script = Qad.$('/script');
-      document.translate = function() {
-         if (Qad.$('#google_translate')) {
-            Qad.$('#google_translate').$('&#xE8E2').attr('class','material-icons');
-         }
-         new google.translate.TranslateElement({
-            pageLanguage: Qad.$('html').lang,
-            layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
-            gaTrack: true,
-            gaId: Qad.$('meta[name="analytics"]').content
-         }, 'google_translate');
-      }
-      script.src = '//translate.google.com/translate_a/element.js?cb=document.translate';
-      console.log(script.src);
-      Qad.$('head').add(script);
+		var script = Qad.$('/script');
+		document.translate = function() {
+			if (Qad.$('#google_translate'))
+				Qad.$('#google_translate').$('&#xE8E2').attr('class','material-icons');
+			new google.translate.TranslateElement({
+				pageLanguage: Qad.$('html').lang,
+				layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+				gaTrack: true,
+				gaId: Qad.$('meta[name="analytics"]').content
+			}, 'google_translate');
+		}
+		script.src = '//translate.google.com/translate_a/element.js?cb=document.translate';
+		Qad.$('head').add(script);
 	}
 	if (navigator.serviceWorker && !Qad.$('html[dev]')) {
 		navigator.serviceWorker.register('/service-worker.js?'+location.pathname,{scope: location.pathname}).then(function(sw) {
@@ -991,7 +995,7 @@ window.addEventListener('load',function() {
 			console.log('ಠ_ಠ');
 		});
 	}else if (Qad.$('html[dev]') && Qad.$()['dev'])
-	   new Function('return '+decodeURIComponent(Qad.$()['dev']))();
+		new Function('return '+decodeURIComponent(Qad.$()['dev']))();
 	if (typeof main == 'function')
 		main();
 	if (Qad.$('iframe.load') && typeof load == 'function') {

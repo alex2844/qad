@@ -1,4 +1,13 @@
 <?php
+/*
+=====================================================
+Qad Framework (qad.php)
+-----------------------------------------------------
+https://pcmasters.ml/
+-----------------------------------------------------
+Copyright (c) 2016 Alex Smith
+=====================================================
+*/
 header('Content-Type: text/html; charset=utf-8');
 class Qad{
 	public $smtp_user;
@@ -19,26 +28,26 @@ class Qad{
 		return true;
 	}
 
-   public function passport($data,$key='',$scope='') {
-      if (!is_array($data))
-         $data = json_decode($data,true);
-      $passport = [
-         'id' => $data['id'],
-         'type' => ($data['response']['type']?$data['response']['type']:1),
-         'email' => $data['response']['email'],
-         'login' => $data['response']['login'],
-         'first_name' => $data['response']['first_name'],
-         'last_name' => $data['response']['last_name'],
-         'utc' => $data['response']['utc'],
-         'update' => time()
-      ];
-      if ($scope)
-         for ($i=0; $i<count($scope); ++$i)
-            $passport['scope'][$scope[$i]] = $data['response'][$scope[$i]];
-      $passport = json_encode($passport);
-      setcookie('passport'.($key!=''?'.'.$key:''), $passport, time()+60*60*24*30, '/');
-      return $passport;
-   }
+	public function passport($data,$key='',$scope='') {
+		if (!is_array($data))
+			$data = json_decode($data,true);
+		$passport = [
+			'id' => $data['id'],
+			'type' => ($data['response']['type']?$data['response']['type']:1),
+			'email' => $data['response']['email'],
+			'login' => $data['response']['login'],
+			'first_name' => $data['response']['first_name'],
+			'last_name' => $data['response']['last_name'],
+			'utc' => $data['response']['utc'],
+			'update' => time()
+		];
+		if ($scope)
+			for ($i=0; $i<count($scope); ++$i)
+				$passport['scope'][$scope[$i]] = $data['response'][$scope[$i]];
+		$passport = json_encode($passport);
+		setcookie('passport'.($key!=''?'.'.$key:''), $passport, time()+60*60*24*30, '/');
+		return $passport;
+	}
 	public function mail($to, $subject, $message, $headers='') {
 		if ($headers == '')
 			$headers= "MIME-Version: 1.0\r\nContent-type: text/html; charset=utf-8\r\nFrom: ".$this->smtp_from."\r\n";
@@ -126,108 +135,108 @@ class Qad{
 		}
 	}
 	public function nosql($exec,$p1='',$p2='',$p3='',$p4='') {
-      switch($exec) {
-         case 'search': {
-            $it = NULL;
-            while($a = self::$nosql->scan($it,self::$nosql->getOption(Redis::OPT_PREFIX).$p1)) {
-               if ($p3 == '')
-                  $p3 = 0;
-               for (; $p3<count($a); ++$p3) {
-                  $arr[] = str_replace([
-                     str_replace('*','',$p1),
-                     self::$nosql->getOption(Redis::OPT_PREFIX)
-                  ],'',$a[$p3]);
-                  if ($p2 != '') {
-                     --$p2;
-                     if ($p2 == 0)
-                        break;
-                  }
-               }
-            }
-            return json_encode($arr);
-            break;
-         }
-         case 'get': {
-            $value = self::$nosql->get($p1);
-            if (($result = @unserialize($value)) === false)
-               return $value;
-            return $result;
-            break;
-         }
-         case 'set': {
-            if (is_array($p2))
-               $p2 = serialize($p2);
-            self::$nosql->set($p1, $p2);
-            self::$nosql->save();
-            break;
-         }
-         case 'delete': {
-            if (self::$nosql->exists($p1))
-               self::$nosql->del($p1);
-            if (!empty($p2)) {
-               $w = self::$nosql->hgetall($p1.':id:'.$p2);
-               foreach ($w as $k=>$v)
-                  if (self::$nosql->exists($p1.':'.$k.':'.$v))
-                     self::$nosql->del($p1.':'.$k.':'.$v);
-               $res = self::$nosql->del($p1.':id:'.$p2);
-            }
-            self::$nosql->save();
-            return json_encode(['status'=>$res]);
-            break;
-         }
-         case 'select': {
-            if ($p2 != 'id')
-               $p3 = self::$nosql->get($p1.':'.$p2.':'.$p3);
-            if (empty($p4))
-               $ret = self::$nosql->hgetall($p1.':id:'.$p3);
-            else
-               $ret = self::$nosql->hmget($p1.':id:'.$p3,$p4);
-            if ($ret)
-               return json_encode(['id'=>$p3,'response'=>$ret]);
-            break;
-         }
-         case 'update': {
-            foreach ($p3 as $k=>$v) {
-               $o = self::$nosql->hmget($p1.':id:'.$p2,[$k])[$k];
-               if (self::$nosql->exists($p1.':'.$k.':'.$o)) {
-                  self::$nosql->del($p1.':'.$k.':'.$o);
-                  self::$nosql->set($p1.':'.$k.':'.$v, $p2);
-               }
-            }
-            $res = self::$nosql->hmset($p1.':id:'.$p2, $p3);
-            self::$nosql->save();
-            return json_encode(['status'=>$res]);
-            break;
-         }
-         case 'insert': {
-            $id = self::$nosql->incr($p1.':id');
-            foreach ($p2 as $k=>$v)
-               if (substr($k,0,1) == '/') {
-                  $p2[substr($k,1)] = $v;
-                  unset($p2[$k]);
-                  self::$nosql->set($p1.':'.substr($k,1).':'.$v, $id);
-               }
-            self::$nosql->hmset($p1.':id:'.$id, $p2);
-            self::$nosql->save();
-            return json_encode(['id'=>$id]);
-            break;
-         }
-         default: {
-            try {
-               self::$nosql = new Redis();
-               if (empty($p1))
-                  $p1 = 'localhost:6379';
-               self::$nosql->connect($p1);
-               if (!empty($p2))
-                  self::$nosql->auth($p2);
-               self::$nosql->setOption(Redis::OPT_PREFIX,$exec.'.');
-               return self::$nosql;
-            } catch(RedisException $e) {
-               exit('Connect error');
-            }
-            break;
-         }
-      }
+		switch($exec) {
+			case 'search': {
+				$it = NULL;
+				while($a = self::$nosql->scan($it,self::$nosql->getOption(Redis::OPT_PREFIX).$p1)) {
+					if ($p3 == '')
+						$p3 = 0;
+					for (; $p3<count($a); ++$p3) {
+						$arr[] = str_replace([
+							str_replace('*','',$p1),
+							self::$nosql->getOption(Redis::OPT_PREFIX)
+						],'',$a[$p3]);
+						if ($p2 != '') {
+							--$p2;
+							if ($p2 == 0)
+								break;
+						}
+					}
+				}
+				return json_encode($arr);
+				break;
+			}
+			case 'get': {
+				$value = self::$nosql->get($p1);
+				if (($result = @unserialize($value)) === false)
+					return $value;
+				return $result;
+				break;
+			}
+			case 'set': {
+				if (is_array($p2))
+					$p2 = serialize($p2);
+				self::$nosql->set($p1, $p2);
+				self::$nosql->save();
+				break;
+			}
+			case 'delete': {
+				if (self::$nosql->exists($p1))
+					self::$nosql->del($p1);
+				if (!empty($p2)) {
+					$w = self::$nosql->hgetall($p1.':id:'.$p2);
+					foreach ($w as $k=>$v)
+						if (self::$nosql->exists($p1.':'.$k.':'.$v))
+							self::$nosql->del($p1.':'.$k.':'.$v);
+					$res = self::$nosql->del($p1.':id:'.$p2);
+				}
+				self::$nosql->save();
+				return json_encode(['status'=>$res]);
+				break;
+			}
+			case 'select': {
+				if ($p2 != 'id')
+					$p3 = self::$nosql->get($p1.':'.$p2.':'.$p3);
+				if (empty($p4))
+					$ret = self::$nosql->hgetall($p1.':id:'.$p3);
+				else
+					$ret = self::$nosql->hmget($p1.':id:'.$p3,$p4);
+				if ($ret)
+					return json_encode(['id'=>$p3,'response'=>$ret]);
+				break;
+			}
+			case 'update': {
+				foreach ($p3 as $k=>$v) {
+					$o = self::$nosql->hmget($p1.':id:'.$p2,[$k])[$k];
+					if (self::$nosql->exists($p1.':'.$k.':'.$o)) {
+						self::$nosql->del($p1.':'.$k.':'.$o);
+						self::$nosql->set($p1.':'.$k.':'.$v, $p2);
+					}
+				}
+				$res = self::$nosql->hmset($p1.':id:'.$p2, $p3);
+				self::$nosql->save();
+				return json_encode(['status'=>$res]);
+				break;
+			}
+			case 'insert': {
+				$id = self::$nosql->incr($p1.':id');
+				foreach ($p2 as $k=>$v)
+					if (substr($k,0,1) == '/') {
+						$p2[substr($k,1)] = $v;
+						unset($p2[$k]);
+						self::$nosql->set($p1.':'.substr($k,1).':'.$v, $id);
+					}
+				self::$nosql->hmset($p1.':id:'.$id, $p2);
+				self::$nosql->save();
+				return json_encode(['id'=>$id]);
+				break;
+			}
+			default: {
+				try {
+					self::$nosql = new Redis();
+					if (empty($p1))
+						$p1 = 'localhost:6379';
+					self::$nosql->connect($p1);
+					if (!empty($p2))
+						self::$nosql->auth($p2);
+					self::$nosql->setOption(Redis::OPT_PREFIX,$exec.'.');
+					return self::$nosql;
+				} catch(RedisException $e) {
+					exit('Connect error');
+				}
+				break;
+			}
+		}
 	}
 	public function rest($serviceClass) {
 		if (array_key_exists('method', array_change_key_case($_REQUEST, CASE_LOWER))) {
