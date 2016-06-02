@@ -48,6 +48,17 @@ class Qad{
 		setcookie('passport'.($key!=''?'.'.$key:''), $passport, time()+60*60*24*30, '/');
 		return $passport;
 	}
+	public function shab() {
+		$file = file_get_contents('index.html');
+		$shab['header'] = preg_replace(array(
+			"'<header[^>](.*?)>.*?</header>'si",
+			'/ tabs/'
+		),array(
+			'<header $1></header>'
+		),explode('<section>',$file)[0]).'<section>';
+		$shab['footer'] = '</section>'.explode('</section>',$file)[1];
+		return $shab;
+	}
 	public function mail($to, $subject, $message, $headers='') {
 		if ($headers == '')
 			$headers= "MIME-Version: 1.0\r\nContent-type: text/html; charset=utf-8\r\nFrom: ".$this->smtp_from."\r\n";
