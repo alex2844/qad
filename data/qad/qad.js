@@ -616,7 +616,7 @@ var Qad={
 				return;
 			this.set(this.src[this.frame]);
 			if (this.time)
-				setInterval(function() {
+				this.time = setInterval(function() {
 					$$.slider.next();
 				},this.time);
 		},
