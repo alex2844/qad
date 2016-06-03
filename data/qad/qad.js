@@ -217,6 +217,7 @@ var Qad={
 				obj.style['display'] = 'block';
 			else
 				obj.style['display'] = 'table-row-group';
+			console.log(obj.shab)
 		}
 		obj.parent = obj.parentNode;
 		return obj;
@@ -600,6 +601,36 @@ var Qad={
 				}, error);
 			else
 				error();
+		}
+	},
+	slider: {
+		src: [],
+		frame: 0,
+		el: null,
+		time: null,
+		set: function(image) {
+			$(this.el).style['background-image'] = "url("+image+")";
+		},
+		init: function() {
+			if (!this.src && !this.el)
+				return;
+			this.set(this.src[this.frame]);
+			if (this.time)
+				setInterval(function() {
+					$$.slider.next();
+				},this.time);
+		},
+		prev: function() {
+			this.frame--;
+			if(this.frame < 0)
+				this.frame = this.src.length-1;
+			this.set(this.src[this.frame]);
+		},
+		next: function() {
+			this.frame++;
+			if(this.frame == this.src.length)
+				this.frame = 0;
+			this.set(this.src[this.frame]);		
 		}
 	},
 	player: {
