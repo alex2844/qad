@@ -213,7 +213,10 @@ var Qad={
 						return new Function('return '+v)();
 					}
 				});
-			obj.style['display'] = 'table-row-group';
+			if (obj.tagName == 'DIV')
+				obj.style['display'] = 'block';
+			else
+				obj.style['display'] = 'table-row-group';
 		}
 		obj.parent = obj.parentNode;
 		return obj;
