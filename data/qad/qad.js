@@ -230,6 +230,16 @@ var Qad={
 			}
 		}
 	},
+	var_dump: function(obj) {
+		var out = '';
+		for (var i in obj) {
+			if(typeof obj[i] === 'object')
+				Qad.var_dump(obj[i]);
+			else
+				out += i + ": " + obj[i] + "\n";
+		}
+		return out;
+	},
 	format: function(data,type,add) {
 		if (type == 'price' && !isNaN(data)) {
 			data=Math.round(parseFloat(data)*Math.pow(10,0))/Math.pow(10,0);
