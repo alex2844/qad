@@ -25,6 +25,7 @@ if [ ! -e "../../page/$1/index.html" ]; then exit 0; fi
 
 company='qwedl';
 color=$(cat ../../page/$1/index.html | grep theme-color | sed 's/.*content="//g' | sed 's/".*//g');
+orientation=$(cat ../../page/$1/index.html | grep screen-orientation | sed 's/.*content="//g' | sed 's/".*//g');
 icon=$(cat ../../page/$1/index.html | grep 'rel="icon"' | sed 's/.*href="//g' | sed 's/".*//g');
 dir=$(pwd);
 
@@ -33,10 +34,11 @@ echo 'App: '$1;
 echo 'Version: '$2;
 echo 'Title: '$3;
 echo 'Color: '$color;
+echo 'Orientation: '$orientation;
 echo 'Icon: '$icon;
 echo 'Dir: '$dir;
 echo 'Build: '$dir/../../build/$1/;
-#-rw-rw-r-- 1 alex alex 700999 Jun  4 11:31 android.apk
+
 cd ~/.config/;
 if [ -e "/usr/bin/unzip" ] || [ -e "/usr/local/bin/unzip" ]; then
 	if [ ! -e "qad" ]; then
@@ -79,6 +81,8 @@ mv app/build.gen.gradle app/build.gradle;
 sed -r 's/versionName ".*"/versionName "'$2'"/g' app/build.gradle  > app/build.gen.gradle;
 mv app/build.gen.gradle app/build.gradle;
 sed -r 's/android:label=".*"/android:label="'$3'"/g' app/src/main/AndroidManifest.xml  > app/src/main/AndroidManifest.gen.xml;
+mv app/src/main/AndroidManifest.gen.xml app/src/main/AndroidManifest.xml;
+sed -r 's/android:screenOrientation=".*"/android:screenOrientation="'$orientation'"/g' app/src/main/AndroidManifest.xml  > app/src/main/AndroidManifest.gen.xml;
 mv app/src/main/AndroidManifest.gen.xml app/src/main/AndroidManifest.xml;
 sed -r 's/ dev>/>/g' app/src/main/assets/www/page/$1/index.html  > app/src/main/assets/www/page/$1/index.gen.html;
 mv app/src/main/assets/www/page/$1/index.gen.html app/src/main/assets/www/page/$1/index.html;
