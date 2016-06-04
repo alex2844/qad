@@ -16,7 +16,7 @@ if [ "$1" == "" ] || [ "$1" == "help" ]; then
 	echo 'Help Qad-cli Fraemwork';
 	echo './qad.sh install'; #TODO
 	echo './qad.sh clear'; #TODO
-	echo './qad.sh name version title';
+	echo './qad.sh name version title [new|key]';
 	exit;
 fi
 if [ -z "$2" ]; then exit 0; fi
@@ -42,6 +42,7 @@ echo 'Build: '$dir/../../build/$1/;
 cd ~/.config/;
 if [ -e "/usr/bin/unzip" ] || [ -e "/usr/local/bin/unzip" ]; then
 	if [ ! -e "qad" ]; then
+		install=true;
 		wget https://github.com/alex2844/qad-android/archive/master.zip;
 		unzip master.zip;
 		rm master.zip;
@@ -85,6 +86,18 @@ mv app/src/main/AndroidManifest.gen.xml app/src/main/AndroidManifest.xml;
 if [ ! -z "$orientation" ]; then
 	sed -r 's/android:screenOrientation=".*"/android:screenOrientation="'$orientation'"/g' app/src/main/AndroidManifest.xml  > app/src/main/AndroidManifest.gen.xml;
 	mv app/src/main/AndroidManifest.gen.xml app/src/main/AndroidManifest.xml;
+fi
+if [ ! -z "$4" ] && [ ! -z "$install" ]; then
+	sed -r 's/\/\/ signingConfig/signingConfig/g' app/build.gradle  > app/build.gen.gradle;
+	mv app/build.gen.gradle app/build.gradle;
+	if [ "$4" == "new" ]; then
+		keytool -genkey -alias $1 -keystore ../.$company'-'$1.jks
+		sed -r 's/buildTypes/signingConfigs {\nrelease {\nstoreFile file("..\/..\/.'$company'-'$1'.jks")\nstorePassword new String(System.console().readPassword("\\n\\$ Enter keystore password: "))\nkeyAlias "'$1'"\nkeyPassword new String(System.console().readPassword("\\n\\$ Enter key password: "))\n}\n}\nbuildTypes/g' app/build.gradle  > app/build.gen.gradle;
+	fi
+	if [ "$4" == "key" ]; then
+		sed -r 's/buildTypes/signingConfigs {\nrelease {\nstoreFile file(System.console().readLine("\\n\\$ Enter keystore path: "))\nstorePassword new String(System.console().readPassword("\\n\\$ Enter keystore password: "))\nkeyAlias System.console().readLine("\\n\\$ Enter key alias: ")\nkeyPassword new String(System.console().readPassword("\\n\\$ Enter key password: "))\n}\n}\nbuildTypes/g' app/build.gradle  > app/build.gen.gradle;
+	fi
+	mv app/build.gen.gradle app/build.gradle;
 fi
 sed -r 's/ dev>/>/g' app/src/main/assets/www/page/$1/index.html  > app/src/main/assets/www/page/$1/index.gen.html;
 mv app/src/main/assets/www/page/$1/index.gen.html app/src/main/assets/www/page/$1/index.html;
@@ -134,4 +147,5 @@ do
 	done
 done
 rm $dir/../../build/$1/android.apk;
-gradle build && mkdir -p $dir/../../build/$1/ && cp app/build/outputs/apk/app-debug.apk $dir/../../build/$1/android.apk && adb install -r $dir/../../build/$1/android.apk && echo $dir/../../build/$1/android.apk;
+gradle build && mkdir -p $dir/../../build/$1/ && cp app/build/outputs/apk/app-release.apk $dir/../../build/$1/android.apk && adb install -r $dir/../../build/$1/android.apk && echo $dir/../../build/$1/android.apk;
+ls app/build/outputs/apk/
