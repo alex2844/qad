@@ -87,18 +87,6 @@ if [ ! -z "$orientation" ]; then
 	sed -r 's/android:screenOrientation=".*"/android:screenOrientation="'$orientation'"/g' app/src/main/AndroidManifest.xml  > app/src/main/AndroidManifest.gen.xml;
 	mv app/src/main/AndroidManifest.gen.xml app/src/main/AndroidManifest.xml;
 fi
-if [ ! -z "$4" ] && [ ! -z "$install" ]; then
-	sed -r 's/\/\/ signingConfig/signingConfig/g' app/build.gradle  > app/build.gen.gradle;
-	mv app/build.gen.gradle app/build.gradle;
-	if [ "$4" == "new" ]; then
-		keytool -genkey -alias $1 -keystore ../.$company'-'$1.jks
-		sed -r 's/buildTypes/signingConfigs {\nrelease {\nstoreFile file("..\/..\/.'$company'-'$1'.jks")\nstorePassword new String(System.console().readPassword("\\n\\$ Enter keystore password: "))\nkeyAlias "'$1'"\nkeyPassword new String(System.console().readPassword("\\n\\$ Enter key password: "))\n}\n}\nbuildTypes/g' app/build.gradle  > app/build.gen.gradle;
-	fi
-	if [ "$4" == "key" ]; then
-		sed -r 's/buildTypes/signingConfigs {\nrelease {\nstoreFile file(System.console().readLine("\\n\\$ Enter keystore path: "))\nstorePassword new String(System.console().readPassword("\\n\\$ Enter keystore password: "))\nkeyAlias System.console().readLine("\\n\\$ Enter key alias: ")\nkeyPassword new String(System.console().readPassword("\\n\\$ Enter key password: "))\n}\n}\nbuildTypes/g' app/build.gradle  > app/build.gen.gradle;
-	fi
-	mv app/build.gen.gradle app/build.gradle;
-fi
 sed -r 's/ dev>/>/g' app/src/main/assets/www/page/$1/index.html  > app/src/main/assets/www/page/$1/index.gen.html;
 mv app/src/main/assets/www/page/$1/index.gen.html app/src/main/assets/www/page/$1/index.html;
 sed -r 's/stylesheet\/qad/stylesheet/g' app/src/main/assets/www/page/$1/index.html  > app/src/main/assets/www/page/$1/index.gen.html;
@@ -116,36 +104,53 @@ mv app/src/main/assets/www/data/qad/qad.gen.css app/src/main/assets/www/data/qad
 sed -r 's/@color: meta.theme-color;//g' app/src/main/assets/www/data/qad/qad.css  > app/src/main/assets/www/data/qad/qad.gen.css;
 mv app/src/main/assets/www/data/qad/qad.gen.css app/src/main/assets/www/data/qad/qad.css;
 sed -i '/meta./d' app/src/main/assets/www/data/qad/qad.css;
-types=(js css)
-declare -A urls
-urls[js]="http://javascript-minifier.com/raw"
-urls[css]="http://cssminifier.com/raw"
-echo "Scaning direcotry..."
-for odir in `find "$HOME/.config/qad/app/src/main/assets/www/" -type d | grep -v \/\.git\/`
-do
-	for filetype in "${types[@]}"
+if [ ! -z "$4" ] && [ ! -z "$install" ]; then
+	sed -r 's/\/\/ signingConfig/signingConfig/g' app/build.gradle  > app/build.gen.gradle;
+	mv app/build.gen.gradle app/build.gradle;
+	if [ "$4" == "new" ]; then
+		keytool -genkey -alias $1 -keystore ../.$company'-'$1.jks
+		sed -r 's/buildTypes/signingConfigs {\nrelease {\nstoreFile file("..\/..\/.'$company'-'$1'.jks")\nstorePassword new String(System.console().readPassword("\\n\\$ Enter keystore password: "))\nkeyAlias "'$1'"\nkeyPassword new String(System.console().readPassword("\\n\\$ Enter key password: "))\n}\n}\nbuildTypes/g' app/build.gradle  > app/build.gen.gradle;
+	fi
+	if [ "$4" == "key" ]; then
+		sed -r 's/buildTypes/signingConfigs {\nrelease {\nstoreFile file(System.console().readLine("\\n\\$ Enter keystore path: "))\nstorePassword new String(System.console().readPassword("\\n\\$ Enter keystore password: "))\nkeyAlias System.console().readLine("\\n\\$ Enter key alias: ")\nkeyPassword new String(System.console().readPassword("\\n\\$ Enter key password: "))\n}\n}\nbuildTypes/g' app/build.gradle  > app/build.gen.gradle;
+	fi
+	mv app/build.gen.gradle app/build.gradle;
+	types=(js css)
+	declare -A urls
+	urls[js]="http://javascript-minifier.com/raw"
+	urls[css]="http://cssminifier.com/raw"
+	echo "Scaning direcotry..."
+	for odir in `find "$HOME/.config/qad/app/src/main/assets/www/" -type d | grep -v \/\.git\/`
 	do
-		echo "Finding $filetype to be compressed under $odir ..."
-		for filename in `ls $odir/*.$filetype 2> /dev/null | sed "s/\.$filetype$//g" | grep -v .min$`
+		for filetype in "${types[@]}"
 		do
-			do_min=0
-			if [ -f $filename\.min\.$filetype ]; then
-				orig_ver_time=`eval $LS $filename\.$filetype | awk '{print $6}'`
-				mini_ver_time=`eval $LS $filename\.min\.$filetype | awk '{print $6}'`
-				if [ $mini_ver_time -lt $orig_ver_time ]; then
+			echo "Finding $filetype to be compressed under $odir ..."
+			for filename in `ls $odir/*.$filetype 2> /dev/null | sed "s/\.$filetype$//g" | grep -v .min$`
+			do
+				do_min=0
+				if [ -f $filename\.min\.$filetype ]; then
+					orig_ver_time=`eval $LS $filename\.$filetype | awk '{print $6}'`
+					mini_ver_time=`eval $LS $filename\.min\.$filetype | awk '{print $6}'`
+					if [ $mini_ver_time -lt $orig_ver_time ]; then
+						do_min=1
+					fi
+				else
 					do_min=1
 				fi
-			else
-				do_min=1
-			fi
-			if [ 0 -lt $do_min ]; then
-				echo "Compressing $filename.$filetype ..."
-				curl -X POST -s --data-urlencode "input@$filename.$filetype" ${urls[$filetype]} > $filename\.min.$filetype
-				mv $filename\.min.$filetype $filename\.$filetype
-			fi
+				if [ 0 -lt $do_min ]; then
+					echo "Compressing $filename.$filetype ..."
+					curl -X POST -s --data-urlencode "input@$filename.$filetype" ${urls[$filetype]} > $filename\.min.$filetype
+					mv $filename\.min.$filetype $filename\.$filetype
+				fi
+			done
 		done
 	done
-done
-rm $dir/../../build/$1/android.apk;
-gradle build && mkdir -p $dir/../../build/$1/ && cp app/build/outputs/apk/app-release.apk $dir/../../build/$1/android.apk && adb install -r $dir/../../build/$1/android.apk && echo $dir/../../build/$1/android.apk;
-ls app/build/outputs/apk/
+fi
+if [ ! -z "$4" ]; then
+	rm $dir/../../build/$1/android.apk;
+	gradle build && mkdir -p $dir/../../build/$1/ && cp app/build/outputs/apk/app-release.apk $dir/../../build/$1/android.apk && adb install -r $dir/../../build/$1/android.apk && echo $dir/../../build/$1/android.apk;
+	ls app/build/outputs/apk/
+else
+	rm $dir/../../build/$1/android.apk;
+	gradle build && adb install -r app/build/outputs/apk/app-debug.apk;
+fi
