@@ -202,9 +202,22 @@ var Qad={
 						return;
 					else if (v == '@')
 						return key;
-					else if (v.indexOf('@') == 0)
-						return d[key][v.replace('@','')];
-					else{
+					else if (v.indexOf('@') == 0) {
+						if (v.indexOf('/') != -1) {
+							p = v.replace('@','').split('/');
+							if (p.length == 2)
+								return d[key][p[0]][p[1]];
+							else if (p.length == 3)
+								return d[key][p[0]][p[1]][p[2]];
+						}else if (d[key][v.replace('@','')])
+							return d[key][v.replace('@','')];
+						/*
+						if (d[key]['response'][v.replace('@','')])
+							return d[key]['response'][v.replace('@','')];
+						else if (d[key][v.replace('@','')])
+							return d[key][v.replace('@','')];
+						*/
+					}else{
 						v = v.replace(/@(.*?);/gim, function(p) {
 							p = p.replace(';','');
 							if (p == '@')
