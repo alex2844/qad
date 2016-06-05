@@ -190,11 +190,13 @@ var Qad={
 		obj.clone = function() {
 			return obj.cloneNode(true);
 		}
-		obj.template = function(d) {
+		obj.template = function(d,t) {
 			if (!obj.shab)
 				obj.shab = obj.innerHTML;
 			obj.innerHTML = '';
-			for (key in d)
+			for (key in d) {
+				if (t)
+					d[key] = JSON.parse(d[key]);
 				obj.innerHTML += obj.shab.replace(/{(.*?)}/gim, function(m,v) {
 					if (!d[key])
 						return;
@@ -213,6 +215,7 @@ var Qad={
 						return new Function('return '+v)();
 					}
 				});
+			}
 			if (obj.tagName == 'DIV')
 				obj.style['display'] = 'block';
 			else
