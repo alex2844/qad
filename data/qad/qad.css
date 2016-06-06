@@ -705,26 +705,21 @@ input[type=range].progress::-webkit-slider-thumb {
 	height: 0px;
 	-webkit-appearance: none;
 }
-input[type=text],
-	input[type=password],
-	input[type=search],
-	input[type=email],
-	input[type=tel],
+input[readonly] {
+	border: 0;
+}
+.input input,
 	select,
 	textarea {
 		background: 0;
-   		width: 200px;
-   		outline: none;
-   		border: 0;
-   		font-size: 16px;
-   		padding: 4px 0;
-   		color: rgb(117, 117, 117);
+		width: 200px;
+		outline: none;
+		border: 0;
+		font-size: 16px;
+		padding: 4px 0;
+		color: rgb(117, 117, 117);
 }
-.input input:not([readonly])[type=text],
-	input[type=password],
-	input[type=search],
-	input[type=email],
-	input[type=tel],
+.input input:not([readonly]),
 	select,
 	textarea {
 		border-bottom: 1px solid rgba(0, 0, 0, 0.12);
