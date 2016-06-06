@@ -1000,6 +1000,23 @@ window.addEventListener('load',function() {
 				}
 		});
 	}
+	if (Qad.$('input[list][data-select]')) {
+		Qad.for('input[list][data-select]', function(el){
+			el.onchange = function() {
+				var optionFound = false,
+					datalist = this.list;
+				for (var j = 0; j < datalist.options.length; j++)
+					if (this.value == datalist.options[j].value) {
+						optionFound = true;
+						break;
+					}
+				if (optionFound)
+					this.setCustomValidity('');
+				else
+					this.setCustomValidity('Please select a valid value.');
+			}
+		});
+	}
 	inc = document.querySelectorAll('#button-float button');
 	if (inc.length > 0) {
 		document.onkeydown = function(e) {
