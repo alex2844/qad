@@ -105,16 +105,6 @@ sed -r 's/@color: meta.theme-color;//g' app/src/main/assets/www/data/qad/qad.css
 mv app/src/main/assets/www/data/qad/qad.gen.css app/src/main/assets/www/data/qad/qad.css;
 sed -i '/meta./d' app/src/main/assets/www/data/qad/qad.css;
 if [ ! -z "$4" ] && [ ! -z "$install" ]; then
-	sed -r 's/\/\/ signingConfig/signingConfig/g' app/build.gradle  > app/build.gen.gradle;
-	mv app/build.gen.gradle app/build.gradle;
-	if [ "$4" == "new" ]; then
-		keytool -genkey -alias $1 -keystore ../.$company'-'$1.jks
-		sed -r 's/buildTypes/signingConfigs {\nrelease {\nstoreFile file("..\/..\/.'$company'-'$1'.jks")\nstorePassword new String(System.console().readPassword("\\n\\$ Enter keystore password: "))\nkeyAlias "'$1'"\nkeyPassword new String(System.console().readPassword("\\n\\$ Enter key password: "))\n}\n}\nbuildTypes/g' app/build.gradle  > app/build.gen.gradle;
-	fi
-	if [ "$4" == "key" ]; then
-		sed -r 's/buildTypes/signingConfigs {\nrelease {\nstoreFile file(System.console().readLine("\\n\\$ Enter keystore path: "))\nstorePassword new String(System.console().readPassword("\\n\\$ Enter keystore password: "))\nkeyAlias System.console().readLine("\\n\\$ Enter key alias: ")\nkeyPassword new String(System.console().readPassword("\\n\\$ Enter key password: "))\n}\n}\nbuildTypes/g' app/build.gradle  > app/build.gen.gradle;
-	fi
-	mv app/build.gen.gradle app/build.gradle;
 	types=(js css)
 	declare -A urls
 	urls[js]="http://javascript-minifier.com/raw"
@@ -145,12 +135,21 @@ if [ ! -z "$4" ] && [ ! -z "$install" ]; then
 			done
 		done
 	done
-fi
+	sed -r 's/\/\/ signingConfig/signingConfig/g' app/build.gradle  > app/build.gen.gradle;
+	mv app/build.gen.gradle app/build.gradle;
+	if [ "$4" == "new" ]; then
+		keytool -genkey -alias $1 -keystore ../.$company'-'$1.jks
+		sed -r 's/buildTypes/signingConfigs {\nrelease {\nstoreFile file("..\/..\/.'$company'-'$1'.jks")\nstorePassword new String(System.console().readPassword("\\n\\$ Enter keystore password: "))\nkeyAlias "'$1'"\nkeyPassword new String(System.console().readPassword("\\n\\$ Enter key password: "))\n}\n}\nbuildTypes/g' app/build.gradle  > app/build.gen.gradle;
+	fi
+	if [ "$4" == "key" ]; then
+		sed -r 's/buildTypes/signingConfigs {\nrelease {\nstoreFile file(System.console().readLine("\\n\\$ Enter keystore path: "))\nstorePassword new String(System.console().readPassword("\\n\\$ Enter keystore password: "))\nkeyAlias System.console().readLine("\\n\\$ Enter key alias: ")\nkeyPassword new String(System.console().readPassword("\\n\\$ Enter key password: "))\n}\n}\nbuildTypes/g' app/build.gradle  > app/build.gen.gradle;
+	fi
+	mv app/build.gen.gradle app/build.gradle;
+	fi
 if [ ! -z "$4" ]; then
 	rm $dir/../../build/$1/android.apk;
 	gradle build && mkdir -p $dir/../../build/$1/ && cp app/build/outputs/apk/app-release.apk $dir/../../build/$1/android.apk && adb install -r $dir/../../build/$1/android.apk && echo $dir/../../build/$1/android.apk;
-	ls app/build/outputs/apk/
-else
+se
 	rm $dir/../../build/$1/android.apk;
 	gradle build && adb install -r app/build/outputs/apk/app-debug.apk;
 fi
