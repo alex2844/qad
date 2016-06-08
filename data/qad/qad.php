@@ -190,9 +190,12 @@ class Qad{
 					self::$nosql->del($p1);
 				if (!empty($p2)) {
 					$w = self::$nosql->hgetall($p1.':id:'.$p2);
-					foreach ($w as $k=>$v)
-						if (self::$nosql->exists($p1.':'.$k.':'.$v))
-							self::$nosql->del($p1.':'.$k.':'.$v);
+					foreach ($w as $k=>$v) {
+						if (self::$nosql->exists($p1.':'.$k.':'.mb_strtolower($v)))
+							self::$nosql->del($p1.':'.$k.':'.mb_strtolower($v));
+						else if ($p1.':'.$k.':id:'.$p2.':'.mb_strtolower($v))
+							self::$nosql->del($p1.':'.$k.':id:'.$p2.':'.mb_strtolower($v));
+					}
 					$res = self::$nosql->del($p1.':id:'.$p2);
 				}
 				self::$nosql->save();
