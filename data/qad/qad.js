@@ -351,7 +351,12 @@ var Qad={
 				var map = new google.maps.Map((id?Qad.$('#'+id):Qad.$('#map')), {
 					center: (typeof(address)=='object'?address:null),
 					scrollwheel: false,
-					zoom: zoom
+					zoom: zoom,
+					disableDefaultUI: true,
+					zoomControl: true,
+					zoomControlOptions: {
+						position: google.maps.ControlPosition.LEFT_CENTER
+					}
 				});
 				if (id)
 				   Qad.geo.id[id] = map;
@@ -389,7 +394,7 @@ var Qad={
 				s.src = '//maps.googleapis.com/maps/api/js?v=3.exp&libraries=places&callback=document.geo';
 				Qad.$('body').add(s);
 			}else
-			  document.geo();
+				document.geo();
 		}
 	},
 	/*random: function(min, max, num=1) {

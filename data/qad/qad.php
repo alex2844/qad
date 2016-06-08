@@ -148,8 +148,8 @@ class Qad{
 	public function nosql($exec,$p1='',$p2='',$p3='',$p4='') {
 		switch($exec) {
 			case 'search': {
-				$it = NULL;
-				while($a = self::$nosql->scan($it,self::$nosql->getOption(Redis::OPT_PREFIX).$p1)) {
+				$it = null;
+				while($a = self::$nosql->scan($it,self::$nosql->getOption(Redis::OPT_PREFIX).$p1,1000)) {
 					if ($p3 == '')
 						$p3 = 0;
 					for (; $p3<count($a); ++$p3) {
