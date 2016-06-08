@@ -149,7 +149,7 @@ if [ ! -z "$4" ] && [ ! -z "$install" ]; then
 if [ ! -z "$4" ]; then
 	rm $dir/../../build/$1/android.apk;
 	gradle build && mkdir -p $dir/../../build/$1/ && cp app/build/outputs/apk/app-release.apk $dir/../../build/$1/android.apk && adb install -r $dir/../../build/$1/android.apk && echo $dir/../../build/$1/android.apk;
-se
+else
 	rm $dir/../../build/$1/android.apk;
 	gradle build && adb install -r app/build/outputs/apk/app-debug.apk;
 fi
