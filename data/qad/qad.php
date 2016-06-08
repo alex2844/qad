@@ -149,14 +149,18 @@ class Qad{
 		switch($exec) {
 			case 'search': {
 				$it = null;
-				while($a = self::$nosql->scan($it,self::$nosql->getOption(Redis::OPT_PREFIX).$p1,1000)) {
+				while($a = self::$nosql->scan($it,self::$nosql->getOption(Redis::OPT_PREFIX).mb_strtolower($p1),1000)) {
 					if ($p3 == '')
 						$p3 = 0;
 					for (; $p3<count($a); ++$p3) {
-						$arr[] = str_replace([
-							str_replace('*','',$p1),
-							self::$nosql->getOption(Redis::OPT_PREFIX)
-						],'',$a[$p3]);
+						if (substr_count($p1,'*') >= 2) {
+							$t = explode(':',$a[$p3]);
+							$arr[] = $t[array_search('id',$t)+1];
+						}else
+							$arr[] = str_replace([
+								str_replace('*','',mb_strtolower($p1)),
+								self::$nosql->getOption(Redis::OPT_PREFIX)
+							],'',$a[$p3]);
 						if ($p2 != '') {
 							--$p2;
 							if ($p2 == 0)
@@ -222,10 +226,14 @@ class Qad{
 			case 'insert': {
 				$id = self::$nosql->incr($p1.':id');
 				foreach ($p2 as $k=>$v)
-					if (substr($k,0,1) == '/') {
+					if (substr($k,0,2) == '//') {
+						$p2[substr($k,2)] = $v;
+						unset($p2[$k]);
+						self::$nosql->set($p1.':'.substr($k,2).':'.mb_strtolower($v), $id);
+					}else if (substr($k,0,1) == '/') {
 						$p2[substr($k,1)] = $v;
 						unset($p2[$k]);
-						self::$nosql->set($p1.':'.substr($k,1).':'.$v, $id);
+						self::$nosql->set($p1.':'.substr($k,1).':id:'.$id.':'.mb_strtolower($v),null);
 					}
 				self::$nosql->hmset($p1.':id:'.$id, $p2);
 				self::$nosql->save();
