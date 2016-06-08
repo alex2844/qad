@@ -708,7 +708,8 @@ input[type=range].progress::-webkit-slider-thumb {
 input[readonly] {
 	border: 0;
 }
-.input input,
+#header-panel input,
+	.input input,
 	select,
 	textarea {
 		background: 0;
