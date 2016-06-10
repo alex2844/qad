@@ -977,9 +977,11 @@ window.addEventListener('load',function() {
 			open(Qad.$('nav.tabs a.active').href.split('#')[1]);
 		Qad.for('nav.tabs a', function(el){
 			el.onclick = function(e){
-				Qad.up();
-				open(el.href.split('#')[1]);
-				e.preventDefault();
+				if (el.href.indexOf('#') != -1) {
+					Qad.up();
+					open(el.href.split('#')[1]);
+					e.preventDefault();
+				}
 			}
 		});
 	}
