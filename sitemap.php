@@ -11,12 +11,13 @@ Copyright (c) 2016 Alex Smith
 if (empty($_GET['type']) || empty($_GET['page']))
 	exit;
 if ($_GET['type'] == 'amp') {
-	if (!file_exists('page/'.$_GET['page']))
+	$page = explode('?',$_GET['page']);
+	if (!file_exists('page/'.$page[0]))
 		exit;
 	function find($b,$e,$d) {
 		return explode($e,explode($b,$d)[1])[0];
 	}
-	$file = file_get_contents('page/'.$_GET['page']);
+	$file = file_get_contents('page/'.$page[0]);
 	$d = array(
 		'/<link (.*?) \/>/',
 		'/<meta name="description" (.*?) \/>/',
@@ -96,7 +97,7 @@ if ($_GET['type'] == 'amp') {
 	$j = 0;
 	for ($i=0; $i<count($arr); ++$i)
 		$file = preg_replace_callback("'<".$arr[$i][0]."(.*?)data-db=\"".$arr[$i][1]."\"(.*?)[^>]*?>.*?</".$arr[$i][0].">'si",function($data){
-			global $arr, $i, $j, $nosql, $rep;
+			global $arr, $i, $j, $nosql, $rep, $page;
 			$rep = array();
 			$out = preg_replace(array(
 				'/<'.$arr[$i][0].'(.*?)>/',
@@ -111,10 +112,15 @@ if ($_GET['type'] == 'amp') {
 				$nosql = 'Qad::nosql';
 				$nosql($conf[0]);
 			}
-			$search = json_decode($nosql('search',$conf[1],50),true);
-			if ($search)
-				foreach ($search as $id)
-					$rep[] = json_decode($nosql('select',$conf[2],'id',$id),true);
+			if (substr_count($conf[1],'#') == 0) {
+				$search = json_decode($nosql('search',$conf[1],50),true);
+				if ($search)
+					foreach ($search as $id)
+						$rep[] = json_decode($nosql('select',$conf[2],'id',$id),true);
+			}else{
+				$get = explode('=',$page[1]);
+				$rep[] = json_decode($nosql('select',$conf[2],$get[0],$get[1]),true);
+			}
 			for ($j=0; $j<count($rep); ++$j)
 				$replace .= preg_replace_callback('/{\@(.*?)}/',function($data){
 					global $j, $rep;
@@ -125,7 +131,6 @@ if ($_GET['type'] == 'amp') {
 				},$out);
 			return $replace;
 		},$file);
-	
 	$t = array(
 		'/ dev/',
 		'/<html/',
