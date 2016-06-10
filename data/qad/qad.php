@@ -15,8 +15,14 @@ class Qad{
 	public $smtp_from;
 	public $smtp_host = 'ssl://smtp.gmail.com';
 	public $smtp_port = 465;
-	static public $nosql;
+	public static $nosql;
+	public static $config;
 	
+	public function __construct() {
+		$conf = dirname(__DIR__).'/config.php';
+		if (file_exists($conf))
+			self::$config = include($conf);
+    }	
 	private function _parseServer($socket, $response) {
 		$responseServer = '';
 		while (@substr($responseServer, 3, 1) != ' ') {
@@ -246,8 +252,14 @@ class Qad{
 			default: {
 				try {
 					self::$nosql = new Redis();
-					if (empty($p1))
-						$p1 = 'localhost:6379';
+					if (empty($p1)) {
+						if (isset(self::$config) && !empty(self::$config['db_server'])) {
+							$p1 = self::$config['db_server'];
+							if (!empty(self::$config['db_password']))
+								$p2 = self::$config['db_password'];
+						}else
+							$p1 = 'localhost:6379';
+					}
 					self::$nosql->connect($p1);
 					if (!empty($p2))
 						self::$nosql->auth($p2);
