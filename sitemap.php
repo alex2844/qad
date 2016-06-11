@@ -8,9 +8,7 @@ https://pcmasters.ml/
 Copyright (c) 2016 Alex Smith
 =====================================================
 */
-if (empty($_GET['type']) || empty($_GET['page']))
-	exit;
-if ($_GET['type'] == 'amp') {
+if (!empty($_GET['type']) && !empty($_GET['page']) && $_GET['type'] == 'amp') {
 	$page = explode('?',$_GET['page']);
 	if (!file_exists('page/'.$page[0]))
 		exit;
@@ -123,27 +121,34 @@ if ($_GET['type'] == 'amp') {
 			}
 			for ($j=0; $j<count($rep); ++$j)
 				$replace .= preg_replace_callback('/{\@(.*?)}/',function($data){
-					global $j, $rep;
+					global $j, $rep, $title;
 					if (substr_count($data[1],'response') == 0)
 						return $rep[$j][$data[1]];
-					else
+					else{
+						if ($data[1] == 'response/title')
+							$title = $rep[$j]['response'][explode('/',$data[1])[1]];
 						return $rep[$j]['response'][explode('/',$data[1])[1]];
+					}
 				},$out);
 			return $replace;
 		},$file);
 	$t = array(
 		'/ dev/',
+		'/<a(.*?)href="(.*?)"(.*?)>/',
 		'/<html/',
 		'/<\/head>/',
 		'/<body(.*?)>/'
 	);
 	$b = array(
 		'',
+		'<a href="'.$dir.'$2">',
 		'<html amp',
-		'<style amp-boilerplate>body{-webkit-animation:-amp-start 8s steps(1,end) 0s 1 normal both;-moz-animation:-amp-start 8s steps(1,end) 0s 1 normal both;-ms-animation:-amp-start 8s steps(1,end) 0s 1 normal both;animation:-amp-start 8s steps(1,end) 0s 1 normal both}@-webkit-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@-moz-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@-ms-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@-o-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}</style><noscript><style amp-boilerplate>body{-webkit-animation:none;-moz-animation:none;-ms-animation:none;animation:none}</style></noscript><link rel="canonical" href="page/'.$_GET['page'].'" /><script async src="https://cdn.ampproject.org/v0.js"></script><style amp-custom>h2{text-align:center;}a {text-decoration: none;color: '.$color.';}header,footer {text-align: center;background: '.$color.';border-top: 1px solid #e4e4e4;width: 100%;padding: 25px 0;}header a,footer a {color: #fff;}.config{display:block;}</style>'.($analytics?'<script async custom-element="amp-analytics" src="https://cdn.ampproject.org/v0/amp-analytics-0.1.js"></script>':'').'</head>',
+		'<style amp-boilerplate>body{-webkit-animation:-amp-start 8s steps(1,end) 0s 1 normal both;-moz-animation:-amp-start 8s steps(1,end) 0s 1 normal both;-ms-animation:-amp-start 8s steps(1,end) 0s 1 normal both;animation:-amp-start 8s steps(1,end) 0s 1 normal both}@-webkit-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@-moz-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@-ms-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@-o-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}</style><noscript><style amp-boilerplate>body{-webkit-animation:none;-moz-animation:none;-ms-animation:none;animation:none}</style></noscript><link rel="canonical" href="page/'.$_GET['page'].'" /><script async src="https://cdn.ampproject.org/v0.js"></script><style amp-custom>h2{text-align:center;}a {text-decoration: none;color: '.$color.';}header,footer {text-align: center;background: '.$color.';border-top: 1px solid #e4e4e4;width: 100%;padding: 25px 0;}header a,footer a {color: #fff;}.config{display:block;}p{white-space: pre-line;}</style>'.($analytics?'<script async custom-element="amp-analytics" src="https://cdn.ampproject.org/v0/amp-analytics-0.1.js"></script>':'').'</head>',
 		'<body>'.($analytics?'<amp-analytics type="googleanalytics" id="analytics1"><script type="application/json">{"vars": {"account": "'.$analytics.'"},"triggers": {"trackPageview": {"on": "visible","request": "pageview"}}}</script></amp-analytics>':'').'<header><a href="page/'.$_GET['page'].'">Открыть</a></header>'
 	);
 	$file = preg_replace($t,$b,$file);
+	if (isset($title))
+		$file = preg_replace('/<title>(.*?)<\/title>/','<title>'.$title.' :: $1</title>',$file);
 	$file = preg_replace_callback('/<img(.*?)src="(.*?)"(.*?)\/>/',function($data){
 		global $dir;
 		if ((substr_count($data[2],'http://') == 0) && (substr_count($data[2],'https://') == 0))
@@ -152,4 +157,26 @@ if ($_GET['type'] == 'amp') {
 			return '<amp-img width=300 height=300 src="'.$data[2].'"></amp-img>';
 	},$file);
 	echo $file;
+}else{
+	include 'data/qad/qad.php';
+	$nosql = 'Qad::nosql';
+	if (empty($qad::$config['sitemap']))
+		exit;
+	$sitemap = $qad::$config['sitemap'];
+	$location = ($_SERVER['HTTPS']?'https://':'http://').$_SERVER['HTTP_HOST'];
+		$txt = '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.google.com/schemas/sitemap/0.84 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">';
+		foreach ($sitemap as $db) {
+			$conf = explode('::',$db);
+			$conf[3] = explode(':id',$conf[1])[0];
+			$qad->nosql($conf[0]);
+			$search = json_decode($nosql('search',$conf[1],45000),true);
+			if ($search)
+				foreach ($search as $id) {
+					$res = json_decode($nosql('select',$conf[3],'id',$id,['created']),true);
+					$txt .= '<url><loc>'.$location.'/sitemap.php?type=amp&amp;page='.$conf[2].'?id='.$id.'</loc><lastmod>'.gmdate('c',$res['response']['created']).'</lastmod><changefreq>daily</changefreq><priority>0.50</priority></url>';
+				}
+		}
+		$txt .='</urlset>';
+		header ("Content-Type:text/xml");
+	echo $txt;
 }

@@ -244,6 +244,7 @@ class Qad{
 						unset($p2[$k]);
 						self::$nosql->set($p1.':'.substr($k,1).':id:'.$id.':'.mb_strtolower($v),null);
 					}
+				$p2['created'] = time();
 				self::$nosql->hmset($p1.':id:'.$id, $p2);
 				self::$nosql->save();
 				return json_encode(['id'=>$id]);
