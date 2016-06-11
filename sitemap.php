@@ -19,7 +19,7 @@ if (file_exists('upload/cache/')) {
 	}
 	ob_start();
 }
-if (!empty($_GET['type']) && !empty($_GET['page']) && $_GET['type'] == 'amp') {
+if (!empty($_GET['page'])) {
 	$page = explode('?',$_GET['page']);
 	if (!file_exists('page/'.$page[0]))
 		exit;
@@ -184,7 +184,7 @@ if (!empty($_GET['type']) && !empty($_GET['page']) && $_GET['type'] == 'amp') {
 			if ($search)
 				foreach ($search as $id) {
 					$res = json_decode($nosql('select',$conf[3],'id',$id,['created']),true);
-					$txt .= '<url><loc>'.$location.'/sitemap.php?type=amp&amp;page='.$conf[2].'?id='.$id.'</loc><lastmod>'.gmdate('c',$res['response']['created']).'</lastmod><changefreq>daily</changefreq><priority>0.50</priority></url>';
+					$txt .= '<url><loc>'.$location.'/sitemap.php?page='.$conf[2].'?id='.$id.'</loc><lastmod>'.gmdate('c',$res['response']['created']).'</lastmod><changefreq>daily</changefreq><priority>0.50</priority></url>';
 				}
 		}
 		$txt .='</urlset>';
