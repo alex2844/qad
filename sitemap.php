@@ -8,6 +8,17 @@ https://pcmasters.ml/
 Copyright (c) 2016 Alex Smith
 =====================================================
 */
+if (file_exists('upload/cache/')) {
+	$cache = 'upload/cache/sitemap_'.md5($_SERVER['REQUEST_URI']).'.cache';
+	if (file_exists($cache) && (time()-86400)<filemtime($cache)) {
+		$cached = file_get_contents($cache);
+		if (substr($cached,2,3) == 'xml')
+			header('Content-Type:text/xml');
+		echo $cached;
+		exit;
+	}
+	ob_start();
+}
 if (!empty($_GET['type']) && !empty($_GET['page']) && $_GET['type'] == 'amp') {
 	$page = explode('?',$_GET['page']);
 	if (!file_exists('page/'.$page[0]))
@@ -177,6 +188,12 @@ if (!empty($_GET['type']) && !empty($_GET['page']) && $_GET['type'] == 'amp') {
 				}
 		}
 		$txt .='</urlset>';
-		header ("Content-Type:text/xml");
+		header('Content-Type:text/xml');
 	echo $txt;
+}
+if (isset($cache)) {
+	$cached = fopen($cache, 'w');
+	fwrite($cached, ob_get_contents());
+	fclose($cached);
+	ob_end_flush();
 }
