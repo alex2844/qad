@@ -194,10 +194,11 @@ body[data-menu] button#menu + nav {
 button#menu + nav, nav.panel {
 	display: none;
 	width: 25%;
+	height: calc(100vh - 64px);
+	overflow-y: scroll;
 	margin-top: 64px;
 	padding: 0;
 	background: #fff;
-	height: 100vh;
 	position: fixed;
 	z-index: 2;
 	left: 0;
