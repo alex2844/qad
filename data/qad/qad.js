@@ -831,7 +831,7 @@ var Qad={
 					style = xhr.responseText;
 					if (location.origin == 'file://')
 						style = style.replace(/\@location/g,location.href.split('/page')[0]);
-					else if (Qad.$('link[rel="stylesheet/qad"]').href.indexOf('masters') != -1)
+					else if (Qad.$('link[rel="stylesheet/qad"]').href.indexOf('master') != -1)
 						style = style.replace(/\@location/g,Qad.$('link[rel="stylesheet/qad"]').href.split('data')[0]);
 					else
 						style = style.replace(/\@location/g,location.origin);
