@@ -10,11 +10,6 @@ Copyright (c) 2016 Alex Smith
 */
 header('Content-Type: text/html; charset=utf-8');
 class Qad{
-	public $smtp_user;
-	public $smtp_pass;
-	public $smtp_from;
-	public $smtp_host = 'ssl://smtp.gmail.com';
-	public $smtp_port = 465;
 	public static $nosql;
 	public static $config;
 	
@@ -66,8 +61,10 @@ class Qad{
 		return $shab;
 	}
 	public function mail($to, $subject, $message, $headers='') {
+		if (empty(self::$config['smtp_host']) || empty(self::$config['smtp_port']) || empty(self::$config['smtp_from']) || empty(self::$config['smtp_user']) || empty(self::$config['smtp_pass']))
+			return 'no config';
 		if ($headers == '')
-			$headers= "MIME-Version: 1.0\r\nContent-type: text/html; charset=utf-8\r\nFrom: ".$this->smtp_from."\r\n";
+			$headers= "MIME-Version: 1.0\r\nContent-type: text/html; charset=utf-8\r\nFrom: ".self::$config['smtp_from']."\r\n";
 		$contentMail = "Date: ".date("D, d M Y H:i:s")." UT\r\n";
 		$contentMail .= 'Subject: =?utf-8?B?'.base64_encode($subject)."=?=\r\n";
 		$contentMail .= $headers."\r\n";
@@ -75,7 +72,7 @@ class Qad{
 		$errno = 0;
 		$errstr = '';
 		try {
-			if(!$socket = fsockopen($this->smtp_host, $this->smtp_port, $errno, $errstr, 30)){
+			if(!$socket = fsockopen(self::$config['smtp_host'], self::$config['smtp_port'], $errno, $errstr, 30)){
 				throw new Exception($errno.".".$errstr);
 			}
 			if (!$this->_parseServer($socket, 220))
@@ -91,17 +88,17 @@ class Qad{
 				fclose($socket);
 				throw new Exception('Autorization error');
 			}
-			fputs($socket, base64_encode($this->smtp_user) . "\r\n");
+			fputs($socket, base64_encode(self::$config['smtp_user']) . "\r\n");
 			if (!$this->_parseServer($socket, 334)) {
 				fclose($socket);
 				throw new Exception('Autorization error');
 			}
-			fputs($socket, base64_encode($this->smtp_pass) . "\r\n");
+			fputs($socket, base64_encode(self::$config['smtp_pass']) . "\r\n");
 			if (!$this->_parseServer($socket, 235)) {
 				fclose($socket);
 				throw new Exception('Autorization error');
 			}
-			fputs($socket, "MAIL FROM: <".$this->smtp_user.">\r\n");
+			fputs($socket, "MAIL FROM: <".self::$config['smtp_user'].">\r\n");
 			if (!$this->_parseServer($socket, 250)) {
 				fclose($socket);
 				throw new Exception('Error of command sending: MAIL FROM');
