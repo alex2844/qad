@@ -229,7 +229,7 @@ var Qad={
 					}
 				});
 			}
-			if (obj.tagName == 'DIV')
+			if (obj.tagName == 'DIV' || obj.tagName == 'ARTICLE')
 				obj.style['display'] = 'block';
 			else
 				obj.style['display'] = 'table-row-group';
