@@ -61,8 +61,12 @@ class Qad{
 		return $shab;
 	}
 	public function mail($to, $subject, $message, $headers='') {
-		if (empty(self::$config['smtp_host']) || empty(self::$config['smtp_port']) || empty(self::$config['smtp_from']) || empty(self::$config['smtp_user']) || empty(self::$config['smtp_pass']))
+		if (empty(self::$config['smtp_from']) || empty(self::$config['smtp_user']) || empty(self::$config['smtp_pass']))
 			return 'no config';
+		if (empty(self::$config['smtp_host']))
+			self::$config['smtp_host'] = 'ssl://smtp.gmail.com';
+		if (empty(self::$config['smtp_port']))
+			self::$config['smtp_port'] = 465;
 		if ($headers == '')
 			$headers= "MIME-Version: 1.0\r\nContent-type: text/html; charset=utf-8\r\nFrom: ".self::$config['smtp_from']."\r\n";
 		$contentMail = "Date: ".date("D, d M Y H:i:s")." UT\r\n";
