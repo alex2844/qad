@@ -334,6 +334,7 @@ table, .card {
 	margin: 1%;
 	vertical-align: top;
 	position: relative;
+	overflow: hidden;
 }
 .card > i {
 	position: absolute;
@@ -722,6 +723,12 @@ input[readonly] {
 		font-size: 16px;
 		padding: 4px 0;
 		color: rgb(117, 117, 117);
+}
+.input input:not(:focus)::-webkit-input-placeholder {
+	color: transparent;
+}
+.input input:not(:focus)::-moz-placeholder {
+	color: transparent;
 }
 .input input:not([readonly]),
 	select,
