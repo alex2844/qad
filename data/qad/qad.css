@@ -27,6 +27,9 @@ Copyright (c) 2016 Alex Smith
 span, div.float, div:after, div:before {
 	display: inline-block;
 }
+button:not([disabled]) {
+	background: @color;
+}
 div.tabs, body:not([data-panel]) #header-panel, body[data-panel] button#menu, .template, iframe.load, dialog:not([open]), #slider span:not([open]) {display: none;}
 a {
 	text-decoration: none;
@@ -466,9 +469,6 @@ div.min {
 }
 article {
 	padding: 8px;
-}
-button:not([disabled]) {
-	background-color: @color;
 }
 button {
 	color: #fff;
