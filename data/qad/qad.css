@@ -745,6 +745,9 @@ label.input {
 	display: block;
 	*/
 }
+label.input.w {
+	width: 100%;
+}
 label.input span {
 	position: absolute;
 	font-size: 12px;
