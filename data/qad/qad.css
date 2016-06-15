@@ -461,6 +461,7 @@ ul p {
 }
 div.float {
 	width: 32%;
+	height: 100%;
 }
 div.middle {
 	width: 50%;
