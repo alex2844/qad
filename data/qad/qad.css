@@ -384,7 +384,7 @@ dialog h2 {
 	border-bottom: 1px solid rgba(0,0,0,.1);
 	color: rgba(0,0,0,.54);
 }
-.card button {
+.card button, .card .button {
 	background: 0;
 	color: @color;
 	box-shadow: none;
