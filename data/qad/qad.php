@@ -255,16 +255,19 @@ class Qad{
 				try {
 					self::$nosql = new Redis();
 					if (empty($p1)) {
-						if (isset(self::$config) && !empty(self::$config['db_server'])) {
-							$p1 = self::$config['db_server'];
+						if (isset(self::$config) && !empty(self::$config['db_host'])) {
+							$p1 = self::$config['db_host'];
+							$p2 = self::$config['db_port'];
 							if (!empty(self::$config['db_password']))
-								$p2 = self::$config['db_password'];
-						}else
-							$p1 = 'localhost:6379';
+								$p3 = self::$config['db_password'];
+						}else{
+							$p1 = 'localhost';
+							$p2 = '6379';
+						}
 					}
-					self::$nosql->connect($p1);
-					if (!empty($p2))
-						self::$nosql->auth($p2);
+					self::$nosql->connect($p1,$p2);
+					if (!empty($p3))
+						self::$nosql->auth($p3);
 					self::$nosql->setOption(Redis::OPT_PREFIX,$exec.'.');
 					return self::$nosql;
 				} catch(RedisException $e) {
