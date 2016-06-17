@@ -834,7 +834,7 @@ var Qad={
 					else if (Qad.$('link[rel="stylesheet/qad"]').href.indexOf('master') != -1)
 						style = style.replace(/\@location/g,Qad.$('link[rel="stylesheet/qad"]').href.split('data')[0]);
 					else
-						style = style.replace(/\@location/g,location.origin);
+						style = style.replace(/\@location/g,Qad.$('link[rel="stylesheet/qad"]').href.split('data')[0]);
 					var parts = style.replace(/@(.*?): (.*?);/gim, function(m,key,value) {
 						style = style.replace('@'+key+': '+value+';','');
 						if (value.indexOf('meta.') != -1)
