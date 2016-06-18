@@ -210,14 +210,30 @@ class Qad{
 				break;
 			}
 			case 'select': {
-				if ($p2 != 'id')
-					$p3 = self::$nosql->get($p1.':'.$p2.':'.$p3);
-				if (empty($p4))
-					$ret = self::$nosql->hgetall($p1.':id:'.$p3);
-				else
-					$ret = self::$nosql->hmget($p1.':id:'.$p3,$p4);
-				if ($ret)
-					return json_encode(['id'=>$p3,'response'=>$ret]);
+                if (gettype($p2) == 'integer' || empty($p2)) {
+                    if ($p3 == '')
+                        $p3 = 0;
+                    $data = self::$nosql->sort($p1, array(
+                        'limit' => ($p2>='0' ? array($p3,$p2) : null),
+                        'sort' => 'desc'
+                    ));
+                    foreach ($data as $id)
+                        if (empty($p4)) {
+                            $ret[] = self::$nosql->hgetall($p1.':id:'.$id);
+                        }else
+                            $ret[] = self::$nosql->hmget($p1.':id:'.$id,$p4);
+                    if ($ret)
+                        return $ret;
+                }else if (gettype($p2) == 'string') {
+                    if ($p2 != 'id')
+                        $p3 = self::$nosql->get($p1.':'.$p2.':'.$p3);
+                    if (empty($p4))
+                        $ret = self::$nosql->hgetall($p1.':id:'.$p3);
+                    else
+                        $ret = self::$nosql->hmget($p1.':id:'.$p3,$p4);
+                    if ($ret)
+                        return json_encode(['id'=>$p3,'response'=>$ret]);
+                }
 				break;
 			}
 			case 'update': {
@@ -234,7 +250,7 @@ class Qad{
 				break;
 			}
 			case 'insert': {
-				$id = self::$nosql->incr($p1.':id');
+				$id = (self::$nosql->sCard($p1))+1;
 				foreach ($p2 as $k=>$v)
 					if (substr($k,0,2) == '//') {
 						$p2[substr($k,2)] = $v;
@@ -247,6 +263,7 @@ class Qad{
 					}
 				$p2['created'] = time();
 				self::$nosql->hmset($p1.':id:'.$id, $p2);
+				self::$nosql->sAdd($p1,$id);
 				self::$nosql->save();
 				return json_encode(['id'=>$id]);
 				break;
