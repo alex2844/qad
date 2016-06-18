@@ -259,7 +259,7 @@ class Qad{
 					}else if (substr($k,0,1) == '/') {
 						$p2[substr($k,1)] = $v;
 						unset($p2[$k]);
-						self::$nosql->set($p1.':'.substr($k,1).':id:'.$id.':'.mb_strtolower($v),$id);
+						self::$nosql->set($p1.':'.substr($k,1).':id:'.$id.':'.mb_strtolower($v),null);
 					}
 				$p2['created'] = time();
 				self::$nosql->hmset($p1.':id:'.$id, $p2);
