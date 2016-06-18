@@ -363,6 +363,7 @@ table, .card {
 	/* padding: 8px 0; */
 	padding: 16px;
 	box-sizing: border-box;
+	height: 100%;
 }
 .card h2 i, dialog h2 i {
 	float: right;
@@ -539,6 +540,7 @@ nav.tabs {
 	background-color: @color;
 	overflow-y: hidden;
 	overflow-x: scroll;
+	-ms-overflow-x: hidden;
 	margin-top: 63px;
 	position: fixed;
 	box-shadow: 0 2px 5px rgba(0,0,0,0.26);
