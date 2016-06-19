@@ -357,13 +357,14 @@ table, .card {
 	text-align: center;
 	font-size: 18px;
 	width: 100%;
-	height: initial;
+	/* height: initial; */
 	background: @color;
 	margin: 0;
 	/* padding: 8px 0; */
 	padding: 16px;
 	box-sizing: border-box;
-	height: 100%;
+	/* height: 100%; */
+	display: table;
 }
 .card h2 i, dialog h2 i {
 	float: right;
