@@ -13,8 +13,7 @@ Copyright (c) 2016 Alex Smith
 	font-style: normal;
 	font-weight: 400;
 	src: local('Material Icons'), local('MaterialIcons-Regular'),
-		url(@location/data/fonts/MaterialIcons-Regular.woff2) format('woff2'),
-		url(@location/data/fonts/MaterialIcons-Regular.ttf) format('truetype');
+		url(@location/data/fonts/MaterialIcons-Regular.woff2) format('woff2');
 }
 @font-face {
 	font-family: 'Roboto';

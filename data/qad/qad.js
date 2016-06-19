@@ -624,6 +624,77 @@ var Qad={
 				error();
 		}
 	},
+	code: {
+		el: null,
+		id: null,
+		file: null,
+		upload: function(el) {
+		    console.log(el);
+		    console.log(el.value);
+		},
+		format: function(type,attr,nofocus) {
+		    //if (Qad.$('iframe[data-code='+this.id+'] body').$().indexOf('<xmp>') == 0)
+		        //return;
+            if (!nofocus)
+			    Qad.$('iframe[data-code='+this.id+']').contentWindow.focus();
+            Qad.$('iframe[data-code='+this.id+']').contentWindow.document.execCommand(type, null, attr);
+		},
+		text: function() {
+		    //if (Qad.$('iframe[data-code='+Qad.code.id+'] body').$().indexOf('<xmp>') == 0)
+                //Qad.$('textarea[name='+Qad.code.id+']').$(Qad.$('iframe[data-code='+Qad.code.id+'] body').$().slice(5,-6));
+            //else
+                Qad.$('textarea[name='+Qad.code.id+']').$(Qad.$('iframe[data-code='+Qad.code.id+'] body').$());
+            Qad.$('div#res').$(Qad.$('textarea[name='+Qad.code.id+']').$());
+		},
+		/*
+		html: function() {
+    		if (Qad.$('iframe[data-code='+this.id+'] body').$().indexOf('<xmp>') == 0)
+                Qad.$('iframe[data-code='+this.id+'] body').$(Qad.$('iframe[data-code='+this.id+'] body').$().slice(5,-6));
+            else
+                Qad.$('iframe[data-code='+this.id+'] body').$('<xmp>'+Qad.$('iframe[data-code='+this.id+'] body').$()+'</xmp>');
+            Qad.$('iframe[data-code='+this.id+'] body').onblur = Qad.code.text;
+		},
+		*/
+		button: function() {
+		    return '<h2>\
+                <!--i onclick="Qad.code.html()" class="material-icons">insert_drive_file</i-->\
+                '+(this.file ? '<label>\
+                    <i class="material-icons">attach_file</i>\
+                    <form method="post" action="'+this.file+'" enctype="multipart/form-data" hidden>\
+                        <input type="file" onchange="Qad.code.upload(this)" />\
+                    </form>\
+                </label>' : '')+'\
+                <label>\
+                    <i class="material-icons" onclick="(parentNode.querySelector(\'input\').style[\'width\']==\'0px\' ? parentNode.querySelector(\'input\').style[\'width\'] = \'24px\' : parentNode.querySelector(\'input\').style[\'width\'] = \'0\')">text_fields</i>\
+                    <input type="number" min="1" max="7" value="3" oninput="Qad.code.format(\'fontSize\',this.value,true)" style="width:0px;padding:0;border:0;overflow:hidden;height:24px;float:right" />\
+                </label>\
+                <label>\
+                    <i class="material-icons">format_color_text</i>\
+                    <input type="color" onchange="Qad.code.format(\'foreColor\',this.value)" style="width:0px;padding:0;border:0;overflow:hidden;" />\
+                </label>\
+                <label>\
+                    <i class="material-icons">format_color_fill</i>\
+                    <input type="color" onchange="Qad.code.format(\'backColor\',this.value)" style="width:0px;padding:0;border:0;overflow:hidden;" />\
+                </label>\
+                <i onclick="Qad.code.format(\'bold\')" class="material-icons">format_bold</i>\
+                <i onclick="Qad.code.format(\'italic\')" class="material-icons">format_italic</i>\
+                <i onclick="Qad.code.format(\'underline\')" class="material-icons">format_underlined</i>\
+                <i onclick="Qad.code.format(\'justifyRight\')" class="material-icons">format_align_right</i>\
+                <i onclick="Qad.code.format(\'justifyCenter\')" class="material-icons">format_align_center</i>\
+                <i onclick="Qad.code.format(\'justifyLeft\')" class="material-icons">format_align_left</i>\
+            </h2>';
+        },
+		init: function() {
+		    html = Qad.$(this.el).$();
+		    this.id = Qad.$(this.el).id;
+            Qad.$(this.el).$(this.button()+'<br /><iframe frameborder="no" style="width:98%;margin-left:5px" data-code="'+this.id+'"></iframe><br /><textarea name="'+this.id+'" hidden>'+html+'</textarea><div id="res"></div>');
+            Qad.$('iframe[data-code="'+this.id+'"]').contentDocument.open(); 
+            Qad.$('iframe[data-code="'+this.id+'"]').contentDocument.write(html); 
+            Qad.$('iframe[data-code="'+this.id+'"]').contentDocument.close();
+            Qad.$('iframe[data-code="'+this.id+'"]').contentDocument.designMode = 'on';
+            Qad.$('iframe[data-code='+this.id+'] body').onblur = Qad.code.text;
+		}
+	},
 	slider: {
 		src: [],
 		frame: 0,
