@@ -193,7 +193,7 @@ class Qad{
 				break;
 			}
 			case 'delete': {
-				if (self::$nosql->exists($p1))
+				if (self::$nosql->exists($p1) && self::$nosql->type($p1)!=2)
 					self::$nosql->del($p1);
 				if (!empty($p2)) {
 					$w = self::$nosql->hgetall($p1.':id:'.$p2);
