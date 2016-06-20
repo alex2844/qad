@@ -683,6 +683,16 @@ var Qad={
                     </form>\
                 </label>' : '')+'\
                 <label>\
+                    <i class="material-icons" onclick="(parentNode.querySelector(\'select\').style[\'width\']==\'0px\' ? parentNode.querySelector(\'select\').style[\'width\'] = \'124px\' : parentNode.querySelector(\'select\').style[\'width\'] = \'0\')">font_download</i>\
+                    <select style="width:0;color:black" onchange="Qad.code.format(\'fontName\',this.value,true)" data-right>\
+                        <option>Verdana</option>\
+                        <option>Arial</option>\
+                        <option>Calibri</option>\
+                        <option>Comic Sans MS</option>\
+                        <option>Courier New</option>\
+                    </select>\
+                </label>\
+                <label>\
                     <i class="material-icons" onclick="(parentNode.querySelector(\'input\').style[\'width\']==\'0px\' ? parentNode.querySelector(\'input\').style[\'width\'] = \'24px\' : parentNode.querySelector(\'input\').style[\'width\'] = \'0\')">text_fields</i>\
                     <input type="number" min="1" max="7" value="3" oninput="Qad.code.format(\'fontSize\',this.value,true)" style="width:0px;padding:0;border:0;overflow:hidden;height:24px;float:right" />\
                 </label>\
