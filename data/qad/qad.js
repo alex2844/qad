@@ -628,40 +628,58 @@ var Qad={
 		el: null,
 		id: null,
 		file: null,
-		upload: function(el) {
-		    console.log(el);
-		    console.log(el.value);
+		accept: null,
+		upload: function(id) {
+		    console.log(id);
+		    //id = id.id;
+		    //console.log(id);
+		    console.log(Qad.$('iframe[data-code='+id+']'));
+		    Qad.$('iframe[data-code='+id+']').contentWindow.focus();
+		    if (Qad.$('#'+id+' form').action) {
+		        if (!Qad.$('iframe[name=file]')) {
+		            file = Qad.$('/iframe');
+		            file.name = 'file';
+		            file.style['display'] = 'none';
+		            Qad.$('body').add(file);
+		        }
+		        Qad.$('iframe[name=file]').onload = function() {
+                    if (!Qad.$('iframe[name=file] body').$())
+                        return;
+                    Qad.$('iframe[data-code='+id+']').contentWindow.document.execCommand('insertImage', false, Qad.$('iframe[name=file] body').$());
+                }
+                Qad.$('#'+id+' form').submit();
+		    }else{
+    		    files = window.event.target.files;
+    		    for (var i = 0, f; f = files[i]; i++) {
+                    var reader = new FileReader();
+                    t = f;
+                    reader.onload = function(e) {
+                        if (t.type.match('image.*'))
+                            Qad.$('iframe[data-code='+id+']').contentWindow.document.execCommand('insertImage', false, e.target.result);
+                        else
+                            Qad.$('iframe[data-code='+id+']').contentWindow.document.execCommand('insertHTML', false, '<a href="'+e.target.result+'" download="'+escape(t.name)+'"><li><strong>'+escape(t.name)+'</strong> ('+(t.type ? t.type : 'n/a')+') - '+t.size+' ('+t.lastModifiedDate.toLocaleDateString()+')</li></a>');
+                    }
+                    reader.readAsDataURL(f);
+    		    }
+		    }
 		},
 		format: function(type,attr,nofocus) {
-		    //if (Qad.$('iframe[data-code='+this.id+'] body').$().indexOf('<xmp>') == 0)
-		        //return;
             if (!nofocus)
 			    Qad.$('iframe[data-code='+this.id+']').contentWindow.focus();
             Qad.$('iframe[data-code='+this.id+']').contentWindow.document.execCommand(type, null, attr);
 		},
 		text: function() {
-		    //if (Qad.$('iframe[data-code='+Qad.code.id+'] body').$().indexOf('<xmp>') == 0)
-                //Qad.$('textarea[name='+Qad.code.id+']').$(Qad.$('iframe[data-code='+Qad.code.id+'] body').$().slice(5,-6));
-            //else
-                Qad.$('textarea[name='+Qad.code.id+']').$(Qad.$('iframe[data-code='+Qad.code.id+'] body').$());
-            Qad.$('div#res').$(Qad.$('textarea[name='+Qad.code.id+']').$());
+            Qad.$('textarea[name='+Qad.code.id+']').value = Qad.$('iframe[data-code='+Qad.code.id+'] body').$();
 		},
-		/*
-		html: function() {
-    		if (Qad.$('iframe[data-code='+this.id+'] body').$().indexOf('<xmp>') == 0)
-                Qad.$('iframe[data-code='+this.id+'] body').$(Qad.$('iframe[data-code='+this.id+'] body').$().slice(5,-6));
-            else
-                Qad.$('iframe[data-code='+this.id+'] body').$('<xmp>'+Qad.$('iframe[data-code='+this.id+'] body').$()+'</xmp>');
-            Qad.$('iframe[data-code='+this.id+'] body').onblur = Qad.code.text;
+		focus: function(id) {
+		    Qad.code.id = id;
 		},
-		*/
 		button: function() {
 		    return '<h2>\
-                <!--i onclick="Qad.code.html()" class="material-icons">insert_drive_file</i-->\
                 '+(this.file ? '<label>\
                     <i class="material-icons">attach_file</i>\
-                    <form method="post" action="'+this.file+'" enctype="multipart/form-data" hidden>\
-                        <input type="file" onchange="Qad.code.upload(this)" />\
+                    <form target="file" method="post" '+(this.file==true ? '' : 'action="'+this.file+'"')+' enctype="multipart/form-data" hidden>\
+                        <input type="file" name="upload" onchange="Qad.code.upload(\''+this.id+'\')" '+(this.accept ? 'accept="image/*"' : '')+' style="width:0px;padding:0;border:0;overflow:hidden;" />\
                     </form>\
                 </label>' : '')+'\
                 <label>\
@@ -684,10 +702,12 @@ var Qad={
                 <i onclick="Qad.code.format(\'justifyLeft\')" class="material-icons">format_align_left</i>\
             </h2>';
         },
-		init: function() {
+		init: function(o) {
+		    for (k in o)
+		        this[k] = o[k];
 		    html = Qad.$(this.el).$();
 		    this.id = Qad.$(this.el).id;
-            Qad.$(this.el).$(this.button()+'<br /><iframe frameborder="no" style="width:98%;margin-left:5px" data-code="'+this.id+'"></iframe><br /><textarea name="'+this.id+'" hidden>'+html+'</textarea><div id="res"></div>');
+            Qad.$(this.el).$(this.button()+'<br /><iframe onmouseover="Qad.code.focus(\''+this.id+'\')" frameborder="no" style="width:98%;margin-left:5px" data-code="'+this.id+'"></iframe><br /><textarea name="'+this.id+'" hidden>'+html+'</textarea>');
             Qad.$('iframe[data-code="'+this.id+'"]').contentDocument.open(); 
             Qad.$('iframe[data-code="'+this.id+'"]').contentDocument.write(html); 
             Qad.$('iframe[data-code="'+this.id+'"]').contentDocument.close();

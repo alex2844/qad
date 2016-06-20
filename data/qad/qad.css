@@ -374,7 +374,7 @@ dialog h2 {
 	margin: -24px 0 0 -24px;
 	width: calc(100% + 48px);
 }
-.card img {
+.card > img {
 	/* max-width: 100%; */
 	width: 100%;
 	margin-bottom: -8px;
