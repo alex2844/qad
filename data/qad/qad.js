@@ -630,10 +630,6 @@ var Qad={
 		file: null,
 		accept: null,
 		upload: function(id) {
-		    console.log(id);
-		    //id = id.id;
-		    //console.log(id);
-		    console.log(Qad.$('iframe[data-code='+id+']'));
 		    Qad.$('iframe[data-code='+id+']').contentWindow.focus();
 		    if (Qad.$('#'+id+' form').action) {
 		        if (!Qad.$('iframe[name=file]')) {
@@ -675,7 +671,7 @@ var Qad={
 		    Qad.code.id = id;
 		},
 		button: function() {
-		    return '<h2>\
+		    return '\
                 '+(this.file ? '<label>\
                     <i class="material-icons">attach_file</i>\
                     <form target="file" method="post" '+(this.file==true ? '' : 'action="'+this.file+'"')+' enctype="multipart/form-data" hidden>\
@@ -710,14 +706,14 @@ var Qad={
                 <i onclick="Qad.code.format(\'justifyRight\')" class="material-icons">format_align_right</i>\
                 <i onclick="Qad.code.format(\'justifyCenter\')" class="material-icons">format_align_center</i>\
                 <i onclick="Qad.code.format(\'justifyLeft\')" class="material-icons">format_align_left</i>\
-            </h2>';
+            ';
         },
 		init: function(o) {
 		    for (k in o)
 		        this[k] = o[k];
 		    html = Qad.$(this.el).$();
 		    this.id = Qad.$(this.el).id;
-            Qad.$(this.el).$(this.button()+'<br /><iframe onmouseover="Qad.code.focus(\''+this.id+'\')" frameborder="no" style="width:98%;margin-left:5px" data-code="'+this.id+'"></iframe><br /><textarea name="'+this.id+'" hidden>'+html+'</textarea>');
+            Qad.$(this.el).$((this.button ? '<h2>'+this.button()+'</h2><br />' : '' )+'<iframe onmouseover="Qad.code.focus(\''+this.id+'\')" frameborder="no" style="width:98%;margin-left:5px" data-code="'+this.id+'"></iframe><br /><textarea name="'+this.id+'" hidden>'+html+'</textarea>');
             Qad.$('iframe[data-code="'+this.id+'"]').contentDocument.open(); 
             Qad.$('iframe[data-code="'+this.id+'"]').contentDocument.write(html); 
             Qad.$('iframe[data-code="'+this.id+'"]').contentDocument.close();
