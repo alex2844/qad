@@ -928,6 +928,10 @@ footer [data-left] {
 [data-left] {
 	float: left;
 }
+[data-color] {
+	background-color: @color !important;
+	color: #fff !important;
+}
 ul.menu[data-right] {
 	right: 0;
 }
