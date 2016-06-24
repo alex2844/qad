@@ -235,8 +235,7 @@ button.menu:hover {
 	background-color: rgba(158,158,158,.2);
 }
 ul.menu {
-	/* position: absolute; */
-	position: fixed;
+	position: absolute;
 	margin: 0;
 	background: #fff;
 	border-radius: .125rem;
