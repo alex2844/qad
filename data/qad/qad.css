@@ -235,7 +235,8 @@ button.menu:hover {
 	background-color: rgba(158,158,158,.2);
 }
 ul.menu {
-	position: absolute;
+	/* position: absolute; */
+	position: fixed;
 	margin: 0;
 	background: #fff;
 	border-radius: .125rem;
@@ -333,7 +334,7 @@ table, .card {
 	/* margin: 10px; */
 	margin: 1%;
 	vertical-align: top;
-	position: relative;
+	/* position: relative; */
 	overflow: hidden;
 }
 .card > i {
@@ -356,7 +357,7 @@ table, .card {
 	font-weight: 300;
 	text-align: center;
 	font-size: 18px;
-	width: 100%;
+	width: 101%;
 	/* height: initial; */
 	background: @color;
 	margin: 0;
