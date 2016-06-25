@@ -756,6 +756,7 @@ label.input span {
 	position: absolute;
 	font-size: 12px;
 	top: 0;
+	left: 0;
 	color: @color;
 	transition: all .2s;
 }
