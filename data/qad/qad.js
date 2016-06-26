@@ -509,6 +509,8 @@ var Qad={
 	api: function(method,callback,params) {
 		if (method.indexOf('googleapis.com') != -1)
 			provider = 'google';
+		else if (method.indexOf('graph.facebook.com') != -1)                                                                    
+            provider = 'facebook';
 		else if (method.indexOf('api.vk.com') != -1)                                                                    
             provider = 'vk';
 		else
