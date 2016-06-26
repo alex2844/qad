@@ -507,8 +507,10 @@ var Qad={
 		}
 	},
 	api: function(method,callback,params) {
-		if (method.indexOf('vk.com') != -1)
-			provider = 'vk';
+		if (method.indexOf('googleapis.com') != -1)
+			provider = 'google';
+		else if (method.indexOf('api.vk.com') != -1)                                                                    
+            provider = 'vk';
 		else
 			provider = 'default';
 		if (!params)
@@ -524,8 +526,8 @@ var Qad={
 		document.api.oauth = function() {
 			Qad.session.set('oauth-token-'+provider,null);
 			Qad.session.set('oauth-scope',params.scope);
-			Qad.session.set('oauth-redirect',location.href);
-			location.href = params.base+'?method='+provider;
+			//Qad.session.set('oauth-redirect',location.href);
+			location.href = params.base+'?method='+provider+'&oauth-redirect='+location.href;
 		};
 		if (Qad.session.get('oauth-token-'+provider))
 			params.access_token = Qad.session.get('oauth-token-'+provider);
