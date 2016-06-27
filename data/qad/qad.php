@@ -113,6 +113,13 @@ class Qad{
 		if ($method == 'get')
 			return 'https://chart.googleapis.com/chart?chs=200x200&chld=M|0&cht=qr&chl='.urlencode($code);
 	}
+	public function recaptcha($recaptcha) {
+		if(empty($recaptcha) || empty(self::$config['recaptcha']))
+			return false;
+		$url = 'https://www.google.com/recaptcha/api/siteverify?secret='.self::$config['recaptcha'].'&response='.$recaptcha.'&remoteip='.$_SERVER['REMOTE_ADDR'];
+		$res = json_decode(file_get_contents($url),true);
+		return $res['success'];
+	}
 	public function shab() {
 		$file = file_get_contents('index.html');
 		$shab['header'] = preg_replace(array(
