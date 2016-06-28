@@ -444,7 +444,7 @@ ul p {
 	font-size: 14px;
 	letter-spacing: 0;
 	line-height: 18px;
-	height: 52px;
+	max-height: 52px;
 	color: rgba(0,0,0,.54);
 	margin: 0;
 	padding: 0;
@@ -473,6 +473,7 @@ div.min {
 }
 article {
 	padding: 8px;
+	display: flex;
 }
 button, .button {
 	color: #fff;
@@ -718,6 +719,7 @@ input[readonly] {
 }
 #header-panel input,
 	.input input,
+	input.label,
 	select,
 	textarea {
 		background: 0;
@@ -735,6 +737,7 @@ input[readonly] {
 	color: transparent;
 }
 .input input:not([readonly]),
+	input.label,
 	select,
 	textarea {
 		border-bottom: 1px solid rgba(0, 0, 0, 0.12);
@@ -765,6 +768,7 @@ label.input span {
 	width: 100%;
 }
 .input input:not([readonly]):focus,
+	input.label:focus,
 	select:focus,
 	textarea:focus {
 		border-bottom: 2px solid @color;
@@ -791,6 +795,23 @@ label.input span {
 }
 .input input[pattern]:focus:valid + span {
 	color: #4CAF50;
+}
+.input.icon i {
+	float: left;
+	margin-left: -1%;
+	width: 24px;
+	margin-right: -24px;
+	margin-top: -25px;
+}
+.input.icon input:focus ~ i {
+	color: @color;
+}
+.input.icon input {
+	margin-left: 30px;
+	width: calc(100% - 30px);
+}
+.input.icon span {
+	left: 30px !important;
 }
 label.checkbox {
 	position: relative;
