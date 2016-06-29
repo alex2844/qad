@@ -677,31 +677,6 @@ progress, ::-webkit-progress-value {
 ::-webkit-progress-bar {
 	background-image: linear-gradient(to right,rgba(255,255,255,.7),rgba(255,255,255,.7)),linear-gradient(to right,@color ,@color);
 }
-svg#loader {
-	position: fixed;
-	width: 100px;
-	top: 50%;
-	left: calc(50% - 50px);
-	stroke: @color;
-	-webkit-animation: rotator 1.4s linear infinite;
-	animation: rotator 1.4s linear infinite;
-	outline: solid rgba(241, 241, 241, 0.8) 10000px;
-	background: rgba(241, 241, 241, 0.8);
-}
-svg#loader circle {
-	cx: 33;
-	cy: 33;
-	r: 30;
-	stroke-width: 3;
-	stroke-linecap: round;
-	fill: none;
-	stroke-dasharray: 187;
-	stroke-dashoffset: 0;
-	-webkit-transform-origin: center;
-	transform-origin: center;
-	-webkit-animation: dash 1.4s ease-in-out infinite;
-	animation: dash 1.4s ease-in-out infinite;
-}
 input[type=range].progress {
 	height: 4px;
 	width: 100%;
@@ -878,6 +853,15 @@ label.checkbox {
 	bottom: 0;
 	z-index: 1;
 }
+.spinner {
+	height: 50px;
+	width: 50px;
+	border-radius: 100px;
+	border: 5px transparent solid;
+	border-top: 5px #3F51B5 solid;
+	animation: spinner 4s infinite;
+	padding: 0;
+}
 ::-webkit-scrollbar {
 	width:5px;
 	height: 5px;
@@ -1021,24 +1005,6 @@ footer [data-right] {
 		float: left;
 	}
 }
-@-webkit-keyframes reset {
-	0% {opacity: 0;}
-	100% {opacity: 0;}
-}
-@-webkit-keyframes fade-in {
-	0% {opacity: 0;}
-	40% {opacity: 0;}
-	100% {opacity: 1;}
-}
-@-moz-keyframes reset {
-	0% {opacity: 0;}
-	100% {opacity: 0;}
-}
-@-moz-keyframes fade-in {
-	0% {opacity: 0;}
-	40% {opacity: 0;}
-	100% {opacity: 1;}
-}
 @keyframes reset {
 	0% {opacity: 0;}
 	100% {opacity: 0;}
@@ -1048,83 +1014,39 @@ footer [data-right] {
 	40% {opacity: 0;}
 	100% {opacity: 1;}
 }
-@-webkit-keyframes slideUp {
-	0% {
-		-webkit-transform: translateY(6.25rem);
-		transform: translateY(6.25rem);
-	}
-	100% {
-		-webkit-transform: translateY(0);
-		transform: translateY(0);
-	}
-}
 @keyframes slideUp {
 	0% {
-		-webkit-transform: translateY(6.25rem);
 		transform: translateY(6.25rem);
 	}
 	100% {
-		-webkit-transform: translateY(0);
 		transform: translateY(0);
 	}
 }
-@-webkit-keyframes slideRight {
-	0% {left: 100%;}
-	100% {left: 0;}
+@keyframes spinner {
+	0% {
+		transform: rotate(0deg);
+		border-top: 5px #3F51B5 solid;
+	}
+	25% {
+		transform: rotate(360deg);
+		border-top: 5px #F44336 solid;
+	}
+	50% {
+		transform: rotate(720deg);
+		border-top: 5px #FFC107 solid;
+	}
+	75% {
+		transform: rotate(1080deg);
+		border-top: 5px #4CAF50 solid;
+	}
+	100% {
+		transform: rotate(1440deg);
+		border-top: 5px #3F51B5 solid;
+	}
 }
 @keyframes slideRight {
 	0% {left: 100%;}
 	100% {left: 0;}
-}
-@-webkit-keyframes rotator {
-	0% {
-		-webkit-transform: rotate(0deg);
-		transform: rotate(0deg);
-	}
-	100% {
-		-webkit-transform: rotate(270deg);
-		transform: rotate(270deg);
-	}
-}
-@keyframes rotator {
-	0% {
-		-webkit-transform: rotate(0deg);
-		transform: rotate(0deg);
-	}
-	100% {
-		-webkit-transform: rotate(270deg);
-		transform: rotate(270deg);
-	}
-}
-@-webkit-keyframes dash {
-	0% {stroke-dashoffset: 187;}
-	50% {
-		stroke-dashoffset: 46.75;
-		-webkit-transform: rotate(135deg);
-		transform: rotate(135deg);
-	}
-	100% {
-		stroke-dashoffset: 187;
-		-webkit-transform: rotate(450deg);
-		transform: rotate(450deg);
-	}
-}
-@keyframes dash {
-	0% {stroke-dashoffset: 187;}
-	50% {
-		stroke-dashoffset: 46.75;
-		-webkit-transform: rotate(135deg);
-		transform: rotate(135deg);
-	}
-	100% {
-		stroke-dashoffset: 187;
-		-webkit-transform: rotate(450deg);
-		transform: rotate(450deg);
-	}
-}
-@-webkit-keyframes scroll {
-	from {bottom: 10px;}
-	to {bottom: 5%;}
 }
 @keyframes scroll {
 	from {bottom: 10px;}
