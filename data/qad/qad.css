@@ -1015,12 +1015,8 @@ footer [data-right] {
 	100% {opacity: 1;}
 }
 @keyframes slideUp {
-	0% {
-		transform: translateY(6.25rem);
-	}
-	100% {
-		transform: translateY(0);
-	}
+	0% {transform: translateY(6.25rem);}
+	100% {transform: translateY(0);}
 }
 @keyframes spinner {
 	0% {

@@ -122,7 +122,11 @@ var Qad={
 			}else if (s == false) {
 				obj.innerHTML = 'close';
 				obj.style['background'] = '#F44336';
+			}else{
+				obj.classList.add('spinner');
+				return;
 			}
+			obj.classList.remove('spinner');
 			setTimeout(function() {
 				obj.innerHTML = tmp;
 				obj.style['background'] = Qad.$('meta[name="theme-color"]').content;
