@@ -113,7 +113,9 @@ var Qad={
 				obj.innerHTML = val;
 		}
 		obj.status = function(s) {
-			tmp = obj.innerHTML;
+			if (obj.innerHTML == 'done' || obj.innerHTML == 'close')
+				return;
+			var tmp = obj.innerHTML;
 			if (s == true) {
 				obj.innerHTML = 'done';
 				obj.style['background'] = '#4CAF50';
