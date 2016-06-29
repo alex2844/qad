@@ -390,6 +390,8 @@ dialog h2 {
 	background: 0;
 	color: @color;
 	box-shadow: none;
+}
+.card button{
 	margin: 8px 16px;
 }
 .card.left {
@@ -421,6 +423,7 @@ ul {
 	list-style: none;
 }
 ul li {
+	min-height: 38px;
 	padding: 16px;
 }
 ul .avatar {
@@ -431,6 +434,7 @@ ul .avatar {
 }
 ul .action {
 	float: right;
+	margin-top: 5px;
 	height: inherit;
 	color: @color;
 }

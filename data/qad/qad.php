@@ -71,6 +71,7 @@ class Qad{
 			'type' => ($data['response']['type']?$data['response']['type']:1),
 			'email' => $data['response']['email'],
 			'login' => $data['response']['login'],
+			'tel' => $data['response']['tel'],
 			'avatar' => $data['response']['avatar'],
 			'first_name' => $data['response']['first_name'],
 			'last_name' => $data['response']['last_name'],
