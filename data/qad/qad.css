@@ -426,6 +426,9 @@ ul li {
 	min-height: 38px;
 	padding: 16px;
 }
+ul.menu li {
+	min-height: 0;
+}
 ul .avatar {
 	width: 40px;
 	float: left;
