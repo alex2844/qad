@@ -15,8 +15,64 @@ fi
 if [ "$1" == "" ] || [ "$1" == "help" ]; then
 	echo 'Help Qad-cli Fraemwork';
 	echo './qad.sh install'; #TODO
+	echo './qad.sh min';
 	echo './qad.sh clear'; #TODO
 	echo './qad.sh name version title [new|key]';
+	exit;
+elif [ "$1" == "min" ]; then
+	pwd=$(pwd);
+	mkdir -p '../../upload/color/';
+	echo "Scaning direcotry..."
+	for odir in `find "../../page/" -type d | grep -v \/\.git\/`
+	do
+		for filetype in "html"
+		do
+			for filename in `ls $odir/*.$filetype 2> /dev/null | sed "s/\.$filetype$//g" | grep -v .min$`
+			do
+				color=$(grep theme-color $filename.$filetype -m 1 | sed 's/.*content="#//g' | sed 's/".*//g');
+				qadf=$(grep '<link.*stylesheet/qad' $filename.$filetype -m 1 | sed 's/.*href="//g' | sed 's/".*//g');
+				if [ ! -z "$color" ] && [ ! -z "$qadf" ]; then
+					cd $pwd'/'$(dirname $filename);
+					if [ "$(echo $qadf | grep '://')" ]; then
+						echo $filename.$filetype'::'$color'::wget::'$qadf;
+						wget -O $color'.css' $qadf;
+						qad=$pwd'/'$(dirname $filename)'/'$color'.css';
+						cd $pwd;
+					else
+						echo $filename.$filetype'::'$color'::'$qadf;
+						cp $qadf $pwd'/../../upload/color/'$color'.css';
+						qad=$pwd'/../../upload/color/'$color'.css';
+						cd $pwd;
+					fi
+					if [ -e "$qad" ]; then
+						sed -r 's/@color/#'$color'/g' $qad > $qad'.qad';
+						mv $qad'.qad' $qad;
+						sed -r 's/@color: meta.theme-color;//g' $qad > $qad'.qad';
+						mv $qad'.qad' $qad;
+						sed -i '/meta./d' $qad;
+						curl -X POST -s --data-urlencode 'input@'$qad 'http://cssminifier.com/raw' > $qad'.qad';
+						mv $qad'.qad' $qad;
+						if [ "$(echo $qadf | grep '://')" ]; then
+							sed -r 's/<link.*stylesheet\/qad.*>/<link type="text\/css" rel="stylesheet" href="'$color'.css" \/>/g' $filename.$filetype > $filename.$filetype.qad;
+							sed -r 's/@location\///g' $qad > $qad'.qad';
+						else
+							sed -r 's/<link.*stylesheet\/qad.*>/<link type="text\/css" rel="stylesheet" href="..\/..\/upload\/color\/'$color'.css" \/>/g' $filename.$filetype > $filename.$filetype.qad;
+							sed -r 's/@location\//..\/..\//g' $qad > $qad'.qad';
+						fi
+						mv $qad'.qad' $qad;
+						mv $filename.$filetype'.qad' $filename.$filetype;
+						sed ':a;N;$!ba;s/>\s*</></g' $filename.$filetype > $filename.$filetype.qad;
+						mv $filename.$filetype.qad $filename.$filetype;
+					fi
+				fi
+			done
+		done
+	done
+	cd $pwd;
+	if [ -e 'qad.js' ]; then
+		curl -X POST -s --data-urlencode 'input@qad.js' 'http://javascript-minifier.com/raw' > 'qad';
+		mv 'qad' 'qad.js';
+	fi
 	exit;
 fi
 if [ -z "$2" ]; then exit 0; fi
@@ -117,21 +173,9 @@ if [ ! -z "$4" ] && [ ! -z "$install" ]; then
 			echo "Finding $filetype to be compressed under $odir ..."
 			for filename in `ls $odir/*.$filetype 2> /dev/null | sed "s/\.$filetype$//g" | grep -v .min$`
 			do
-				do_min=0
-				if [ -f $filename\.min\.$filetype ]; then
-					orig_ver_time=`eval $LS $filename\.$filetype | awk '{print $6}'`
-					mini_ver_time=`eval $LS $filename\.min\.$filetype | awk '{print $6}'`
-					if [ $mini_ver_time -lt $orig_ver_time ]; then
-						do_min=1
-					fi
-				else
-					do_min=1
-				fi
-				if [ 0 -lt $do_min ]; then
-					echo "Compressing $filename.$filetype ..."
-					curl -X POST -s --data-urlencode "input@$filename.$filetype" ${urls[$filetype]} > $filename\.min.$filetype
-					mv $filename\.min.$filetype $filename\.$filetype
-				fi
+				echo "Compressing $filename.$filetype ..."
+				curl -X POST -s --data-urlencode "input@$filename.$filetype" ${urls[$filetype]} > $filename\.min.$filetype
+				mv $filename\.min.$filetype $filename\.$filetype
 			done
 		done
 	done

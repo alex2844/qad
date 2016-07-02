@@ -228,26 +228,27 @@ class Qad{
 	public function nosql($exec,$p1='',$p2='',$p3='',$p4='') {
 		switch($exec) {
 			case 'search': {
-				$it = null;
-				while($a = self::$nosql->scan($it,self::$nosql->getOption(Redis::OPT_PREFIX).mb_strtolower($p1),1000)) {
-					if ($p3 == '')
-						$p3 = 0;
-					for (; $p3<count($a); ++$p3) {
-						if (substr_count($p1,'*') >= 2) {
-							$t = explode(':',$a[$p3]);
-							$arr[] = $t[array_search('id',$t)+1];
-						}else
-							$arr[] = str_replace([
-								str_replace('*','',mb_strtolower($p1)),
-								self::$nosql->getOption(Redis::OPT_PREFIX)
-							],'',$a[$p3]);
-						if ($p2 != '') {
-							--$p2;
-							if ($p2 == 0)
-								break;
-						}
+				//$it = null;
+				//while($a = self::$nosql->scan($it,self::$nosql->getOption(Redis::OPT_PREFIX).mb_strtolower($p1),1000)) {
+				$a = self::$nosql->keys(mb_strtolower($p1));
+				if ($p3 == '')
+					$p3 = 0;
+				for (; $p3<count($a); ++$p3) {
+					if (substr_count($p1,'*') >= 2) {
+						$t = explode(':',$a[$p3]);
+						$arr[] = $t[array_search('id',$t)+1];
+					}else
+						$arr[] = str_replace([
+							str_replace('*','',mb_strtolower($p1)),
+							self::$nosql->getOption(Redis::OPT_PREFIX)
+						],'',$a[$p3]);
+					if ($p2 != '') {
+						--$p2;
+						if ($p2 == 0)
+							break;
 					}
 				}
+				//}
 				return json_encode($arr);
 				break;
 			}
