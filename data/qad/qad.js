@@ -1038,6 +1038,10 @@ window.onpopstate = function() {
 }
 */
 window.addEventListener('load',function() {
+	if (!navigator.cookieEnabled) {
+		location.href = '/?browser';
+		return;
+	}
 	var locarray = location.href.split('#')[0].replace(location.search,'').split('/');
 	location.file = (locarray[(locarray.length-1)]?locarray[(locarray.length-1)]:'index.html');
 	delete locarray[(locarray.length-1)];
