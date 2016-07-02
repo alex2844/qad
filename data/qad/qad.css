@@ -16,14 +16,6 @@ Copyright (c) 2016 Alex Smith
 		url(@location/data/fonts/MaterialIcons-Regular.woff2) format('woff2'),
 		url(@location/data/fonts/MaterialIcons-Regular.ttf) format('truetype');
 }
-@font-face {
-	font-family: 'Roboto';
-	font-style: normal;
-	font-weight: 400;
-	src: local('Roboto Regular'), local('Roboto-Regular'),
-		url(@location/data/fonts/roboto.woff) format('woff'),
-		url(@location/data/fonts/roboto.ttf) format('truetype');
-}
 span, div.float, div:after, div:before {
 	display: inline-block;
 }
@@ -56,8 +48,8 @@ body {
 	font-size: 14px;
 	width: 100%;
 	margin: 0;
-	font-family: "RobotoDraft","Roboto",sans-serif;
 	background: #f1f1f1;
+	font-family: sans-serif;
 	-webkit-animation-name: reset, fade-in;
 	-webkit-animation-duration: 1.5s;
 	-webkit-animation-timing-function: ease-in;
