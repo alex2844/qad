@@ -331,7 +331,6 @@ var Qad={
 						geocoder.geocode({'latLng': latlng}, function(results, status) {
 							if (status == google.maps.GeocoderStatus.OK) {
 								if (results[1]) {
-									//Qad.$('#'+id).$(results[1].formatted_address);
 									document.dispatchEvent(new CustomEvent('geo.me',{'detail':{
 										'status': true,
 										'type': 'location',

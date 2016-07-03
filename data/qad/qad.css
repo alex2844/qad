@@ -747,6 +747,9 @@ label.input span {
 	textarea:focus {
 		border-bottom: 2px solid @color;
 }
+input.label {
+	margin-left: 10px;
+}
 .input input[pattern]:invalid + span,
 .input input:focus + span, .input input:focus:invalid + span,
 	.input select:focus + span, .input select:focus:invalid + span,
