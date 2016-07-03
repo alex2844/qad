@@ -308,26 +308,68 @@ var Qad={
 	},
 	geo: {
 		id: {},
+		key: null,
 		me: function(id) {
 			document.me = function() {
-				id = 'location_name';
-				//autocomplete = new google.maps.places.Autocomplete(Qad.$('#'+id),{types: ['geocode']});
-				if (navigator.geolocation)
+				if (id) {
+					ac = new google.maps.places.Autocomplete(Qad.$('#'+id),{types: ['geocode']});
+					ac.addListener('place_changed', function() {
+						var p = ac.getPlace();
+						document.dispatchEvent(new CustomEvent('geo.me',{'detail':{
+							'status': true,
+							'type': 'autocomplete',
+							'lat': p.geometry.location.lat(),
+							'lng': p.geometry.location.lng(),
+							'address': p.formatted_address
+						}}));
+					});
+				}
+				if ((!id || !Qad.$('#'+id).value) && navigator.geolocation)
 					navigator.geolocation.getCurrentPosition(function(position) {
+						var latlng = new google.maps.LatLng(position.coords.latitude,position.coords.longitude);
 						var geocoder = new google.maps.Geocoder();
-						var latlng = new google.maps.LatLng(position.coords.latitude,position.coords.longitude);        
 						geocoder.geocode({'latLng': latlng}, function(results, status) {
 							if (status == google.maps.GeocoderStatus.OK) {
-								if (results[1])
-									Qad.$('#'+id).$(results[1].formatted_address);
+								if (results[1]) {
+									//Qad.$('#'+id).$(results[1].formatted_address);
+									document.dispatchEvent(new CustomEvent('geo.me',{'detail':{
+										'status': true,
+										'type': 'location',
+										'lat': position.coords.latitude,
+										'lng': position.coords.longitude,
+										'time': position.coords.timestamp,
+										'address': results[1].formatted_address
+									}}));
+								}
 							}else
-								console.log('Geocoder failed due to: ' + status);
+								document.dispatchEvent(new CustomEvent('geo.me',{'detail':{
+									'status': false,
+									'type': 'location',
+									'error': status
+								}}));
 						});
-					});
+					}, function(e) {
+						if (e.code == 1)
+							e.title = 'PERMISSION_DENIED';
+						else if (e.code == 2)
+							e.title = 'POSITION_UNAVAILABLE';
+						else
+							e.title = 'UNKNOWN_ERROR';
+						document.dispatchEvent(new CustomEvent('geo.me',{'detail':{
+							'status': false,
+							'type': 'location',
+							'error': e.title
+						}}));
+					}, {maximumAge: 75000});
+				else
+					document.dispatchEvent(new CustomEvent('geo.me',{'detail':{
+						'status': false,
+						'type': 'location'
+					}}));
 			}
 			if (typeof(google) == 'undefined' || typeof(google.maps) == 'undefined') {
 				s = Qad.$('/script');
-				s.src = '//maps.googleapis.com/maps/api/js?v=3.exp&libraries=places&callback=document.me';
+				s.src = '//maps.googleapis.com/maps/api/js?v=3.exp&libraries=places&callback=document.me'+(this.key ? '&key='+this.key : '');
 				Qad.$('body').add(s);
 			}else
 				document.me();
@@ -421,7 +463,7 @@ var Qad={
 			}
 			if (typeof(google) == 'undefined' || typeof(google.maps) == 'undefined') {
 				s = Qad.$('/script');
-				s.src = '//maps.googleapis.com/maps/api/js?v=3.exp&libraries=places&callback=document.maps';
+				s.src = '//maps.googleapis.com/maps/api/js?v=3.exp&libraries=places&callback=document.me'+(this.key ? '&key='+this.key : '');
 				Qad.$('body').add(s);
 			}else
 				document.maps();
