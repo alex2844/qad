@@ -16,6 +16,31 @@ Copyright (c) 2016 Alex Smith
 		url(@location/data/fonts/MaterialIcons-Regular.woff2) format('woff2'),
 		url(@location/data/fonts/MaterialIcons-Regular.ttf) format('truetype');
 }
+header + .clear:not(.onload) {
+	position: fixed;
+	left: 0;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	background: #f1f1f1;
+	z-index: 1;
+}
+header + .clear:not(.onload):after {
+	content: '';
+	left: 50%;
+	top: 50%;
+	position: absolute;
+	margin: -25px 0 0 -25px;
+}
+header + .clear:not(.onload):after, .spinner {
+	height: 50px;
+	width: 50px;
+	border-radius: 100px;
+	border: 5px transparent solid;
+	border-top: 5px #3F51B5 solid;
+	animation: spinner 4s infinite;
+	padding: 0;
+}
 span, div.float, div:after, div:before {
 	display: inline-block;
 }
@@ -50,7 +75,7 @@ body {
 	margin: 0;
 	background: #f1f1f1;
 	font-family: sans-serif;
-	-webkit-animation-name: reset, fade-in;
+	/* -webkit-animation-name: reset, fade-in;
 	-webkit-animation-duration: 1.5s;
 	-webkit-animation-timing-function: ease-in;
 	-moz-animation-name: reset, fade-in;
@@ -58,7 +83,7 @@ body {
 	-moz-animation-timing-function: ease-in;
 	animation-name: reset, fade-in;
 	animation-duration: 1.5s;
-	animation-timing-function: ease-in;
+	animation-timing-function: ease-in; */
 	top: 0px !important;
 }
 h1 {
@@ -851,15 +876,6 @@ label.checkbox {
 	bottom: 0;
 	z-index: 1;
 }
-.spinner {
-	height: 50px;
-	width: 50px;
-	border-radius: 100px;
-	border: 5px transparent solid;
-	border-top: 5px #3F51B5 solid;
-	animation: spinner 4s infinite;
-	padding: 0;
-}
 ::-webkit-scrollbar {
 	width:5px;
 	height: 5px;
@@ -953,6 +969,9 @@ footer [data-right] {
 	float: right;
 }
 @media all and (max-width: 650px) {
+	article {
+		display: block;
+	}
 	div.middle, div.float {
 		/* width: 100%; */
 		width: 98%;

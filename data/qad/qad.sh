@@ -35,8 +35,9 @@ elif [ "$1" == "min" ]; then
 					cd $pwd'/'$(dirname $filename);
 					if [ "$(echo $qadf | grep '://')" ]; then
 						echo $filename.$filetype'::'$color'::wget::'$qadf;
-						wget -O $color'.css' $qadf;
-						qad=$pwd'/'$(dirname $filename)'/'$color'.css';
+						qad='none';
+						#wget -O $color'.css' $qadf;
+						#qad=$pwd'/'$(dirname $filename)'/'$color'.css';
 						cd $pwd;
 					else
 						echo $filename.$filetype'::'$color'::'$qadf;

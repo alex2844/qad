@@ -1259,8 +1259,12 @@ window.addEventListener('load',function() {
 		load(Qad.$('iframe.load body').innerHTML);
 		Qad.$('iframe.load').onload = function() {
 			load(Qad.$('iframe.load body').innerHTML);
+			if ($('header + .clear:not(.onload)'))
+				$('header + .clear:not(.onload)').classList.add('onload');
 		}
 	}
+	if ($('header + .clear:not(.onload)'))
+		$('header + .clear:not(.onload)').classList.add('onload');
 });
 var $$ = Qad;
 var $ = $$.$;
