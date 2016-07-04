@@ -462,7 +462,7 @@ var Qad={
 			}
 			if (typeof(google) == 'undefined' || typeof(google.maps) == 'undefined') {
 				s = Qad.$('/script');
-				s.src = '//maps.googleapis.com/maps/api/js?v=3.exp&libraries=places&callback=document.me'+(this.key ? '&key='+this.key : '');
+				s.src = '//maps.googleapis.com/maps/api/js?v=3.exp&libraries=places&callback=document.maps'+(this.key ? '&key='+this.key : '');
 				Qad.$('body').add(s);
 			}else
 				document.maps();
