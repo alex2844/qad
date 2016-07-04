@@ -936,9 +936,12 @@ footer [data-left] {
 [data-left] {
 	float: left;
 }
-[data-color] {
+button[data-color] {
 	background-color: @color !important;
 	color: #fff !important;
+}
+label[data-color] {
+	color: @color !important;
 }
 ul.menu[data-right] {
 	right: 0;
