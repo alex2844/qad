@@ -228,9 +228,18 @@ class Qad{
 	public function nosql($exec,$p1='',$p2='',$p3='',$p4='') {
 		switch($exec) {
 			case 'search': {
+				$p1 = mb_strtolower($p1);
+				if (file_exists(dirname(__DIR__).'/../upload/cache/')) {
+					$cache = dirname(__DIR__).'/../upload/cache/search_'.md5(self::$nosql->getOption(Redis::OPT_PREFIX).$p1.$p2.$p3).'.cache';
+					if (file_exists($cache) && (time()-900)<filemtime($cache)) {
+						$cached = file_get_contents($cache);
+						return $cached;
+						exit;
+					}
+				}
 				//$it = null;
 				//while($a = self::$nosql->scan($it,self::$nosql->getOption(Redis::OPT_PREFIX).mb_strtolower($p1),1000)) {
-				$a = self::$nosql->keys(mb_strtolower($p1));
+				$a = self::$nosql->keys($p1);
 				if ($p3 == '')
 					$p3 = 0;
 				for (; $p3<count($a); ++$p3) {
@@ -239,7 +248,7 @@ class Qad{
 						$arr[] = $t[array_search('id',$t)+1];
 					}else
 						$arr[] = str_replace([
-							str_replace('*','',mb_strtolower($p1)),
+							str_replace('*','',$p1),
 							self::$nosql->getOption(Redis::OPT_PREFIX)
 						],'',$a[$p3]);
 					if ($p2 != '') {
@@ -249,7 +258,13 @@ class Qad{
 					}
 				}
 				//}
-				return json_encode($arr);
+				$json = json_encode($arr);
+				if (isset($cache)) {
+					$cached = fopen($cache, 'w');
+					fwrite($cached, $json);
+					fclose($cached);
+				}
+				return $json;
 				break;
 			}
 			case 'get': {
