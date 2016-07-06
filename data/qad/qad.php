@@ -329,10 +329,29 @@ class Qad{
 			}
 			case 'update': {
 				foreach ($p3 as $k=>$v) {
-					$o = self::$nosql->hmget($p1.':id:'.$p2,[$k])[$k];
-					if (self::$nosql->exists($p1.':'.$k.':'.$o)) {
-						self::$nosql->del($p1.':'.$k.':'.$o);
-						self::$nosql->set($p1.':'.$k.':'.$v, $p2);
+					if (substr($k,0,1) == '/') {
+						$o = self::$nosql->hmget($p1.':id:'.$p2,[substr($k,1)])[substr($k,1)];
+						if ($o != $v) {
+							if (is_array($o))
+								$o = json_encode($o);
+							if (self::$nosql->exists($p1.':'.substr($k,1).':id:'.$p2.':'.mb_strtolower($o)))
+								self::$nosql->del($p1.':'.substr($k,1).':id:'.$p2.':'.mb_strtolower($o));
+							else if (self::$nosql->exists($p1.':'.substr($k,1).':id:'.$p2.':'))
+								self::$nosql->del($p1.':'.substr($k,1).':id:'.$p2.':');
+							if (!empty($v)) {
+								if (is_array($v))
+									$v = json_encode($v);
+								self::$nosql->set($p1.':'.substr($k,1).':id:'.$p2.':'.mb_strtolower($v),null);
+							}
+							$p3[substr($k,1)] = $v;
+						}
+						unset($p3[$k]);
+					}else{
+						$o = self::$nosql->hmget($p1.':id:'.$p2,[$k])[$k];
+						if (self::$nosql->exists($p1.':'.$k.':'.$o)) {
+							self::$nosql->del($p1.':'.$k.':'.$o);
+							self::$nosql->set($p1.':'.$k.':'.$v, $p2);
+						}
 					}
 				}
 				$res = self::$nosql->hmset($p1.':id:'.$p2, $p3);
