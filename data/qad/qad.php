@@ -9,6 +9,7 @@ Copyright (c) 2016 Alex Smith
 =====================================================
 */
 header('Content-Type: text/html; charset=utf-8');
+session_start();
 class Qad{
 	public static $nosql;
 	public static $config;
@@ -82,7 +83,8 @@ class Qad{
 			for ($i=0; $i<count($scope); ++$i)
 				$passport['scope'][$scope[$i]] = $data['response'][$scope[$i]];
 		$passport = json_encode($passport);
-		setcookie('passport'.($key!=''?'.'.$key:''), $passport, time()+60*60*24*30, '/');
+		setcookie('passport'.($key!=''?'::'.$key:''), $passport, time()+60*60*24*30, '/');
+		$_SESSION['passport'.($key!=''?'::'.$key:'')] = md5($passport);
 		return $passport;
 	}
 	public function otp($p1,$p2) {
