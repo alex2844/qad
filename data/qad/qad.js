@@ -55,10 +55,9 @@ var Qad={
 				obj.removeAttribute(key);
 			else if (typeof(value) == 'undefined')
 				return obj.getAttribute(key);
-			else{
+			else
 				obj.setAttribute(key,value);
-				return value
-			}
+			return obj;
 		}
 		obj.resize = function() {
 			if (obj.tagName == 'IFRAME') {
@@ -111,6 +110,7 @@ var Qad={
 				obj.value = val;
 			else
 				obj.innerHTML = val;
+			return obj;
 		}
 		obj.status = function(s) {
 			if (obj.innerHTML == 'done' || obj.innerHTML == 'close')
@@ -1232,7 +1232,7 @@ window.addEventListener('load',function() {
 	if (Qad.$('html').lang) {
 		var script = Qad.$('/script');
 		document.translate = function() {
-			if (Qad.$('#google_translate'))
+			if (Qad.$('#google_translate') && Qad.$('#google_translate').$() == '')
 				Qad.$('#google_translate').$('&#xE8E2').attr('class','material-icons');
 			new google.translate.TranslateElement({
 				pageLanguage: Qad.$('html').lang,
