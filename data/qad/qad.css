@@ -492,7 +492,7 @@ div.float {
 	width: 32%;
 	height: 100%;
 }
-div.middle {
+div.middle, dialog.middle {
 	width: 50%;
 }
 div.min {
@@ -978,6 +978,9 @@ footer [data-right] {
 	div.middle, div.float {
 		/* width: 100%; */
 		width: 98%;
+	}
+	dialog.middle {
+		width: 85%;
 	}
 	div.min {
 		width: 45%;
