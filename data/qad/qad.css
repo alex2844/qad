@@ -333,8 +333,8 @@ section {
 	display: none !important;
 }
 .goog-text-highlight {
-	background: 0;
-	box-shadow: none;
+	background: 0 !important;
+	box-shadow: none !important;
 }
 table, .card {
 	/* display: inline-block; */
@@ -433,6 +433,9 @@ dialog::backdrop {
 }
 dialog img {
 	max-width: 100%;
+}
+dialog button {
+	margin: 4px;
 }
 ul {
 	display: block;

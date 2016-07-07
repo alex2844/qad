@@ -1234,6 +1234,11 @@ window.addEventListener('load',function() {
 		document.translate = function() {
 			if (Qad.$('#google_translate') && Qad.$('#google_translate').$() == '')
 				Qad.$('#google_translate').$('&#xE8E2').attr('class','material-icons');
+			$$.for('.material-icons',function(el) {
+				el.classList.add('notranslate');
+			});
+			if ($('footer'))
+				$('footer').classList.add('notranslate');
 			new google.translate.TranslateElement({
 				pageLanguage: Qad.$('html').lang,
 				layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
