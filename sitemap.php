@@ -8,7 +8,7 @@ https://pcmasters.ml/
 Copyright (c) 2016 Alex Smith
 =====================================================
 */
-if (file_exists('upload/cache/S')) {
+if (file_exists('upload/cache/')) {
 	$cache = 'upload/cache/sitemap_'.md5($_SERVER['REQUEST_URI']).'.cache';
 	if (file_exists($cache) && (time()-86400)<filemtime($cache)) {
 		$cached = file_get_contents($cache);
