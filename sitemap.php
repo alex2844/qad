@@ -9,10 +9,12 @@ Copyright (c) 2016 Alex Smith
 =====================================================
 */
 if (file_exists('upload/cache/')) {
-	$cache = 'upload/cache/sitemap_'.md5($_SERVER['REQUEST_URI']).'.cache';
+	$cache = 'upload/cache/sitemap_'.md5($_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI']).'.cache';
 	if (file_exists($cache) && (time()-86400)<filemtime($cache)) {
 		$cached = file_get_contents($cache);
-		if (substr($cached,2,3) == 'xml')
+		if (isset($_GET['rss']))
+			header('Content-Type:application/rss+xml');
+		else if (substr($cached,2,3) == 'xml')
 			header('Content-Type:text/xml');
 		echo $cached;
 		exit;
@@ -180,27 +182,51 @@ if (!empty($_GET['page'])) {
 			return '<amp-img width=300 height=300 src="'.$data[2].'"></amp-img>';
 	},$file);
 	echo $file;
-}else{
+}else if (isset($_GET['rss'])) {
 	include 'data/qad/qad.php';
-	$nosql = 'Qad::nosql';
 	if (empty($qad::$config['sitemap']))
 		exit;
+	$nosql = 'Qad::nosql';
 	$sitemap = $qad::$config['sitemap'];
 	$location = ($_SERVER['HTTPS']?'https://':'http://').$_SERVER['HTTP_HOST'];
-		$txt = '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.google.com/schemas/sitemap/0.84 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">';
-		foreach ($sitemap as $db) {
-			$conf = explode('::',$db);
-			$conf[3] = explode(':id',$conf[1])[0];
-			$qad->nosql($conf[0]);
-			$search = json_decode($nosql('search',$conf[1],45000),true);
-			if ($search)
-				foreach ($search as $id) {
-					$res = json_decode($nosql('select',$conf[3],'id',$id,['created']),true);
-					$txt .= '<url><loc>'.$location.'/sitemap.php?page='.$conf[2].'?id='.$id.'</loc><lastmod>'.gmdate('c',$res['response']['created']).'</lastmod><changefreq>daily</changefreq><priority>0.50</priority></url>';
-				}
-		}
-		$txt .='</urlset>';
-		header('Content-Type:text/xml');
+	$txt = '<?xml version="1.0"?><rss version="2.0"><channel><title>'.(isset($qad::$config['name']) ? $qad::$config['name'] : '').'</title><link>'.$location.$_SERVER['REQUEST_URI'].'</link><description>'.(isset($qad::$config['description']) ? $qad::$config['description'] : '').'</description><lastBuildDate>'.date("D, j M Y G:i:s")." GMT".'</lastBuildDate>';
+	foreach ($sitemap as $db) {
+		$conf = explode('::',$db);
+		$conf[3] = explode(':id',$conf[1])[0];
+		$qad->nosql($conf[0]);
+		$search = json_decode($nosql('search',$conf[1],25),true);
+		if ($search)
+			foreach ($search as $id) {
+				$res = json_decode($nosql('select',$conf[3],'id',$id,['created','title','text','link']),true);
+				if ($res['response']['link'])
+					$link = json_decode($res['response']['link'],true);
+				$txt .= '<item><title>'.$res['response']['title'].'</title><description>'.htmlspecialchars($res['response']['text']).'</description><link>'.$location.'/sitemap.php?page='.$conf[2].'?id='.$id.'</link><pubDate>'.date("D, j M Y G:i:s", $res['response']['created']).' GMT</pubDate><guid>'.$location.'/sitemap.php?page='.$conf[2].'?id='.$id.'</guid>'.(isset($link) ? '<enclosure url="'.$link[0].'" type="'.$link[1].'" />' : '').'</item>';
+			}
+	}
+	$txt .= '</channel></rss>';
+	header('Content-Type:application/rss+xml');
+	echo $txt;
+}else{
+	include 'data/qad/qad.php';
+	if (empty($qad::$config['sitemap']))
+		exit;
+	$nosql = 'Qad::nosql';
+	$sitemap = $qad::$config['sitemap'];
+	$location = ($_SERVER['HTTPS']?'https://':'http://').$_SERVER['HTTP_HOST'];
+	$txt = '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.google.com/schemas/sitemap/0.84 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">';
+	foreach ($sitemap as $db) {
+		$conf = explode('::',$db);
+		$conf[3] = explode(':id',$conf[1])[0];
+		$qad->nosql($conf[0]);
+		$search = json_decode($nosql('search',$conf[1],45000),true);
+		if ($search)
+			foreach ($search as $id) {
+				$res = json_decode($nosql('select',$conf[3],'id',$id,['created']),true);
+				$txt .= '<url><loc>'.$location.'/sitemap.php?page='.$conf[2].'?id='.$id.'</loc><lastmod>'.gmdate('c',$res['response']['created']).'</lastmod><changefreq>daily</changefreq><priority>0.50</priority></url>';
+			}
+	}
+	$txt .='</urlset>';
+	header('Content-Type:text/xml');
 	echo $txt;
 }
 if (isset($cache)) {
