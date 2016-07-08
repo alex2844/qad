@@ -8,7 +8,7 @@ https://pcmasters.ml/
 Copyright (c) 2016 Alex Smith
 =====================================================
 */
-if (file_exists('upload/cache/')) {
+if (file_exists('upload/cache/S')) {
 	$cache = 'upload/cache/sitemap_'.md5($_SERVER['REQUEST_URI']).'.cache';
 	if (file_exists($cache) && (time()-86400)<filemtime($cache)) {
 		$cached = file_get_contents($cache);
@@ -34,7 +34,6 @@ if (!empty($_GET['page'])) {
 		'/<meta name="theme-color" (.*?) \/>/',
 		'/<meta name="analytics" (.*?) \/>/',
 		'/<script(.*?)\/script>/',
-		'/ style="(.*?)"/',
 		'/ onclick="(.*?)"/',
 		"'<div hidden[^>]*?>.*?</div>'si",
 		"'<dialog[^>]*?>.*?</dialog>'si",
@@ -43,9 +42,11 @@ if (!empty($_GET['page'])) {
 		"'<nav[^>]*?>.*?</nav>'si",
 		"'<header[^>]*?>.*?</header>'si",
 		"'<style[^>]*?>.*?</style>'si",
+		"'<label[^>]*?>.*?</label>'si",
 		'/<form(.*?)>/',
 		'/<\/form>/',
 		'/<i class="material-icons">(.*?)<\/i>/',
+		'/<input(.*?)readonly(.*?)>/'
 	);
 	$color = find('theme-color" content="','"',$file);
 	$analytics = find('analytics" content="','"',$file);
@@ -61,18 +62,17 @@ if (!empty($_GET['page'])) {
 			$nosql = 'Qad::nosql';
 			$nosql($conf[0]);
 		}
-		$id = $data[6];
 		$file = preg_replace_callback("'".$data[0]."(.*?)<p></p>(.*?)</".$data[1].">'si",function($dd){
-			global $id, $nosql, $conf;
+			global $nosql, $conf;
 			return $dd[1].'<p>'.$nosql('get',$conf[1]).'</p>';
 		},$file);
 	},$file);
 	if (!empty($json)) {
 		$json = json_decode('{'.preg_replace('/(.*?) =/','"$1":',file_get_contents($dir.$json)).'}', true);
 		$arr = array();
-		preg_replace_callback('/<(.*?) (.*?)class="(.*?)template(.*?)"(.*?)data-config="(.*?)"(.*?)>/',function($data){
+		preg_replace_callback('/<ul (.*?)class="(.*?)template(.*?)"(.*?)data-config="(.*?)"(.*?)>/',function($data){
 			global $arr;
-			$arr[] = array($data[1],$data[6]);
+			$arr[] = array('ul',$data[5]);
 		},$file);
 		$rep = array();
 		$j = 0;
@@ -144,13 +144,21 @@ if (!empty($_GET['page'])) {
 			return $replace;
 		},$file);
 	$t = array(
+		'/{(.*?)}/',
 		'/ dev/',
+		'/ style="(.*?)"/',
+		'/<output(.*?)>/',
+		'/<\/output>/',
 		'/<a(.*?)href="(.*?)"(.*?)>/',
 		'/<html/',
 		'/<\/head>/',
 		'/<body(.*?)>/'
 	);
 	$b = array(
+		'',
+		'',
+		'',
+		'',
 		'',
 		'<a href="'.$dir.'$2">',
 		'<html amp',
@@ -160,7 +168,11 @@ if (!empty($_GET['page'])) {
 	$file = preg_replace($t,$b,$file);
 	if (isset($title))
 		$file = preg_replace('/<title>(.*?)<\/title>/','<title>'.$title.' :: $1</title>',$file);
-	$file = preg_replace_callback('/<img(.*?)src="(.*?)"(.*?)\/>/',function($data){
+	/*
+	$file = preg_replace_callback("'<".$arr[$i][0]."(.*?)data-db=\"".$arr[$i][1]."\"(.*?)[^>]*?>.*?</".$arr[$i][0].">'si",function($data){
+	$file = preg_replace_callback('/<img(.*?)src="(.*?)"(.*?)>/',function($data){
+	*/
+	$file = preg_replace_callback("'<img(.*?)src=\"(.*?)\"(.*?)>'si",function($data){
 		global $dir;
 		if ((substr_count($data[2],'http://') == 0) && (substr_count($data[2],'https://') == 0))
 			return '<amp-img width=300 height=300 src="'.$dir.$data[2].'"></amp-img>';
