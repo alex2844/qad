@@ -189,13 +189,16 @@ header #button-header button {
 	padding: 12px;
 	box-shadow: none;
 }
-body[data-menu] {
-	display: block;
-	width: 75%;
-	float: right;
-}
 body[data-menu] header:after {
 	z-index: 2;
+}
+body[data-menu] button#menu {
+	width: 300px;
+	text-align: left;
+}
+body[data-menu] button#menu + nav {
+	outline: solid rgba(0, 0, 0, 0.5) 10000px;
+	width: 300px;
 }
 button#menu {
 	width: 64px;
@@ -287,6 +290,7 @@ section {
 	max-width: 980px;
 }
 .parallax {
+	position: relative;
 	width: 100vw;
 	height: 100vh;
 	line-height: 100vh;
@@ -990,18 +994,6 @@ footer [data-right] {
 	}
 	.card.right {
 		width: 100%;
-	}
-	body[data-menu] {
-		width: 100%;
-		float: none;
-	}
-	body[data-menu] button#menu {
-		width: 300px;
-		text-align: left;
-	}
-	body[data-menu] button#menu + nav {
-		outline: solid rgba(0, 0, 0, 0.5) 10000px;
-		width: 300px;
 	}
 	table {
 		margin-bottom: 0;
