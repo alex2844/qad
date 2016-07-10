@@ -177,9 +177,13 @@ if (!empty($_GET['page'])) {
 	$file = preg_replace_callback("'<img(.*?)src=\"(.*?)\"(.*?)>'si",function($data){
 		global $dir;
 		if ((substr_count($data[2],'http://') == 0) && (substr_count($data[2],'https://') == 0))
-			return '<amp-img width=300 height=300 src="'.$dir.$data[2].'"></amp-img>';
+			$url = $dir.$data[2];
 		else
-			return '<amp-img width=300 height=300 src="'.$data[2].'"></amp-img>';
+			$url = $data[2];
+		if (strpos($data[1],'width=') || strpos($data[3],'width='))
+			return '<amp-img '.$data[1].' '.$data[3].' src="'.$url.'"></amp-img>';
+		else
+			return '<amp-img width=300 height=300 src="'.$url.'"></amp-img>';
 	},$file);
 	echo $file;
 }else if (isset($_GET['rss'])) {
