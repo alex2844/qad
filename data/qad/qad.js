@@ -1153,8 +1153,12 @@ window.addEventListener('load',function() {
 		Qad.for('nav.tabs a', function(el){
 			el.onclick = function(e){
 				if (el.href.indexOf('#') != -1) {
-					Qad.up();
-					open(el.href.split('#')[1]);
+					var id = el.href.split('#')[1];
+					open(id);
+					if (Qad.$('#'+id))
+						Qad.up(id);
+					else
+						Qad.up();
 					e.preventDefault();
 				}
 			}
