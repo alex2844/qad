@@ -1135,8 +1135,14 @@ window.addEventListener('load',function() {
 			if (Qad.$('div.tabs#'+id))
 				Qad.$('div.tabs#'+id).classList.add('active');
 			Qad.$('nav.tabs a[href="#'+id+'"]').classList.add('active');
+			var s = location.search;
+			if (s.indexOf('tab') != -1)
+				location.search.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m) {
+					if (m.indexOf('tab') != -1)
+						s = s.replace(m,'');
+				});
 			if (location.origin != 'file://' && location.origin.indexOf('chrome-extension')==-1)
-				history.pushState(null, null, '?tab='+id);
+				history.pushState(null, null, (s!='' ? s+'&' : '?')+'tab='+id);
 			if (typeof tabs == 'function')
 				tabs(id);
 		}
