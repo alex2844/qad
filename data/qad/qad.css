@@ -291,6 +291,7 @@ section {
 }
 .parallax {
 	position: relative;
+	overflow: hidden;
 	width: 100vw;
 	height: 100vh;
 	line-height: 100vh;
