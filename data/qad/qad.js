@@ -1086,6 +1086,10 @@ window.addEventListener('load',function() {
 	var locarray = location.href.split('#')[0].replace(location.search,'').split('/');
 	location.file = (locarray[(locarray.length-1)]?locarray[(locarray.length-1)]:'index.html');
 	delete locarray[(locarray.length-1)];
+	if (location.file.indexOf('.') == -1) {
+		location.pathname += '/';
+		return;
+	}
 	location.pwd = locarray.join('/').slice(0,-1);
 	if (Qad.$('meta[name="passport"]') && Qad.session.get('passport::'+Qad.$('meta[name="passport"]').content.split(',')[2])) {
 		Qad.passport = JSON.parse(decodeURIComponent(Qad.session.get('passport::'+Qad.$('meta[name="passport"]').content.split(',')[2])));
@@ -1093,7 +1097,7 @@ window.addEventListener('load',function() {
 			Qad.passport.type = 1;
 	}else
 		Qad.passport.type = 0;
-	if (Qad.$('meta[name="passport"]') && Qad.passport.type != Qad.$('meta[name="passport"]').content.split(',')[0]) {
+	if (Qad.$('meta[name="passport"]') && Qad.passport.type < Qad.$('meta[name="passport"]').content.split(',')[0]) {
 		location.href = Qad.$('meta[name="passport"]').content.split(',')[1];
 		return;
 	}
@@ -1146,10 +1150,6 @@ window.addEventListener('load',function() {
 			if (typeof tabs == 'function')
 				tabs(id);
 		}
-		if (Qad.$()['tab'])
-			open(Qad.$()['tab']);
-		else if (Qad.$('nav.tabs a.active'))
-			open(Qad.$('nav.tabs a.active').href.split('#')[1]);
 		Qad.for('nav.tabs a', function(el){
 			el.onclick = function(e){
 				if (el.href.indexOf('#') != -1) {
@@ -1270,6 +1270,12 @@ window.addEventListener('load',function() {
 		new Function('return '+decodeURIComponent(Qad.$()['dev']))();
 	if (typeof main == 'function')
 		main();
+	if (typeof(open) == 'function') {
+		if (Qad.$()['tab'])
+			open(Qad.$()['tab']);
+		else if (Qad.$('nav.tabs a.active'))
+			open(Qad.$('nav.tabs a.active').href.split('#')[1]);
+	}
 	if (Qad.$('iframe.load') && typeof load == 'function') {
 		load(Qad.$('iframe.load body').innerHTML);
 		Qad.$('iframe.load').onload = function() {
