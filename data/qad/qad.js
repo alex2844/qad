@@ -1098,7 +1098,7 @@ window.addEventListener('load',function() {
 	}else
 		Qad.passport.type = 0;
 	if (Qad.$('meta[name="passport"]') && Qad.passport.type < Qad.$('meta[name="passport"]').content.split(',')[0]) {
-		location.href = Qad.$('meta[name="passport"]').content.split(',')[1];
+		top.location.href = Qad.$('meta[name="passport"]').content.split(',')[1];
 		return;
 	}
 	if (Qad.$()['actions'] && typeof(actions)!='undefined')
