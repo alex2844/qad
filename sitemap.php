@@ -8,8 +8,10 @@ https://pcmasters.ml/
 Copyright (c) 2016 Alex Smith
 =====================================================
 */
-if (file_exists('upload/cache/')) {
-	$cache = 'upload/cache/sitemap_'.md5($_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI']).'.cache';
+$root = '';
+$pages = 'page/';
+if (file_exists($root.'upload/cache/')) {
+	$cache = $root.'upload/cache/sitemap_'.md5($_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI']).'.cache';
 	if (file_exists($cache) && (time()-86400)<filemtime($cache)) {
 		$cached = file_get_contents($cache);
 		if (isset($_GET['rss']))
@@ -23,12 +25,12 @@ if (file_exists('upload/cache/')) {
 }
 if (!empty($_GET['page'])) {
 	$page = explode('?',$_GET['page']);
-	if (!file_exists('page/'.$page[0]))
+	if (!file_exists($pages.$page[0]))
 		exit;
 	function find($b,$e,$d) {
 		return explode($e,explode($b,$d)[1])[0];
 	}
-	$file = file_get_contents('page/'.$page[0]);
+	$file = file_get_contents($pages.$page[0]);
 	$d = array(
 		'/<link (.*?) \/>/',
 		'/<meta name="description" (.*?) \/>/',
@@ -54,13 +56,13 @@ if (!empty($_GET['page'])) {
 	$analytics = find('analytics" content="','"',$file);
 	$json = find('<script data-config src="','"',$file);
 	$file = preg_replace($d,'',$file);
-	$dir = dirname('page/'.$_GET['page']).'/';
+	$dir = dirname($pages.$_GET['page']).'/';
 	$arr = array();
 	preg_replace_callback('/<(.*?) (.*?)class="(.*?)config(.*?)"(.*?)data-db="(.*?)"(.*?)>/',function($data){
 		global $file, $id, $nosql, $conf;
 		$conf = explode(':',$data[6]);
 		if (!$nosql) {
-			include 'data/qad/qad.php';
+			include $root.'data/qad/qad.php';
 			$nosql = 'Qad::nosql';
 			$nosql($conf[0]);
 		}
@@ -119,7 +121,7 @@ if (!empty($_GET['page'])) {
 			$conf[2] = explode(':',$conf[1])[0];
 			$replace = '';
 			if (!$nosql) {
-				include 'data/qad/qad.php';
+				include $root.'data/qad/qad.php';
 				$nosql = 'Qad::nosql';
 				$nosql($conf[0]);
 			}
@@ -170,10 +172,6 @@ if (!empty($_GET['page'])) {
 	$file = preg_replace($t,$b,$file);
 	if (isset($title))
 		$file = preg_replace('/<title>(.*?)<\/title>/','<title>'.$title.' :: $1</title>',$file);
-	/*
-	$file = preg_replace_callback("'<".$arr[$i][0]."(.*?)data-db=\"".$arr[$i][1]."\"(.*?)[^>]*?>.*?</".$arr[$i][0].">'si",function($data){
-	$file = preg_replace_callback('/<img(.*?)src="(.*?)"(.*?)>/',function($data){
-	*/
 	$file = preg_replace_callback("'<img(.*?)src=\"(.*?)\"(.*?)>'si",function($data){
 		global $dir;
 		if ((substr_count($data[2],'http://') == 0) && (substr_count($data[2],'https://') == 0))
@@ -187,7 +185,7 @@ if (!empty($_GET['page'])) {
 	},$file);
 	echo $file;
 }else if (isset($_GET['rss'])) {
-	include 'data/qad/qad.php';
+	include $root.'data/qad/qad.php';
 	if (empty($qad::$config['sitemap']))
 		exit;
 	$nosql = 'Qad::nosql';
@@ -196,22 +194,37 @@ if (!empty($_GET['page'])) {
 	$txt = '<?xml version="1.0"?><rss version="2.0"><channel><title>'.(isset($qad::$config['name']) ? $qad::$config['name'] : '').'</title><link>'.$location.$_SERVER['REQUEST_URI'].'</link><description>'.(isset($qad::$config['description']) ? $qad::$config['description'] : '').'</description><lastBuildDate>'.date("D, j M Y G:i:s")." GMT".'</lastBuildDate>';
 	foreach ($sitemap as $db) {
 		$conf = explode('::',$db);
-		$conf[3] = explode(':id',$conf[1])[0];
-		$qad->nosql($conf[0]);
-		$search = json_decode($nosql('search',$conf[1],25),true);
-		if ($search)
-			foreach ($search as $id) {
-				$res = json_decode($nosql('select',$conf[3],'id',$id,['created','title','text','link']),true);
-				if ($res['response']['link'])
-					$link = json_decode($res['response']['link'],true);
-				$txt .= '<item><title>'.$res['response']['title'].'</title><description>'.htmlspecialchars($res['response']['text']).'</description><link>'.$location.'/sitemap.php?page='.$conf[2].'?id='.$id.'</link><pubDate>'.date("D, j M Y G:i:s", $res['response']['created']).' GMT</pubDate><guid>'.$location.'/sitemap.php?page='.$conf[2].'?id='.$id.'</guid>'.(isset($link) ? '<enclosure url="'.$link[0].'" type="'.$link[1].'" />' : '').'</item>';
-			}
+		if (count($conf) == 1) {
+			$file = file_get_contents($pages.$conf[0]);
+			$title = '';
+			$description = '';
+			preg_replace_callback('/<title>(.*?)<\/title>/',function($data){
+				global $title;
+				$title = $data[1];
+			}, $file);
+			preg_replace_callback('/<meta(.*?)name="description"(.*?)content="(.*?)"(.*?)\/>/',function($data){
+				global $description;
+				$description = $data[3];
+			}, $file);
+			$txt .= '<item><title>'.$title.'</title><description>'.$description.'</description><link>'.$location.'/sitemap.php?page='.$conf[0].'</link><pubDate>'.date("D, j M Y G:i:s", filemtime($pages.$conf[0])).' GMT</pubDate><guid>'.$location.'/sitemap.php?page='.$conf[0].'</guid></item>';
+		}else if (count($conf) == 3) {
+			$conf[3] = explode(':id',$conf[1])[0];
+			$qad->nosql($conf[0]);
+			$search = json_decode($nosql('search',$conf[1],25),true);
+			if ($search)
+				foreach ($search as $id) {
+					$res = json_decode($nosql('select',$conf[3],'id',$id,['created','title','text','link']),true);
+					if ($res['response']['link'])
+						$link = json_decode($res['response']['link'],true);
+					$txt .= '<item><title>'.$res['response']['title'].'</title><description>'.htmlspecialchars($res['response']['text']).'</description><link>'.$location.'/sitemap.php?page='.$conf[2].'?id='.$id.'</link><pubDate>'.date("D, j M Y G:i:s", $res['response']['created']).' GMT</pubDate><guid>'.$location.'/sitemap.php?page='.$conf[2].'?id='.$id.'</guid>'.(isset($link) ? '<enclosure url="'.$link[0].'" type="'.$link[1].'" />' : '').'</item>';
+				}
+		}
 	}
 	$txt .= '</channel></rss>';
 	header('Content-Type:application/rss+xml');
 	echo $txt;
 }else{
-	include 'data/qad/qad.php';
+	include $root.'data/qad/qad.php';
 	if (empty($qad::$config['sitemap']))
 		exit;
 	$nosql = 'Qad::nosql';
@@ -220,14 +233,18 @@ if (!empty($_GET['page'])) {
 	$txt = '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.google.com/schemas/sitemap/0.84 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">';
 	foreach ($sitemap as $db) {
 		$conf = explode('::',$db);
-		$conf[3] = explode(':id',$conf[1])[0];
-		$qad->nosql($conf[0]);
-		$search = json_decode($nosql('search',$conf[1],45000),true);
-		if ($search)
-			foreach ($search as $id) {
-				$res = json_decode($nosql('select',$conf[3],'id',$id,['created']),true);
-				$txt .= '<url><loc>'.$location.'/sitemap.php?page='.$conf[2].'?id='.$id.'</loc><lastmod>'.gmdate('c',$res['response']['created']).'</lastmod><changefreq>daily</changefreq><priority>0.50</priority></url>';
-			}
+		if (count($conf) == 1) {
+			$txt .= '<url><loc>'.$location.'/sitemap.php?page='.$conf[0].'</loc><lastmod>'.gmdate('c',filemtime($pages.$conf[0])).'</lastmod><changefreq>daily</changefreq><priority>0.50</priority></url>';
+		}else if (count($conf) == 3) {
+			$conf[3] = explode(':id',$conf[1])[0];
+			$qad->nosql($conf[0]);
+			$search = json_decode($nosql('search',$conf[1],45000),true);
+			if ($search)
+				foreach ($search as $id) {
+					$res = json_decode($nosql('select',$conf[3],'id',$id,['created']),true);
+					$txt .= '<url><loc>'.$location.'/sitemap.php?page='.$conf[2].'?id='.$id.'</loc><lastmod>'.gmdate('c',$res['response']['created']).'</lastmod><changefreq>daily</changefreq><priority>0.50</priority></url>';
+				}
+		}
 	}
 	$txt .='</urlset>';
 	header('Content-Type:text/xml');
