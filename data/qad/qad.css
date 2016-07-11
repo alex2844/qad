@@ -47,7 +47,7 @@ span, div.float, div:after, div:before {
 button:not([disabled]) {
 	background: @color;
 }
-div.tabs, body:not([data-panel]) #header-panel, body[data-panel] button#menu, .template, iframe.load, dialog:not([open]), #slider span:not([open]) {display: none;}
+img:not([src]), div.tabs, body:not([data-panel]) #header-panel, body[data-panel] button#menu, .template, iframe.load, dialog:not([open]), #slider span:not([open]) {display: none;}
 a {
 	text-decoration: none;
 	color: @color;
