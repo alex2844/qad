@@ -994,18 +994,28 @@ var Qad={
 			return css;
 		}
 	},
-	gencss: function() {
+	gencss: function(css,file) {
 		/* if (!window.requestFileSystem) {
 			Qad.$('link[rel="stylesheet/qad"]').rel = 'stylesheet';
 			Qad.$('head').innerHTML += '<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">';
 			Qad.$('body').style['display'] = 'block';
 		}else{ */
-			var css = (Qad.$('meta[name="theme-color"]')?Qad.$('meta[name="theme-color"]').content.slice(1):'style');
+			if (!css)
+				css = (Qad.$('meta[name="theme-color"]')?Qad.$('meta[name="theme-color"]').content.slice(1):'style');
+			else
+				Qad.$('meta[name=theme-color]').content = '#'+css;
+			if (file) {
+				link = Qad.$('/link');
+				link.rel = 'stylesheet/qad';
+				link.href = file;
+				Qad.$('head').add(link);
+			}
 			var style = function() {
 				var style;
 				var xhr = new XMLHttpRequest();
 				xhr.open('GET', Qad.$('link[rel="stylesheet/qad"]').href);
 				xhr.onload = function () {
+					console.log(Qad.$('link[rel="stylesheet/qad"]'));
 					style = xhr.responseText;
 					if (location.origin == 'file://')
 						style = style.replace(/\@location/g,location.href.split('/page')[0]);
@@ -1128,10 +1138,12 @@ window.addEventListener('load',function() {
 		}
 	}
 	if (Qad.$('link[rel="stylesheet/qad"]')) {
-		color = Qad.$('/meta');
-		color.name = 'theme-color';
-		color.content = '#4285F4';
-		Qad.$('head').add(color);
+		if (!Qad.$('meta[name=theme-color]')) {
+			color = Qad.$('/meta');
+			color.name = 'theme-color';
+			color.content = '#4285F4';
+			Qad.$('head').add(color);
+		}
 		Qad.gencss();
 	}
 	if (Qad.$('nav.tabs')) {
