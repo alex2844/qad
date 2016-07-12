@@ -547,8 +547,14 @@ var Qad={
 	},
 	up: function(id) {
 		var w = window.pageYOffset,
-			t = document.querySelector((id ? '#'+id : 'body')).getBoundingClientRect().top,
+			t = Qad.$((id ? '#'+id : 'body')).getBoundingClientRect().top,
 			start = null;
+		if (id) {
+			if (Qad.$('header'))
+				t -= Qad.$('header').pos().height;
+			if (Qad.$('header nav.tabs'))
+				t -= Qad.$('nav.tabs').pos().height+5;
+		}
 		requestAnimationFrame(step);
 		function step(time) {
 			if (start === null)
