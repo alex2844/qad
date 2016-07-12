@@ -1000,7 +1000,9 @@ var Qad={
 			Qad.$('head').innerHTML += '<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">';
 			Qad.$('body').style['display'] = 'block';
 		}else{ */
-			if (!css)
+			if (Qad.session.get('theme-color'))
+				Qad.$('meta[name=theme-color]').content = '#'+Qad.session.get('theme-color');
+			else if (!css)
 				css = (Qad.$('meta[name="theme-color"]')?Qad.$('meta[name="theme-color"]').content.slice(1):'style');
 			else
 				Qad.$('meta[name=theme-color]').content = '#'+css;
