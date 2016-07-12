@@ -192,6 +192,9 @@ header #button-header button {
 body[data-menu] header:after {
 	z-index: 2;
 }
+body[data-menu] nav.tabs {
+	z-index: 1;
+}
 body[data-menu] button#menu {
 	width: 300px;
 	text-align: left;
