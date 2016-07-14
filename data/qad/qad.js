@@ -1165,6 +1165,8 @@ window.addEventListener('load',function() {
 					if (m.indexOf('tab') != -1)
 						s = s.replace(m,'');
 				});
+			if (s.slice(0,1) == '&')
+				s = '?'+s.slice(1);
 			if (location.origin != 'file://' && location.origin.indexOf('chrome-extension')==-1)
 				history.pushState(null, null, (s!='' ? s+'&' : '?')+'tab='+id);
 			if (typeof tabs == 'function')
