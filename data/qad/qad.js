@@ -239,7 +239,6 @@ var Qad={
 				obj.style['display'] = 'block';
 			else
 				obj.style['display'] = 'table-row-group';
-			console.log(obj.shab)
 		}
 		obj.parent = obj.parentNode;
 		return obj;
