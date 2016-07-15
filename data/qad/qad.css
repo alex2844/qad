@@ -740,10 +740,10 @@ input[readonly] {
 		padding: 4px 0;
 		color: rgb(117, 117, 117);
 }
-.input input:not(:focus)::-webkit-input-placeholder {
+.input input:not(:focus)::-webkit-input-placeholder, .input textarea:not(:focus)::-webkit-input-placeholder {
 	color: transparent;
 }
-.input input:not(:focus)::-moz-placeholder {
+.input input:not(:focus)::-moz-placeholder, .input textarea:not(:focus)::-moz-placeholder {
 	color: transparent;
 }
 .input input:not([readonly]),
