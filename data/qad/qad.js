@@ -217,6 +217,8 @@ var Qad={
 								return d[key][p[0]][p[1]][p[2]];
 						}else if (d[key][v.replace('@','')])
 							return d[key][v.replace('@','')];
+						else
+							return '';
 						/*
 						if (d[key]['response'][v.replace('@','')])
 							return d[key]['response'][v.replace('@','')];
