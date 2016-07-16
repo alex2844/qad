@@ -198,7 +198,7 @@ var Qad={
 		}
 		obj.template = function(d,t) {
 			if (!obj.shab)
-				obj.shab = obj.innerHTML;
+				obj.shab = obj.innerHTML.replace(/data-src/g,'src');
 			obj.innerHTML = '';
 			for (key in d) {
 				if (t)
