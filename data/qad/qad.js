@@ -587,6 +587,13 @@ var Qad={
 			return keyValue ? keyValue[2] : null;
 		}
 	},
+	load: function(params) {
+		if (!$('iframe.load'))
+			return;
+		if (typeof(params) != 'string')
+			params = Qad.http_build_query(params);
+		$('.load').src = 'server.php?'+params;
+	},
 	api: function(method,callback,params) {
 		if (method.indexOf('googleapis.com') != -1)
 			provider = 'google';
