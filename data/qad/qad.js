@@ -508,6 +508,43 @@ var Qad={
 		var e = (Date.now()-date)/1000;
 		return (e < 10 && e > 0) ? 'now':(e < 60 && e > 0) ? Math.floor(e)+' sec':(e < 3600 && e > 0) ? Math.floor(e/60)+' min':d();
 	},*/
+	format: function(data,type,add) {
+		if (type == 'date' && !isNaN(data)) {
+			if (!data)
+				data = new Date(Date.now());
+			else if (typeof date != 'object')
+				data = new Date(1000*data);
+			d = function() {
+				var d = f(data.getDate()),
+					m = f(data.getMonth()+1),
+					y = f(data.getFullYear()%100),
+					h = f(data.getHours()),
+					i = f(data.getMinutes());
+				return d+'.'+m+'.'+y+' '+h+':'+i;
+			}
+			f = function(n) {
+				return (n < 10) ? '0'+n : n;
+			}
+			var e = (Date.now()-data)/1000;
+			return (e < 10 && e > 0) ? 'now':(e < 60 && e > 0) ? Math.floor(e)+' sec':(e < 3600 && e > 0) ? Math.floor(e/60)+' min':d();
+		}else if (type == 'price' && !isNaN(data)) {
+			//data=Math.round(parseFloat(data)*Math.pow(10,0))/Math.pow(10,0);
+			rr=Number(data)./*toFixed(0).*/toString().split('.');
+			b=rr[0].replace(/(\d{1,3}(?=(\d{3})+(?:\.\d|\b)))/g,'\$1 ');
+			data=(rr[1]?b+'.'+rr[1]:b);
+		}else if (type == 'byte' && !isNaN(data)) {
+			if(data == 0)
+				return '0 Byte';
+			if (!add)
+				add = ['B','KB','MB','GB','TB','PB','EB','ZB','YB'];
+			var i = Math.floor(Math.log(data) / Math.log(1000));
+			return (data/Math.pow(1000,i)).toPrecision(3)+' '+add[i];
+		}else
+			return data;
+		if (add)
+			data += ' '+add;
+		return data;
+	},
 	screen: function(o) {
 		if (o['lock']) {
 			if (o['lock'] == 'exit')
