@@ -203,6 +203,7 @@ var Qad={
 			for (key in d) {
 				if (t)
 					d[key] = JSON.parse(d[key]);
+				$key = d[key];
 				obj.innerHTML += obj.shab.replace(/{(.*?)}/gim, function(m,v) {
 					if (!d[key])
 						return;
@@ -233,9 +234,11 @@ var Qad={
 							else if (p.indexOf('@') == 0)
 								return d[key][p.replace('@','')];
 						});
-						return new Function('return '+v)();
+						var res = new Function('return '+v)();
+						return (res ? res : '');
 					}
 				});
+				delete $key;
 			}
 			if (obj.tagName == 'DIV' || obj.tagName == 'ARTICLE')
 				obj.style['display'] = 'block';
