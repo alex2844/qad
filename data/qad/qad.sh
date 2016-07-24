@@ -97,6 +97,22 @@ echo 'Dir: '$dir;
 echo 'Build: '$dir/../../build/$1/;
 
 cd ~/.config/;
+if [ ! -e "android-sdk-linux" ]; then
+	sudo apt install android-tools-adb curl openjdk-7-jdk
+	wget https://dl.google.com/android/android-sdk_r24.4.1-linux.tgz
+	tar xvf wget android-sdk*.tgz
+	rm android-sdk*.tgz
+	cd android-sdk-linux/
+	wget https://services.gradle.org/distributions/gradle-2.14.1-bin.zip
+	unzip gradle*.zip
+	rm gradle*.zip
+	mv gradle* gradle
+	ls
+	echo 'export ANDROID_HOME='$(pwd)'/' >> ~/.bashrc
+	echo 'export PATH=${PATH}:$ANDROID_HOME/gradle/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/tools:$ANDROID_HOME/build-tools/21.1.0/' >> ~/.bashrc
+	source ~/.bashrc
+	./tools/android update sdk --all --filter android-21,build-tools-23.0.3 --no-ui
+fi
 if [ -e "/usr/bin/unzip" ] || [ -e "/usr/local/bin/unzip" ]; then
 	if [ ! -e "qad" ]; then
 		install=true;
