@@ -1189,6 +1189,10 @@ window.addEventListener('load',function() {
 					Qad.$('html').on('mouse',menu,'menu');
 				}
 			}
+			Qad.$('html').on('swipe', function(e){
+				if (e.x<50 && e.swipe == 'right')
+					Qad.$('button#menu').click();
+			});
 		}
 	}
 	if (Qad.$('link[rel="stylesheet/qad"]')) {
@@ -1224,7 +1228,9 @@ window.addEventListener('load',function() {
 			if (typeof tabs == 'function')
 				tabs(id);
 		}
+		var i = 0;
 		Qad.for('nav.tabs a', function(el){
+			Qad.$(el).attr('data-index',i);
 			el.onclick = function(e){
 				if (el.href.indexOf('#') != -1) {
 					var id = el.href.split('#')[1];
@@ -1236,6 +1242,17 @@ window.addEventListener('load',function() {
 					e.preventDefault();
 				}
 			}
+			++i;
+		});
+		Qad.$('html').on('swipe', function(e){
+			if (e.x < 50)
+				return;
+			var a = Number(Qad.$('nav.tabs a[href="#'+Qad.$()['tab']+'"]').attr('data-index')),
+				m = $$.$$('nav.tabs a').length-1;
+			if (e.swipe == 'left' && a<m)
+				$$.$$('nav.tabs a')[a+1].click();
+			else if (e.swipe == 'right' && a>0)
+				$$.$$('nav.tabs a')[a-1].click();
 		});
 	}
 	if (Qad.$('.menu')) {
