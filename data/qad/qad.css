@@ -374,10 +374,12 @@ table, .card {
 	*/
 	position: relative;
 	float: right;
-	margin-bottom: -54px;
 	padding: 15px;
 	color: #fff;
 	cursor: pointer;
+}
+.card > i.float {
+	margin-bottom: -54px;
 }
 .card h1 {
 	font-size: 24px;
