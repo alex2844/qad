@@ -210,10 +210,6 @@ body[data-menu] button#menu {
 	width: 300px;
 	text-align: left;
 }
-body[data-menu] button#menu + nav {
-	outline: solid rgba(0, 0, 0, 0.5) 10000px;
-	width: 300px;
-}
 button#menu {
 	width: 64px;
 	left: 0;
@@ -230,7 +226,7 @@ body[data-menu] button#menu + nav {
 }
 button#menu + nav, nav.panel {
 	display: none;
-	width: 25%;
+	width: 300px;
 	height: calc(100vh - 64px);
 	overflow-y: scroll;
 	margin-top: 64px;
@@ -306,8 +302,6 @@ section {
 .parallax {
 	position: relative;
 	overflow: hidden;
-	width: 100vw;
-	height: 100vh;
 	line-height: 100vh;
 	margin: -5px;
 	background-position: 50% 50%;
@@ -662,9 +656,6 @@ input[type="search"]::-webkit-search-cancel-button {
 	background-color: #fff;
 	z-index: 1;
 }
-body[data-panel] section, body[data-menu] section {
-	pointer-events: none;
-}
 div.tabs.active {
 	display: block;
 }
@@ -996,6 +987,42 @@ footer [data-right] {
 }
 [data-right] {
 	float: right;
+}
+@media all and (min-width: 1367px) {
+	.parallax {
+		height: 50vh;
+	}
+	body[data-menu] .parallax {
+		width: calc(100vw - 300px);
+	}
+	button#menu+nav, nav.panel {
+		display: block;
+	}
+	body[data-menu] {
+		left: 300px;
+		width: calc(100% - 300px);
+	}
+	button#menu {
+		display: none;
+	}
+	section {
+		max-width: 80%;
+	}
+}
+@media all and (max-width: 1366px) {
+	.parallax {
+		height: 100vh;
+		width: 100vw;
+	}
+	body[data-menu] button#menu + nav {
+		outline: solid rgba(0, 0, 0, 0.5) 10000px;
+	}
+	body[data-panel] section, body[data-menu] section {
+		pointer-events: none;
+	}
+	section {
+		max-width: 980px;
+	}
 }
 @media all and (max-width: 650px) {
 	article {

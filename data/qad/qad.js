@@ -1173,17 +1173,21 @@ window.addEventListener('load',function() {
 	if (typeof console !=="undefined" && console.log)
 		console.info("%c Сюда вставлять не что не надо, иначе откроете доступ к своему аккаунту!",'color:red;font-weight:bold;font-style:italic;font-size:16px;');
 	if (Qad.$('button#menu + nav')) {
-		menu = function(e) {
-			if (e.x > 300)
-				Qad.$('button#menu').click();
-		}
-		Qad.$('button#menu').onclick = function() {
-			if (Qad.$('body[data-menu]')) {
-				Qad.$('body').attr('data-menu',false);
-				Qad.$('html').on('mouse',null,'menu');
-			}else{
-				Qad.$('body').attr('data-menu',true);
-				Qad.$('html').on('mouse',menu,'menu');
+		if ($('html').pos().width > 1366)
+			Qad.$('body').attr('data-menu',true);
+		else{
+			menu = function(e) {
+				if (e.x > 300)
+					Qad.$('button#menu').click();
+			}
+			Qad.$('button#menu').onclick = function() {
+				if (Qad.$('body[data-menu]')) {
+					Qad.$('body').attr('data-menu',false);
+					Qad.$('html').on('mouse',null,'menu');
+				}else{
+					Qad.$('body').attr('data-menu',true);
+					Qad.$('html').on('mouse',menu,'menu');
+				}
 			}
 		}
 	}
