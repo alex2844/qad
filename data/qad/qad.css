@@ -423,7 +423,7 @@ dialog h2 {
 	margin: 0;
 	padding: 16px;
 	border-bottom: 1px solid rgba(0,0,0,.1);
-	color: rgba(0,0,0,.54);
+	color: #757575;
 }
 .card button, .card .button {
 	background: 0;
@@ -463,7 +463,7 @@ summary {
 	outline: none;
 	cursor: pointer;
 	padding: 16px;
-	color: rgba(0,0,0,.54);
+	color: #757575;
 	text-transform: uppercase;
 }
 summary:hover {
@@ -523,7 +523,7 @@ ul p {
 	letter-spacing: 0;
 	line-height: 18px;
 	max-height: 52px;
-	color: rgba(0,0,0,.54);
+	color: #757575;
 	margin: 0;
 	padding: 0;
 	display: block;
