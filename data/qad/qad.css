@@ -459,6 +459,35 @@ dialog img {
 dialog button {
 	margin: 4px;
 }
+summary {
+	outline: none;
+	cursor: pointer;
+	padding: 16px;
+	color: rgba(0,0,0,.54);
+	text-transform: uppercase;
+}
+summary:hover {
+	background: #eee;
+}
+summary::-webkit-details-marker {
+	display: none;
+}
+summary:after {
+	float: right;
+	font-size: 24px;
+	content: 'keyboard_arrow_down';
+	font-family: 'Material Icons';
+	text-transform: none;
+	line-height: normal;
+	font-feature-settings: 'liga';
+}
+details[open] summary:after {
+	content: 'keyboard_arrow_up';
+}
+details > p {
+	padding: 16px;
+	margin: 0;
+}
 ul {
 	display: block;
 	padding: 8px 0;
