@@ -1284,6 +1284,7 @@ window.addEventListener('load',function() {
 	if (Qad.$('ul.emoji')) {
 		if (navigator.userAgent.match(/Android/i))
 			Qad.for('ul.emoji',function(el) {
+				Qad.$('#'+Qad.$(el).attr('for')).remove();
 				el.remove();
 			});
 		else{
