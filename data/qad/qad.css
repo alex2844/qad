@@ -528,6 +528,14 @@ ul p {
 	padding: 0;
 	display: block;
 }
+ul.emoji {
+	width: 50%;
+}
+ul.emoji li {
+	display: inline-block;
+	cursor: pointer;
+	font-size: 24px;
+}
 #slider span {
 	color: #8cc43f;
 	position: relative;

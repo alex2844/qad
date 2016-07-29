@@ -1281,6 +1281,30 @@ window.addEventListener('load',function() {
 				}
 		});
 	}
+	if (Qad.$('ul.emoji')) {
+		if (navigator.userAgent.match(/Android/i))
+			Qad.for('ul.emoji',function(el) {
+				el.remove();
+			});
+		else{
+			var emoji = '';
+			for (var i=0; i<=3; ++i) {
+				for (var j=0; j<=15; ++j) {
+					emoji += '<li>&#x1f6'+i+''+
+						(j==10 ? 'A' : (j==11 ? 'B' : (j==12 ? 'C' : (j==13 ? 'D' : (j==14 ? 'E' : (j==15 ? 'F' : j))))))
+					+';</li>';
+				}
+			}
+			Qad.for('ul.emoji',function(el) {
+				if (Qad.$('[data-emoji="'+Qad.$(el).attr('for')+'"]')) {
+					Qad.$(el).$(emoji);
+					el.onclick = function() {
+						Qad.$('[data-emoji="'+Qad.$(this).attr('for')+'"]').$('~'+Qad.$(window.event.target).$());
+					}
+				}
+			});
+		}
+	}
 	if (Qad.$('input[list][data-select]')) {
 		Qad.for('input[list][data-select]', function(el){
 			el.onchange = function() {
