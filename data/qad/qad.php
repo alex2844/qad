@@ -232,8 +232,8 @@ class Qad{
 			case 'search': {
 				$p1 = mb_strtolower($p1);
 				if (file_exists(dirname(__DIR__).'/../upload/cache/')) {
-					$cache = dirname(__DIR__).'/../upload/cache/search_'.md5(self::$nosql->getOption(Redis::OPT_PREFIX).$p1.$p2.$p3).'.cache';
-					if (file_exists($cache) && (time()-900)<filemtime($cache)) {
+					$cache = dirname(__DIR__).'/../upload/cache/search_'.str_replace([':*',':'],['','_'],$p1).md5(self::$nosql->getOption(Redis::OPT_PREFIX).$p2.$p3).'.cache';
+					if (file_exists($cache) && (time()-1800)<filemtime($cache)) {
 						$cached = file_get_contents($cache);
 						return $cached;
 						exit;
@@ -375,6 +375,8 @@ class Qad{
 				self::$nosql->hmset($p1.':id:'.$id, $p2);
 				self::$nosql->sAdd($p1,$id);
 				self::$nosql->save();
+				if (file_exists(dirname(__DIR__).'/../upload/cache/'))
+					array_map('unlink', glob(dirname(__DIR__).'/../upload/cache/search_'.str_replace([':*',':'],['','_'],$p1).'*.cache'));
 				return json_encode(['id'=>$id]);
 				break;
 			}
