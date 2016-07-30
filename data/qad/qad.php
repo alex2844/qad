@@ -324,6 +324,8 @@ class Qad{
                 }else if (gettype($p2) == 'string') {
                     if ($p2 != 'id')
                         $p3 = self::$nosql->get($p1.':'.$p2.':'.$p3);
+					if (!self::$nosql->exists($p1.':id:'.$p3))
+						return json_encode(['id'=>null]);
                     if (empty($p4))
                         $ret = self::$nosql->hgetall($p1.':id:'.$p3);
                     else
