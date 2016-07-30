@@ -245,7 +245,7 @@ var Qad={
 			else
 				obj.style['display'] = 'table-row-group';
 		}
-		obj.parent = obj.parentNode;
+		obj.parent = Qad.$(obj.parentNode);
 		return obj;
 	},
 	template: function(s) {
