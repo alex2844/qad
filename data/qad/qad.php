@@ -309,10 +309,16 @@ class Qad{
                         'sort' => 'desc'
                     ));
                     foreach ($data as $id)
-                        if (empty($p4)) {
-                            $ret[] = self::$nosql->hgetall($p1.':id:'.$id);
-                        }else
-                            $ret[] = self::$nosql->hmget($p1.':id:'.$id,$p4);
+                        if (empty($p4))
+                            $ret[] = [
+								'id' => $id,
+								'response' => self::$nosql->hgetall($p1.':id:'.$id)
+							];
+                        else
+                            $ret[] = [
+								'id' => $id,
+								'response' => self::$nosql->hmget($p1.':id:'.$id,$p4)
+							];
                     if ($ret)
                         return $ret;
                 }else if (gettype($p2) == 'string') {
