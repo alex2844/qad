@@ -1245,7 +1245,7 @@ window.addEventListener('load',function() {
 			++i;
 		});
 		Qad.$('html').on('swipe', function(e){
-			if (e.x < 50)
+			if (e.x < 50 || !Qad.$()['tab'])
 				return;
 			var a = Number(Qad.$('nav.tabs a[href="#'+Qad.$()['tab']+'"]').attr('data-index')),
 				m = $$.$$('nav.tabs a').length-1;
