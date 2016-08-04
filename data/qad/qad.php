@@ -294,6 +294,7 @@ class Qad{
 						else if ($p1.':'.$k.':id:'.$p2.':'.mb_strtolower($v))
 							self::$nosql->del($p1.':'.$k.':id:'.$p2.':'.mb_strtolower($v));
 					}
+					self::$nosql->sRem($p1,$p2);
 					$res = self::$nosql->del($p1.':id:'.$p2);
 				}
 				self::$nosql->save();
@@ -309,16 +310,19 @@ class Qad{
                         'sort' => 'desc'
                     ));
                     foreach ($data as $id)
-                        if (empty($p4))
-                            $ret[] = [
-								'id' => $id,
-								'response' => self::$nosql->hgetall($p1.':id:'.$id)
-							];
-                        else
-                            $ret[] = [
-								'id' => $id,
-								'response' => self::$nosql->hmget($p1.':id:'.$id,$p4)
-							];
+						if (self::$nosql->exists($p1.':id:'.$id)) {
+							if (empty($p4))
+								$ret[] = [
+									'id' => $id,
+									'response' => self::$nosql->hgetall($p1.':id:'.$id)
+								];
+							else
+								$ret[] = [
+									'id' => $id,
+									'response' => self::$nosql->hmget($p1.':id:'.$id,$p4)
+								];
+						}
+					$ret['count'] = count($data);
                     if ($ret)
                         return $ret;
                 }else if (gettype($p2) == 'string') {

@@ -201,44 +201,40 @@ var Qad={
 				obj.shab = obj.innerHTML.replace(/data-src/g,'src');
 			obj.innerHTML = '';
 			for (key in d) {
-				if (t)
-					d[key] = JSON.parse(d[key]);
-				$key = d[key];
-				obj.innerHTML += obj.shab.replace(/{(.*?)}/gim, function(m,v) {
-					if (!d[key])
-						return;
-					else if (v == '@')
-						return key;
-					else if (v.indexOf('@') == 0) {
-						if (v.indexOf('/') != -1) {
-							p = v.replace('@','').split('/');
-							if (p.length == 2)
-								return d[key][p[0]][p[1]];
-							else if (p.length == 3)
-								return d[key][p[0]][p[1]][p[2]];
-						}else if (d[key][v.replace('@','')])
-							return d[key][v.replace('@','')];
-						else
-							return '';
-						/*
-						if (d[key]['response'][v.replace('@','')])
-							return d[key]['response'][v.replace('@','')];
-						else if (d[key][v.replace('@','')])
-							return d[key][v.replace('@','')];
-						*/
-					}else{
-						v = v.replace(/@(.*?);/gim, function(p) {
-							p = p.replace(';','');
-							if (p == '@')
-								return key;
-							else if (p.indexOf('@') == 0)
-								return d[key][p.replace('@','')];
-						});
-						var res = new Function('return '+v)();
-						return (res ? res : '');
-					}
-				});
-				delete $key;
+				if (key != 'count') {
+					if (t)
+						d[key] = JSON.parse(d[key]);
+					$key = d[key];
+					obj.innerHTML += obj.shab.replace(/{(.*?)}/gim, function(m,v) {
+						if (!d[key])
+							return;
+						else if (v == '@')
+							return key;
+						else if (v.indexOf('@') == 0) {
+							if (v.indexOf('/') != -1) {
+								p = v.replace('@','').split('/');
+								if (p.length == 2)
+									return d[key][p[0]][p[1]];
+								else if (p.length == 3)
+									return d[key][p[0]][p[1]][p[2]];
+							}else if (d[key][v.replace('@','')])
+								return d[key][v.replace('@','')];
+							else
+								return '';
+						}else{
+							v = v.replace(/@(.*?);/gim, function(p) {
+								p = p.replace(';','');
+								if (p == '@')
+									return key;
+								else if (p.indexOf('@') == 0)
+									return d[key][p.replace('@','')];
+							});
+							var res = new Function('return '+v)();
+							return (res ? res : '');
+						}
+					});
+					delete $key;
+				}
 			}
 			if (obj.tagName == 'DIV' || obj.tagName == 'ARTICLE')
 				obj.style['display'] = 'block';
