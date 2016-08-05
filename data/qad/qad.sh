@@ -98,9 +98,9 @@ echo 'Build: '$dir/../../build/$1/;
 
 cd ~/.config/;
 if [ ! -e "android-sdk-linux" ]; then
-	sudo apt install android-tools-adb curl openjdk-7-jdk
+	sudo apt install android-tools-adb curl openjdk-8-jdk
 	wget https://dl.google.com/android/android-sdk_r24.4.1-linux.tgz
-	tar xvf wget android-sdk*.tgz
+	tar xvf android-sdk*.tgz
 	rm android-sdk*.tgz
 	cd android-sdk-linux/
 	wget https://services.gradle.org/distributions/gradle-2.14.1-bin.zip
