@@ -266,7 +266,7 @@ var Qad={
 		if(typeof(obj) == 'object') {
 			for(var i in obj) {
 				var v = obj[i];
-				if(typeof(value) == 'object') {
+				if(typeof(v) == 'object') {
 					res += lp+"'"+i+"' => [\n";
 					res += Qad.dump(v,level+1);
 					res += lp+" ],\n";
