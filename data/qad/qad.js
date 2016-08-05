@@ -259,22 +259,26 @@ var Qad={
 	dump: function(obj,level) {
 		var res = '',
 			lp = '';
-		if (!level)
-			level = 0;
-		for(var j=0;j<level;j++)
-			lp += "    ";
 		if(typeof(obj) == 'object') {
+			if (!level)
+				level = 0;
+			for(var j=0;j<level+1;j++)
+				lp += "    ";
+			if (level == 0)
+				res += typeof(obj)+'('+Object.keys(obj).length+") {\n";
 			for(var i in obj) {
 				var v = obj[i];
 				if(typeof(v) == 'object') {
-					res += lp+"'"+i+"' => [\n";
+					res += lp+'['+i+'] => '+typeof(v)+'('+Object.keys(v).length+") {\n";
 					res += Qad.dump(v,level+1);
-					res += lp+" ],\n";
+					res += lp+"}\n";
 				}else
-					res += lp+"'"+i+"' => \""+v+"\",\n";
+					res += lp+'['+i+'] => '+typeof(v)+(typeof(v)=='string' ? '('+v.length+') "'+v+'"' : '('+v+')')+"\n";
 			}
+			if (level == 0)
+				res += '}';
 		}else
-			res = "===>"+obj+"<===("+typeof(obj)+")";
+			res = typeof(obj)+(typeof(obj)=='string' ? '('+obj.length+') "'+obj+'"' : '('+obj+')');
 		return res;
 	},
 	format: function(data,type,add) {
