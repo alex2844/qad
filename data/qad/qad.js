@@ -256,15 +256,26 @@ var Qad={
 			}
 		}
 	},
-	var_dump: function(obj) {
-		var out = '';
-		for (var i in obj) {
-			if(typeof obj[i] === 'object')
-				Qad.var_dump(obj[i]);
-			else
-				out += i + ": " + obj[i] + "\n";
-		}
-		return out;
+	dump: function(obj,level) {
+		var res = '',
+			lp = '';
+		if (!level)
+			level = 0;
+		for(var j=0;j<level;j++)
+			lp += "    ";
+		if(typeof(obj) == 'object') {
+			for(var i in obj) {
+				var v = obj[i];
+				if(typeof(value) == 'object') {
+					res += lp+"'"+i+"' => [\n";
+					res += Qad.dump(v,level+1);
+					res += lp+" ],\n";
+				}else
+					res += lp+"'"+i+"' => \""+v+"\",\n";
+			}
+		}else
+			res = "===>"+obj+"<===("+typeof(obj)+")";
+		return res;
 	},
 	format: function(data,type,add) {
 		if (type == 'price' && !isNaN(data)) {
