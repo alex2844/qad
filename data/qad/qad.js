@@ -268,7 +268,7 @@ var Qad={
 				res += typeof(obj)+'('+Object.keys(obj).length+") {\n";
 			for(var i in obj) {
 				var v = obj[i];
-				if(typeof(v) == 'object') {
+				if(v && typeof(v) == 'object') {
 					res += lp+'['+i+'] => '+typeof(v)+'('+Object.keys(v).length+") {\n";
 					res += Qad.dump(v,level+1);
 					res += lp+"}\n";

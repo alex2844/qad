@@ -148,8 +148,7 @@ cp app/src/main/assets/www/page/$1/$icon app/src/main/res/drawable-hdpi/ic_launc
 cp app/src/main/assets/www/page/$1/$icon app/src/main/res/drawable-mdpi/ic_launcher.png;
 cp app/src/main/assets/www/page/$1/$icon app/src/main/res/drawable-xhdpi/ic_launcher.png;
 cp app/src/main/assets/www/page/$1/$icon app/src/main/res/drawable-xxhdpi/ic_launcher.png;
-sed -r 's/mWebView.loadUrl(.*);/mWebView.loadUrl("file:\/\/\/android_asset\/www\/page\/'$1'\/index.html");/g' app/src/main/java/com/example/app/MainActivity.java > app/src/main/java/com/example/app/MainActivity.gen.java;
-mv app/src/main/java/com/example/app/MainActivity.gen.java app/src/main/java/com/example/app/MainActivity.java;
+sed '0,/mWebView.loadUrl(.*);/s/mWebView.loadUrl(.*);/mWebView.loadUrl("file:\/\/\/android_asset\/www\/page\/'$1'\/index.html");/' -i app/src/main/java/com/example/app/MainActivity.java;
 sed -r 's/applicationId ".*"/applicationId "com.'$company'.'$1'"/g' app/build.gradle  > app/build.gen.gradle;
 mv app/build.gen.gradle app/build.gradle;
 sed -r 's/versionName ".*"/versionName "'$2'"/g' app/build.gradle  > app/build.gen.gradle;
