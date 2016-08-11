@@ -867,7 +867,10 @@ var Qad={
 		el: null,
 		time: null,
 		set: function(image) {
-			Qad.$(this.el).style['background-image'] = "url("+image+")";
+			if (Qad.$(this.el).tagName == 'IMG')
+				Qad.$(this.el).src = image;
+			else
+				Qad.$(this.el).style['background-image'] = "url("+image+")";
 		},
 		init: function() {
 			if (!this.src && !this.el)
