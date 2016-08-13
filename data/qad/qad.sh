@@ -15,15 +15,20 @@ fi
 if [ "$1" == "" ] || [ "$1" == "help" ]; then
 	echo 'Help Qad-cli Fraemwork';
 	echo './qad.sh install'; #TODO
-	echo './qad.sh min';
+	echo './qad.sh min [project]';
 	echo './qad.sh clear'; #TODO
-	echo './qad.sh name version title [new|key]';
+	echo './qad.sh project version title [new|key]';
 	exit;
 elif [ "$1" == "min" ]; then
 	pwd=$(pwd);
 	mkdir -p '../../upload/color/';
 	echo "Scaning direcotry..."
-	for odir in `find "../../page/" -type d | grep -v \/\.git\/`
+	if [ ! -z "$2" ]; then
+		project='../../page/'$2;
+	else
+		project='../../page/';
+	fi
+	for odir in `find $project -type d | grep -v \/\.git\/`
 	do
 		for filetype in "html"
 		do
@@ -53,7 +58,13 @@ elif [ "$1" == "min" ]; then
 						sed -i '/meta./d' $qad;
 						curl -X POST -s --data-urlencode 'input@'$qad 'http://cssminifier.com/raw' > $qad'.qad';
 						mv $qad'.qad' $qad;
-						if [ "$(echo $qadf | grep '://')" ]; then
+						if [ ! -z "$2" ]; then
+							mkdir -p '../../page/'$2'/data/qad/';
+							cp $qad '../../page/'$2'/data/qad/qad.min.css';
+							qad='../../page/'$2'/data/qad/qad.min.css';
+							sed -r 's/<link.*stylesheet\/qad.*>/<link type="text\/css" rel="stylesheet" href="data\/qad\/qad.min.css" \/>/g' $filename.$filetype > $filename.$filetype.qad;
+							sed -r 's/@location\//..\/..\//g' $qad > $qad'.qad';
+						elif [ "$(echo $qadf | grep '://')" ]; then
 							sed -r 's/<link.*stylesheet\/qad.*>/<link type="text\/css" rel="stylesheet" href="'$color'.css" \/>/g' $filename.$filetype > $filename.$filetype.qad;
 							sed -r 's/@location\///g' $qad > $qad'.qad';
 						else
