@@ -62,6 +62,8 @@ elif [ "$1" == "min" ]; then
 							mkdir -p '../../page/'$2'/data/qad/';
 							cp $qad '../../page/'$2'/data/qad/qad.min.css';
 							qad='../../page/'$2'/data/qad/qad.min.css';
+							sed -r 's/<script src=".*qad.js">/<script src="data\/qad\/qad.min.js">/g' $filename.$filetype > $filename.$filetype.qad;
+							mv $filename.$filetype'.qad' $filename.$filetype;
 							sed -r 's/<link.*stylesheet\/qad.*>/<link type="text\/css" rel="stylesheet" href="data\/qad\/qad.min.css" \/>/g' $filename.$filetype > $filename.$filetype.qad;
 							sed -r 's/@location\//..\/..\//g' $qad > $qad'.qad';
 						elif [ "$(echo $qadf | grep '://')" ]; then
@@ -83,7 +85,11 @@ elif [ "$1" == "min" ]; then
 	cd $pwd;
 	if [ -e 'qad.js' ]; then
 		curl -X POST -s --data-urlencode 'input@qad.js' 'http://javascript-minifier.com/raw' > 'qad';
-		mv 'qad' 'qad.js';
+		if [ ! -z "$2" ]; then
+			mv 'qad' '../../page/'$2'/data/qad/qad.min.js';
+		else
+			mv 'qad' 'qad.js';
+		fi
 	fi
 	exit;
 fi
