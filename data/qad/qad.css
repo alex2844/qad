@@ -431,8 +431,13 @@ dialog h2 {
 }
 .card button, .card .button {
 	background: 0;
-	color: @color;
 	box-shadow: none;
+}
+.card button:not([disabled]), .card .button {
+	color: @color;
+}
+.card button[disabled]{
+	color: buttonface;
 }
 .card button{
 	margin: 8px 16px;
