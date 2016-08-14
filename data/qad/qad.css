@@ -425,6 +425,10 @@ dialog h2 {
 	border-bottom: 1px solid rgba(0,0,0,.1);
 	color: #757575;
 }
+.l {
+	white-space: pre-line;
+	padding-top: 0 !important;
+}
 .card button, .card .button {
 	background: 0;
 	color: @color;
