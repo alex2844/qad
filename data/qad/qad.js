@@ -201,7 +201,7 @@ var Qad={
 				obj.shab = obj.innerHTML.replace(/data-src/g,'src');
 			obj.innerHTML = '';
 			for (key in d) {
-				if (key != 'count') {
+				//if (key != 'count') {
 					if (t)
 						d[key] = JSON.parse(d[key]);
 					$key = d[key];
@@ -235,7 +235,7 @@ var Qad={
 					});
 					delete $key;
 				}
-			}
+			//}
 			if (obj.tagName == 'DIV' || obj.tagName == 'ARTICLE')
 				obj.style['display'] = 'block';
 			else

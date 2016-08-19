@@ -298,6 +298,8 @@ class Qad{
 					$res = self::$nosql->del($p1.':id:'.$p2);
 				}
 				self::$nosql->save();
+				if (file_exists(dirname(__DIR__).'/../upload/cache/'))
+					array_map('unlink', glob(dirname(__DIR__).'/../upload/cache/search_'.str_replace([':*',':'],['','_'],$p1).'_*.cache'));
 				return json_encode(['status'=>$res]);
 				break;
 			}
@@ -322,7 +324,7 @@ class Qad{
 									'response' => self::$nosql->hmget($p1.':id:'.$id,$p4)
 								];
 						}
-					$ret['count'] = count($data);
+					//$ret['count'] = count($data);
                     if ($ret)
                         return $ret;
                 }else if (gettype($p2) == 'string') {
