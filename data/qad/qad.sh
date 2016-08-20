@@ -114,6 +114,32 @@ echo 'Dir: '$dir;
 echo 'Build: '$dir/../../build/$1/;
 
 cd ~/.config/;
+if [ ! -e "nw" ]; then
+	nw='0.16.1'
+	mkdir nw
+	cd nw
+	wget http://dl.nwjs.io/v$nw/nwjs-v$nw-linux-ia32.tar.gz
+	tar xvf *.tar.gz
+	rm *.tar.gz
+	cd nwjs-*-linux-ia32/lib
+	wget https://github.com/iteufel/nwjs-ffmpeg-prebuilt/releases/download/$nw/$nw-linux-ia32.zip
+	rm libffmpeg.so
+	unzip *.zip
+	rm *.zip
+	cd ~/.config/nw/
+	wget http://dl.nwjs.io/v$nw/nwjs-v$nw-win-ia32.zip
+	unzip *win-ia32.zip
+	rm *.zip
+	cd nwjs-*-win-ia32
+	wget https://github.com/iteufel/nwjs-ffmpeg-prebuilt/releases/download/$nw/$nw-win-ia32.zip
+	rm ffmpeg.dll
+	unzip *.zip
+	rm *.zip
+	cd ~/.config/nw/
+	wget https://github.com/megastep/makeself/raw/master/makeself.sh
+	wget https://github.com/megastep/makeself/raw/master/makeself-header.sh
+fi
+cd ~/.config/
 if [ ! -e "android-sdk-linux" ]; then
 	sudo apt install android-tools-adb curl openjdk-8-jdk
 	wget https://dl.google.com/android/android-sdk_r24.4.1-linux.tgz
@@ -130,13 +156,14 @@ if [ ! -e "android-sdk-linux" ]; then
 	source ~/.bashrc
 	./tools/android update sdk --all --filter android-21,build-tools-23.0.3 --no-ui
 fi
+cd ~/.config/
 if [ -e "/usr/bin/unzip" ] || [ -e "/usr/local/bin/unzip" ]; then
 	if [ ! -e "qad" ]; then
 		install=true;
-		wget https://github.com/alex2844/qad-android/archive/master.zip;
+		wget https://github.com/alex2844/qad-make/archive/master.zip;
 		unzip master.zip;
 		rm master.zip;
-		mv qad-android-master qad;
+		mv qad-make-master qad;
 	fi
 	cd qad;
 	mkdir -p ~/.config/qad/app/src/main/assets/www/page/;
@@ -144,6 +171,7 @@ if [ -e "/usr/bin/unzip" ] || [ -e "/usr/local/bin/unzip" ]; then
 	cp -r $dir/../../data ~/.config/qad/app/src/main/assets/www/;
 	cp -r $dir/../../page/$1 ~/.config/qad/app/src/main/assets/www/page/;
 	rm ~/.config/qad/app/src/main/assets/www/page/$1/*.php;
+	rm ~/.config/qad/app/src/main/assets/www/data/*.php;
 	rm ~/.config/qad/app/src/main/assets/www/data/qad/*.php;
 	rm ~/.config/qad/app/src/main/assets/www/data/qad/*.sh;
 	if [ -e "$dir/../../page/$1/libs" ]; then
@@ -165,6 +193,7 @@ cp app/src/main/assets/www/page/$1/$icon app/src/main/res/drawable-hdpi/ic_launc
 cp app/src/main/assets/www/page/$1/$icon app/src/main/res/drawable-mdpi/ic_launcher.png;
 cp app/src/main/assets/www/page/$1/$icon app/src/main/res/drawable-xhdpi/ic_launcher.png;
 cp app/src/main/assets/www/page/$1/$icon app/src/main/res/drawable-xxhdpi/ic_launcher.png;
+cp app/src/main/assets/www/page/$1/$icon nw/;
 sed '0,/mWebView.loadUrl(.*);/s/mWebView.loadUrl(.*);/mWebView.loadUrl("file:\/\/\/android_asset\/www\/page\/'$1'\/index.html");/' -i app/src/main/java/com/example/app/MainActivity.java;
 sed -r 's/applicationId ".*"/applicationId "com.'$company'.'$1'"/g' app/build.gradle  > app/build.gen.gradle;
 mv app/build.gen.gradle app/build.gradle;
@@ -193,6 +222,18 @@ mv app/src/main/assets/www/data/qad/qad.gen.css app/src/main/assets/www/data/qad
 sed -r 's/@color: meta.theme-color;//g' app/src/main/assets/www/data/qad/qad.css  > app/src/main/assets/www/data/qad/qad.gen.css;
 mv app/src/main/assets/www/data/qad/qad.gen.css app/src/main/assets/www/data/qad/qad.css;
 sed -i '/meta./d' app/src/main/assets/www/data/qad/qad.css;
+sed -r 's/@project/'$1'/g' nw/package.json > nw/package.gen.json;
+mv nw/package.gen.json nw/package.json;
+sed -r 's/@version/'$2'/g' nw/package.json > nw/package.gen.json;
+mv nw/package.gen.json nw/package.json;
+sed -r 's/@title/'$3'/g' nw/package.json > nw/package.gen.json;
+mv nw/package.gen.json nw/package.json;
+sed -r 's/@project/'$1'/g' nw/setup.sh > nw/setup.gen.sh;
+mv nw/setup.gen.sh nw/setup.sh;
+sed -r 's/@version/'$2'/g' nw/setup.sh > nw/setup.gen.sh;
+mv nw/setup.gen.sh nw/setup.sh;
+sed -r 's/@title/'$3'/g' nw/setup.sh  > nw/setup.gen.sh;
+mv nw/setup.gen.sh nw/setup.sh;
 if [ ! -z "$4" ] && [ ! -z "$install" ]; then
 	types=(js css)
 	declare -A urls
@@ -230,3 +271,24 @@ else
 	rm $dir/../../build/$1/android.apk;
 	gradle build && adb install -r app/build/outputs/apk/app-debug.apk;
 fi
+cd app/src/main/assets/www/
+cp ../../../../../nw/package.json ./
+cp ../../../../../nw/logo.png ./
+zip -r ../../../../../nw/app.nw *
+cd ../../../../../nw/
+cp -r ~/.config/nw/nwjs-*-linux-ia32/ $1-lin/
+cp icon.png $1-lin/
+cp setup.sh $1-lin/
+cat $1-lin/nw app.nw > $1-lin/app && chmod +x $1-lin/app
+rm $1-lin/nw
+bash ~/.config/nw/makeself.sh $1-lin linux.run "$3" bash setup.sh
+rm -r $1-lin
+cp -r ~/.config/nw/nwjs-*-win-ia32/ $1-win/
+cp icon.png $1-win/
+cat $1-win/nw.exe app.nw > $1-win/app.exe
+rm $1-win/nw.exe
+zip -r windows.zip $1-win
+cat unz552xn.exe windows.zip > windows.exe
+rm windows.zip
+zip -A windows.exe
+rm -r $1-win
