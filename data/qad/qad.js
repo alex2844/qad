@@ -669,10 +669,11 @@ var Qad={
 		};
 		if (Qad.session.get('oauth-token-'+provider))
 			params.access_token = Qad.session.get('oauth-token-'+provider);
-		if (location.origin.indexOf('chrome-extension')==-1) {
-			var script = Qad.$('/script');
-			script.src = method+'?callback=document.api.callback&'+Qad.http_build_query(params);
-			Qad.$('head').add(script);
+		// if (location.origin.indexOf('chrome-extension')==-1) {
+		var script = Qad.$('/script');
+		script.src = method+'?callback=document.api.callback&'+Qad.http_build_query(params);
+		Qad.$('head').add(script);
+		/*
 		}else{
 			var xhr = new XMLHttpRequest();
 			xhr.open('GET', method+'?'+Qad.http_build_query(params));
@@ -681,6 +682,7 @@ var Qad={
 			}
 			xhr.send();
 		}
+		*/
 	},
 	fs: {
 		open: function(name,callback) {
