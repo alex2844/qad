@@ -234,7 +234,7 @@ sed -r 's/@version/'$2'/g' nw/package.json > nw/package.gen.json;
 mv nw/package.gen.json nw/package.json;
 sed -r 's/@title/'$3'/g' nw/package.json > nw/package.gen.json;
 mv nw/package.gen.json nw/package.json;
-sed -r 's/@company/'$1'/g' nw/app.desktop > nw/app.gen.desktop;
+sed -r 's/@company/'$company'/g' nw/app.desktop > nw/app.gen.desktop;
 mv nw/app.gen.desktop nw/app.desktop;
 sed -r 's/@project/'$1'/g' nw/app.desktop > nw/app.gen.desktop;
 mv nw/app.gen.desktop nw/app.desktop;
