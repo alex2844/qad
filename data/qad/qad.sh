@@ -198,6 +198,7 @@ cp app/src/main/assets/www/page/$1/$icon app/src/main/res/drawable-hdpi/ic_launc
 cp app/src/main/assets/www/page/$1/$icon app/src/main/res/drawable-mdpi/ic_launcher.png;
 cp app/src/main/assets/www/page/$1/$icon app/src/main/res/drawable-xhdpi/ic_launcher.png;
 cp app/src/main/assets/www/page/$1/$icon app/src/main/res/drawable-xxhdpi/ic_launcher.png;
+cp app/src/main/assets/www/page/$1/$icon app/src/main/assets/www/icon.png;
 cp app/src/main/assets/www/page/$1/$icon nw/;
 sed '0,/mWebView.loadUrl(.*);/s/mWebView.loadUrl(.*);/mWebView.loadUrl("file:\/\/\/android_asset\/www\/page\/'$1'\/index.html");/' -i app/src/main/java/com/example/app/MainActivity.java;
 sed -r 's/applicationId ".*"/applicationId "com.'$company'.'$1'"/g' app/build.gradle  > app/build.gen.gradle;
@@ -233,6 +234,14 @@ sed -r 's/@version/'$2'/g' nw/package.json > nw/package.gen.json;
 mv nw/package.gen.json nw/package.json;
 sed -r 's/@title/'$3'/g' nw/package.json > nw/package.gen.json;
 mv nw/package.gen.json nw/package.json;
+sed -r 's/@company/'$1'/g' nw/app.desktop > nw/app.gen.desktop;
+mv nw/app.gen.desktop nw/app.desktop;
+sed -r 's/@project/'$1'/g' nw/app.desktop > nw/app.gen.desktop;
+mv nw/app.gen.desktop nw/app.desktop;
+sed -r 's/@version/'$2'/g' nw/app.desktop > nw/app.gen.desktop;
+mv nw/app.gen.desktop nw/app.desktop;
+sed -r 's/@title/'$3'/g' nw/app.desktop > nw/app.gen.desktop;
+mv nw/app.gen.desktop nw/app.desktop;
 sed -r 's/@project/'$1'/g' nw/setup.sh > nw/setup.gen.sh;
 mv nw/setup.gen.sh nw/setup.sh;
 sed -r 's/@version/'$2'/g' nw/setup.sh > nw/setup.gen.sh;
@@ -258,6 +267,8 @@ if [ ! -z "$4" ] && [ ! -z "$install" ]; then
 			done
 		done
 	done
+fi
+if [ -z "$os" ] || [ "$(echo $os | grep -io "android")" = "android" ]; then
 	sed -r 's/\/\/ signingConfig/signingConfig/g' app/build.gradle  > app/build.gen.gradle;
 	mv app/build.gen.gradle app/build.gradle;
 	if [ "$4" == "new" ]; then
@@ -268,8 +279,6 @@ if [ ! -z "$4" ] && [ ! -z "$install" ]; then
 		sed -r 's/buildTypes/signingConfigs {\nrelease {\nstoreFile file(System.console().readLine("\\n\\$ Enter keystore path: "))\nstorePassword new String(System.console().readPassword("\\n\\$ Enter keystore password: "))\nkeyAlias System.console().readLine("\\n\\$ Enter key alias: ")\nkeyPassword new String(System.console().readPassword("\\n\\$ Enter key password: "))\n}\n}\nbuildTypes/g' app/build.gradle  > app/build.gen.gradle;
 	fi
 	mv app/build.gen.gradle app/build.gradle;
-	fi
-if [ -z "$os" ] || [ "$(echo $os | grep -io "android")" = "android" ]; then
 	if [ ! -z "$4" ]; then
 		rm $dir/../../build/$1/android.apk;
 		gradle build && mkdir -p $dir/../../build/$1/ && cp app/build/outputs/apk/app-release.apk $dir/../../build/$1/android.apk && adb install -r $dir/../../build/$1/android.apk && echo $dir/../../build/$1/android.apk;
@@ -286,6 +295,7 @@ cd ../../../../../nw/
 if [ -z "$os" ] || [ "$(echo $os | grep -io "linux")" = "linux" ]; then
 	cp -r ~/.config/nw/nwjs-*-linux-ia32/ $1-lin/
 	cp icon.png $1-lin/
+	cp app.desktop $1-lin/
 	cp setup.sh $1-lin/
 	cat $1-lin/nw app.nw > $1-lin/app && chmod +x $1-lin/app
 	rm $1-lin/nw
