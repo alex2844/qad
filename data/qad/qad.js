@@ -221,7 +221,7 @@ var Qad={
 								return d[key][v.replace('@','')];
 							else
 								return '';
-						}else{
+						}else if (v.slice(0,1) == '$' || v.slice(0,1) == '(') {
 							v = v.replace(/@(.*?);/gim, function(p) {
 								p = p.replace(';','');
 								if (p == '@')
