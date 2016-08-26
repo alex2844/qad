@@ -100,6 +100,7 @@ if [ ! -e "../../page/$1/index.html" ]; then exit 0; fi
 company='qwedl';
 color=$(cat ../../page/$1/index.html | grep theme-color | sed 's/.*content="//g' | sed 's/".*//g');
 orientation=$(cat ../../page/$1/index.html | grep screen-orientation | sed 's/.*content="//g' | sed 's/".*//g');
+os=$(cat ../../page/$1/index.html | grep os | sed 's/.*content="//g' | sed 's/".*//g');
 icon=$(cat ../../page/$1/index.html | grep 'rel="icon"' | sed 's/.*href="//g' | sed 's/".*//g');
 dir=$(pwd);
 
@@ -109,6 +110,7 @@ echo 'Version: '$2;
 echo 'Title: '$3;
 echo 'Color: '$color;
 echo 'Orientation: '$orientation;
+echo 'Os: '$os;
 echo 'Icon: '$icon;
 echo 'Dir: '$dir;
 echo 'Build: '$dir/../../build/$1/;
@@ -181,6 +183,9 @@ if [ -e "/usr/bin/unzip" ] || [ -e "/usr/local/bin/unzip" ]; then
 	if [ -e "$dir/../../page/$1/MainActivity.java" ]; then
 		cp -r $dir/../../page/$1/MainActivity.java ~/.config/qad/app/src/main/java/com/example/app/;
 		rm ~/.config/qad/app/src/main/assets/www/page/$1/MainActivity.java;
+	fi
+	if [ -e "$dir/../../page/$1/package.json" ]; then
+		cp -r $dir/../../page/$1/package.json ~/.config/qad/nw/;
 	fi
 	ls;
 else
@@ -264,31 +269,41 @@ if [ ! -z "$4" ] && [ ! -z "$install" ]; then
 	fi
 	mv app/build.gen.gradle app/build.gradle;
 	fi
-if [ ! -z "$4" ]; then
-	rm $dir/../../build/$1/android.apk;
-	gradle build && mkdir -p $dir/../../build/$1/ && cp app/build/outputs/apk/app-release.apk $dir/../../build/$1/android.apk && adb install -r $dir/../../build/$1/android.apk && echo $dir/../../build/$1/android.apk;
-else
-	rm $dir/../../build/$1/android.apk;
-	gradle build && adb install -r app/build/outputs/apk/app-debug.apk;
+if [ -z "$os" ] || [ "$(echo $os | grep -io "android")" = "android" ]; then
+	if [ ! -z "$4" ]; then
+		rm $dir/../../build/$1/android.apk;
+		gradle build && mkdir -p $dir/../../build/$1/ && cp app/build/outputs/apk/app-release.apk $dir/../../build/$1/android.apk && adb install -r $dir/../../build/$1/android.apk && echo $dir/../../build/$1/android.apk;
+	else
+		rm $dir/../../build/$1/android.apk;
+		gradle build && adb install -r app/build/outputs/apk/app-debug.apk;
+	fi
 fi
 cd app/src/main/assets/www/
 cp ../../../../../nw/package.json ./
 cp ../../../../../nw/logo.png ./
 zip -r ../../../../../nw/app.nw *
 cd ../../../../../nw/
-cp -r ~/.config/nw/nwjs-*-linux-ia32/ $1-lin/
-cp icon.png $1-lin/
-cp setup.sh $1-lin/
-cat $1-lin/nw app.nw > $1-lin/app && chmod +x $1-lin/app
-rm $1-lin/nw
-bash ~/.config/nw/makeself.sh $1-lin linux.run "$3" bash setup.sh
-rm -r $1-lin
-cp -r ~/.config/nw/nwjs-*-win-ia32/ $1-win/
-cp icon.png $1-win/
-cat $1-win/nw.exe app.nw > $1-win/app.exe
-rm $1-win/nw.exe
-zip -r windows.zip $1-win
-cat unz552xn.exe windows.zip > windows.exe
-rm windows.zip
-zip -A windows.exe
-rm -r $1-win
+if [ -z "$os" ] || [ "$(echo $os | grep -io "linux")" = "linux" ]; then
+	cp -r ~/.config/nw/nwjs-*-linux-ia32/ $1-lin/
+	cp icon.png $1-lin/
+	cp setup.sh $1-lin/
+	cat $1-lin/nw app.nw > $1-lin/app && chmod +x $1-lin/app
+	rm $1-lin/nw
+	if [ ! -z "$4" ]; then
+		bash ~/.config/nw/makeself.sh $1-lin linux.run "$3" bash setup.sh
+		rm -r $1-lin
+	fi
+fi
+if [ -z "$os" ] || [ "$(echo $os | grep -io "windows")" = "windows" ]; then
+	cp -r ~/.config/nw/nwjs-*-win-ia32/ $1-win/
+	cp icon.png $1-win/
+	cat $1-win/nw.exe app.nw > $1-win/app.exe
+	rm $1-win/nw.exe
+	if [ ! -z "$4" ]; then
+		zip -r windows.zip $1-win
+		cat unz552xn.exe windows.zip > windows.exe
+		rm windows.zip
+		zip -A windows.exe
+		rm -r $1-win
+	fi
+fi
