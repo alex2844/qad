@@ -267,8 +267,6 @@ if [ ! -z "$4" ] && [ ! -z "$install" ]; then
 			done
 		done
 	done
-fi
-if [ -z "$os" ] || [ "$(echo $os | grep -io "android")" = "android" ]; then
 	sed -r 's/\/\/ signingConfig/signingConfig/g' app/build.gradle  > app/build.gen.gradle;
 	mv app/build.gen.gradle app/build.gradle;
 	if [ "$4" == "new" ]; then
@@ -279,6 +277,8 @@ if [ -z "$os" ] || [ "$(echo $os | grep -io "android")" = "android" ]; then
 		sed -r 's/buildTypes/signingConfigs {\nrelease {\nstoreFile file(System.console().readLine("\\n\\$ Enter keystore path: "))\nstorePassword new String(System.console().readPassword("\\n\\$ Enter keystore password: "))\nkeyAlias System.console().readLine("\\n\\$ Enter key alias: ")\nkeyPassword new String(System.console().readPassword("\\n\\$ Enter key password: "))\n}\n}\nbuildTypes/g' app/build.gradle  > app/build.gen.gradle;
 	fi
 	mv app/build.gen.gradle app/build.gradle;
+fi
+if [ -z "$os" ] || [ "$(echo $os | grep -io "android")" = "android" ]; then
 	if [ ! -z "$4" ]; then
 		rm $dir/../../build/$1/android.apk;
 		gradle build && mkdir -p $dir/../../build/$1/ && cp app/build/outputs/apk/app-release.apk $dir/../../build/$1/android.apk && adb install -r $dir/../../build/$1/android.apk && echo $dir/../../build/$1/android.apk;
