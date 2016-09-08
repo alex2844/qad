@@ -103,6 +103,7 @@ orientation=$(cat ../../page/$1/index.html | grep screen-orientation | sed 's/.*
 os=$(cat ../../page/$1/index.html | grep os | sed 's/.*content="//g' | sed 's/".*//g');
 icon=$(cat ../../page/$1/index.html | grep 'rel="icon"' | sed 's/.*href="//g' | sed 's/".*//g');
 dir=$(pwd);
+date=`date +%y%m%d-%H%M`;
 
 echo 'Inc: '$company;
 echo 'App: '$1;
@@ -114,6 +115,7 @@ echo 'Os: '$os;
 echo 'Icon: '$icon;
 echo 'Dir: '$dir;
 echo 'Build: '$dir/../../build/$1/;
+echo 'Date: '$date;
 
 cd ~/.config/;
 if [ ! -e "nw" ]; then
@@ -279,12 +281,14 @@ if [ ! -z "$4" ] && [ ! -z "$install" ]; then
 	mv app/build.gen.gradle app/build.gradle;
 fi
 if [ -z "$os" ] || [ "$(echo $os | grep -io "android")" = "android" ]; then
+	rm $dir/../../build/$1/android.apk;
 	if [ ! -z "$4" ]; then
-		rm $dir/../../build/$1/android.apk;
-		gradle build && mkdir -p $dir/../../build/$1/ && cp app/build/outputs/apk/app-release.apk $dir/../../build/$1/android.apk && adb install -r $dir/../../build/$1/android.apk && echo $dir/../../build/$1/android.apk;
+		gradle build && mkdir -p $dir/../../build/$1/ && cp app/build/outputs/apk/app-release.apk $dir/../../build/$1/android.apk && apk="$dir/../../build/$1/android.apk";
 	else
-		rm $dir/../../build/$1/android.apk;
-		gradle build && adb install -r app/build/outputs/apk/app-debug.apk;
+		gradle build && apk="app/build/outputs/apk/app-debug.apk";
+	fi
+	if [ "`adb devices | grep device | wc -l`" != "1" ] && [ ! -z "$apk" ]; then
+		adb install -r $apk;
 	fi
 fi
 cd app/src/main/assets/www/
@@ -316,4 +320,29 @@ if [ -z "$os" ] || [ "$(echo $os | grep -io "windows")" = "windows" ]; then
 		zip -A windows.exe
 		rm -r $1-win
 	fi
+fi
+if [ -e "/usr/bin/gdrive" ]; then
+	cd ~/.config/qad/;
+	if [ "`gdrive list -q "name = 'qad-make'" | grep 'qad-make' | wc -l`" == "0" ]; then
+		gdrive mkdir qad-make;
+	fi
+	dm=`gdrive list -q "name = 'qad-make'" | grep 'qad-make' | sed -r 's/ .+//'`;
+	echo $dm;
+	if [ "`gdrive list -q "name = '$1'" --absolute | grep 'qad-make/' | wc -l`" == "0" ]; then
+		gdrive mkdir -p $dm $1;
+	fi
+	dp=`gdrive list -q "name = '$1'" --absolute | grep 'qad-make/' | sed -r 's/ .+//'`;
+	echo $dp;
+	if [ -z "$os" ] || [ "$(echo $os | grep -io "android")" = "android" ]; then
+		if [ ! -z "$4" ]; then
+			mv app/build/outputs/apk/app-release.apk app/build/outputs/apk/android-$date.apk;
+		else
+			mv app/build/outputs/apk/app-debug.apk app/build/outputs/apk/android-$date.apk;
+		fi
+		gdrive upload -p $dp 'app/build/outputs/apk/android-'$date'.apk';
+	fi
+	#if [ ! -z "$4" ]; then
+	#	if [ -z "$os" ] || [ "$(echo $os | grep -io "linux")" = "linux" ]; then
+	#	fi
+	#fi
 fi
