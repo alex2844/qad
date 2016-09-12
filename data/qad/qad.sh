@@ -98,9 +98,9 @@ if [ -z "$3" ]; then exit 0; fi
 if [ ! -e "../../page/$1/index.html" ]; then exit 0; fi
 
 company='qwedl';
-color=$(cat ../../page/$1/index.html | grep theme-color | sed 's/.*content="//g' | sed 's/".*//g');
-orientation=$(cat ../../page/$1/index.html | grep screen-orientation | sed 's/.*content="//g' | sed 's/".*//g');
-os=$(cat ../../page/$1/index.html | grep os | sed 's/.*content="//g' | sed 's/".*//g');
+color=$(cat ../../page/$1/index.html | grep 'name="theme-color"' | sed 's/.*content="//g' | sed 's/".*//g');
+orientation=$(cat ../../page/$1/index.html | grep 'name="screen-orientation"' | sed 's/.*content="//g' | sed 's/".*//g');
+os=$(cat ../../page/$1/index.html | grep 'name="os"' | sed 's/.*content="//g' | sed 's/".*//g');
 icon=$(cat ../../page/$1/index.html | grep 'rel="icon"' | sed 's/.*href="//g' | sed 's/".*//g');
 dir=$(pwd);
 date=`date +%y%m%d-%H%M`;
