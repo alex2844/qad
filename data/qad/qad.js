@@ -27,10 +27,16 @@ var Qad={
 					iframe = el.split(' ');
 					if (iframe.length > 1 && document.querySelector(iframe[0]))
 						return Qad.$(document.querySelector(iframe[0]).contentDocument.querySelector(el.replace(iframe[0]+' ','')));
+				}else if (el.slice(0,1) == '$') {
+					el = el.slice(1).split('->');
+					var forms = document.forms;
+					for (var i in el)
+						forms = forms[el[i]];
+					return forms;
 				}
-				obj=document.querySelector(el);
+				obj = document.querySelector(el);
 			}else
-				obj=el;
+				obj = el;
 		}else{
 			var vars = {};
 			var parts = location.search.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
