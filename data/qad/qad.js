@@ -287,18 +287,6 @@ var Qad={
 			res = typeof(obj)+(typeof(obj)=='string' ? '('+obj.length+') "'+obj+'"' : '('+obj+')');
 		return res;
 	},
-	format: function(data,type,add) {
-		if (type == 'price' && !isNaN(data)) {
-			data=Math.round(parseFloat(data)*Math.pow(10,0))/Math.pow(10,0);
-			rr=Number(data).toFixed(0).toString().split('.');
-			b=rr[0].replace(/(\d{1,3}(?=(\d{3})+(?:\.\d|\b)))/g,'\$1 ');
-			data=(rr[1]?b+'.'+rr[1]:b);
-		}else
-			return data;
-		if (add)
-			data += ' '+add;
-		return data;
-	},
 	json: function(data) {
 		if (typeof(data) == 'string')
 			data = JSON.parse(data);
