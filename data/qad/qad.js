@@ -484,34 +484,6 @@ var Qad={
 		for (i = 0; i < num; i++)
 			res.push(arr.splice(Math.floor(Math.random() * (arr.length)), 1)[0]);
 		return res;
-	},
-	byte: function(bytes,sizes,div) {
-		if (!sizes)
-			sizes = ['B','KB','MB','GB','TB','PB','EB','ZB','YB'];
-		if(bytes == 0 || isNaN(bytes))
-			return '0 '+sizes[0];
-		var k = 1000;
-		var i = Math.floor(Math.log(bytes) / Math.log(k));
-		return (bytes / Math.pow(k, i)).toPrecision(3) + ' ' + sizes[i]+(div != null ? '/'+div : '');
-	},
-	date: function(date) {
-		if (!date)
-			date = new Date(Date.now());
-		else if (typeof date != 'object')
-			date = new Date(1000*date);
-		d = function() {
-			var d = f(date.getDate()),
-				m = f(date.getMonth()+1),
-				y = f(date.getFullYear()%100),
-				h = f(date.getHours()),
-				i = f(date.getMinutes());
-			return d+'.'+m+'.'+y+' '+h+':'+i;
-		}
-		f = function(n) {
-			return (n < 10) ? '0'+n : n;
-		}
-		var e = (Date.now()-date)/1000;
-		return (e < 10 && e > 0) ? 'now':(e < 60 && e > 0) ? Math.floor(e)+' sec':(e < 3600 && e > 0) ? Math.floor(e/60)+' min':d();
 	},*/
 	format: function(data,type,add) {
 		if (type == 'date' && !isNaN(data)) {
