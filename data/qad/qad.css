@@ -209,6 +209,7 @@ body[data-menu] nav.tabs {
 body[data-menu] button#menu {
 	width: 300px;
 	text-align: left;
+	left: 4px;
 }
 button#menu {
 	width: 64px;
