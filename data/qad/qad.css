@@ -250,6 +250,7 @@ button#menu + nav a, nav.panel a {
 	font-size: 14px;
 	line-height: 24px;
 	opacity: .87;
+	cursor: pointer;
 }
 button#menu + nav a:hover, nav.panel a:hover {
 	background: #f1f1f1;
