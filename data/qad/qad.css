@@ -86,6 +86,7 @@ body {
 	margin: 0;
 	background: #f1f1f1;
 	font-family: sans-serif;
+	position: relative;
 	/* -webkit-animation-name: reset, fade-in;
 	-webkit-animation-duration: 1.5s;
 	-webkit-animation-timing-function: ease-in;
@@ -228,13 +229,14 @@ body[data-menu] button#menu + nav {
 button#menu + nav, nav.panel {
 	display: none;
 	width: 300px;
-	height: calc(100vh - 64px);
+	/* height: calc(100vh - 64px); */
+	height: 100vh;
 	overflow-y: scroll;
-	margin-top: 64px;
+	/* margin-top: 64px; */
 	padding: 0;
 	background: #fff;
 	position: fixed;
-	z-index: 2;
+	z-index: 11;
 	left: 0;
 	top: 0;
 	bottom: 0;
