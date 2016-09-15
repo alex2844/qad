@@ -255,6 +255,9 @@ button#menu + nav a, nav.panel a {
 	opacity: .87;
 	cursor: pointer;
 }
+button#menu + nav a[hidden], nav.panel a[hidden] {
+	display: none;
+}
 button#menu+nav a span, nav.panel a span {
 	top: -7px;
 	left: 14px;
