@@ -172,6 +172,10 @@ var Qad={
 							swipe = (distX < 0)? 'left' : 'right';
 						else if (Math.abs(distY) >= 50 && Math.abs(distX) <= 50)
 							swipe = (distY < 0)? 'up' : 'down';
+						else if (distX >= 50)
+							swipe = (distY < 0)? 'up,right' : 'down,right';
+						else if (distX <= -50)
+							swipe = (distY < 0)? 'up,left' : 'down,left';
 						if (swipe == 'none')
 							return;
 						else if (((new Date().getTime())-startTime) > 300)
@@ -1189,30 +1193,27 @@ window.addEventListener('load',function() {
 				}
 			}
 			Qad.$('html').on('swipe', function(e) {
-				if (e.swipe == 'move') {
-					if (e.sx < 50 && e.x >= 300 && !$('body[data-menu]')) {
+				if (event.target.tagName == 'NAV')
+					return;
+				else if (e.swipe == 'move') {
+					if (e.sx < 10 && e.sx > 0 && e.x >= 300 && !$('body[data-menu]')) {
 						$('nav').style['left'] = '0px';
 						Qad.$('button#menu').click();
-					}else if (e.sx > 30 && e.x <= 0 && $('body[data-menu]')) {
-						$('nav').style['left'] = '-300px';
-						Qad.$('button#menu').click();
-					}else if (e.x < 300) {
-						if (e.sx > 50 && !$('body[data-menu]'))
-							return;
-						else if (e.sx < 30 && $('body[data-menu]'))
+					}else if (e.x < 300 && (e.x - e.sx) > 50) {
+						if (e.sx > 10 && !$('body[data-menu]'))
 							return;
 						$('nav').style['display'] = 'block';
 						$('nav').style['left'] = (e.x-300)+'px';
-					}
+					}else if (e.x < 300 && (e.x - e.sx) < 50)
+						$('nav').style['display'] = 'none';
 				}else{
-					if (e.swipe == 'right' && !$('body[data-menu]'))
+					if (e.sx < 50 && !$('body[data-menu]')) {
+						if (e.x > 100)
+							Qad.$('button#menu').click();
+						else
+							$('nav').style['display'] = 'none';
+					}else if (e.x < 300 && $('body[data-menu]'))
 						Qad.$('button#menu').click();
-					else if (e.sx < 50 && !$('body[data-menu]'))
-						$('nav').style['display'] = 'none';
-					else if (e.sx > 30 && $('body[data-menu]')) {
-						$('nav').style['display'] = 'none';
-						Qad.$('button#menu').click();
-					}
 				}
 			});
 			/* Qad.$('html').on('swipe', function(e){
