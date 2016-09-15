@@ -142,35 +142,51 @@ var Qad={
 			switch (e) {
 				case 'mouse':
 					e = 'mousedown';
-				break;
+					break;
 				case 'key':
 					e = 'keydown';
-				break;
+					break;
 				case 'swipe':
 					var swipe, startX, startY, startTime;
-					obj.addEventListener('touchstart', function(e){
+					obj.addEventListener('touchstart', function(e) {
 						swipe = 'none';
 						startX = Math.round(e.changedTouches[0].pageX);
 						startY = Math.round(e.changedTouches[0].pageY);
 						startTime = new Date().getTime();
 					}, false);
-					obj.addEventListener('touchmove', function(e){
+					obj.addEventListener('touchmove', function(e) {
 						if (((new Date().getTime())-startTime) < 50)
 							e.preventDefault();
+						f({
+							x: e.changedTouches[0].pageX,
+							y: e.changedTouches[0].pageY,
+							sx: startX,
+							sy: startY,
+							swipe: 'move'
+						});
 					}, false);
-					obj.addEventListener('touchend', function(e){
+					obj.addEventListener('touchend', function(e) {
 						var distX = e.changedTouches[0].pageX-startX;
 						var distY = e.changedTouches[0].pageY-startY;
-						if (((new Date().getTime())-startTime) <= 300) {
-							if (Math.abs(distX) >= 50 && Math.abs(distY) <= 50)
-								swipe = (distX < 0)? 'left' : 'right';
-							else if (Math.abs(distY) >= 50 && Math.abs(distX) <= 50)
-								swipe = (distY < 0)? 'up' : 'down';
-						}
-						f({x:startX,y:startY,swipe:swipe});
+						if (Math.abs(distX) >= 50 && Math.abs(distY) <= 50)
+							swipe = (distX < 0)? 'left' : 'right';
+						else if (Math.abs(distY) >= 50 && Math.abs(distX) <= 50)
+							swipe = (distY < 0)? 'up' : 'down';
+						if (swipe == 'none')
+							return;
+						else if (((new Date().getTime())-startTime) > 300)
+							swipe = 'none';
+						f({
+							x: e.changedTouches[0].pageX,
+							y: e.changedTouches[0].pageY,
+							sx: startX,
+							sy: startY,
+							swipe: swipe
+						});
 					}, false);
+					console.error('Update swipe for project');
 					return;
-				break;
+					break;
 			}
 			console.log(e);
 			if (typeof(f) == 'function') {
@@ -1163,6 +1179,7 @@ window.addEventListener('load',function() {
 					Qad.$('button#menu').click();
 			}
 			Qad.$('button#menu').onclick = function() {
+				$('nav').style = null;
 				if (Qad.$('body[data-menu]')) {
 					Qad.$('body').attr('data-menu',false);
 					Qad.$('html').on('mouse',null,'menu');
@@ -1171,10 +1188,37 @@ window.addEventListener('load',function() {
 					Qad.$('html').on('mouse',menu,'menu');
 				}
 			}
-			Qad.$('html').on('swipe', function(e){
+			Qad.$('html').on('swipe', function(e) {
+				if (e.swipe == 'move') {
+					if (e.sx < 50 && e.x >= 300 && !$('body[data-menu]')) {
+						$('nav').style['left'] = '0px';
+						Qad.$('button#menu').click();
+					}else if (e.sx > 30 && e.x <= 0 && $('body[data-menu]')) {
+						$('nav').style['left'] = '-300px';
+						Qad.$('button#menu').click();
+					}else if (e.x < 300) {
+						if (e.sx > 50 && !$('body[data-menu]'))
+							return;
+						else if (e.sx < 30 && $('body[data-menu]'))
+							return;
+						$('nav').style['display'] = 'block';
+						$('nav').style['left'] = (e.x-300)+'px';
+					}
+				}else{
+					if (e.swipe == 'right' && !$('body[data-menu]'))
+						Qad.$('button#menu').click();
+					else if (e.sx < 50 && !$('body[data-menu]'))
+						$('nav').style['display'] = 'none';
+					else if (e.sx > 30 && $('body[data-menu]')) {
+						$('nav').style['display'] = 'none';
+						Qad.$('button#menu').click();
+					}
+				}
+			});
+			/* Qad.$('html').on('swipe', function(e){
 				if (e.x<50 && e.swipe == 'right')
 					Qad.$('button#menu').click();
-			});
+			}); */
 		}
 	}
 	if (Qad.$('link[rel="stylesheet/qad"]')) {
@@ -1227,7 +1271,7 @@ window.addEventListener('load',function() {
 			++i;
 		});
 		Qad.$('html').on('swipe', function(e){
-			if (e.x < 50 || !Qad.$()['tab'])
+			if (e.sx < 50 || !Qad.$()['tab'])
 				return;
 			var a = Number(Qad.$('nav.tabs a[href="#'+Qad.$()['tab']+'"]').attr('data-index')),
 				m = $$.$$('nav.tabs a').length-1;
