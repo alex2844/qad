@@ -1193,26 +1193,26 @@ window.addEventListener('load',function() {
 				}
 			}
 			Qad.$('html').on('swipe', function(e) {
-				if (event.target.parentNode.tagName == 'NAV' || event.target.tagName == 'NAV')
+				if (event.target.parentNode.tagName == 'NAV' || event.target.tagName == 'NAV' || Qad.$('button#menu').disabled)
 					return;
 				else if (e.swipe == 'move') {
-					if (e.sx < 10 && e.sx > 0 && e.x >= 300 && !$('body[data-menu]')) {
-						$('nav').style['left'] = '0px';
+					if (e.sx < 10 && e.sx > 0 && e.x >= 300 && !Qad.$('body[data-menu]')) {
+						Qad.$('nav').style['left'] = '0px';
 						Qad.$('button#menu').click();
 					}else if (e.x < 300 && (e.x - e.sx) > 50) {
-						if (e.sx > 10 && !$('body[data-menu]'))
+						if (e.sx > 10 && !Qad.$('body[data-menu]'))
 							return;
-						$('nav').style['display'] = 'block';
-						$('nav').style['left'] = (e.x-300)+'px';
+						Qad.$('nav').style['display'] = 'block';
+						Qad.$('nav').style['left'] = (e.x-300)+'px';
 					}else if (e.x < 300 && (e.x - e.sx) < 50)
-						$('nav').style['display'] = 'none';
+						Qad.$('nav').style['display'] = 'none';
 				}else{
-					if (e.sx < 50 && !$('body[data-menu]')) {
+					if (e.sx < 50 && !Qad.$('body[data-menu]')) {
 						if (e.x > 100)
 							Qad.$('button#menu').click();
 						else
-							$('nav').style['display'] = 'none';
-					}else if (e.x < 300 && $('body[data-menu]'))
+							Qad.$('nav').style['display'] = 'none';
+					}else if (e.x < 300 && Qad.$('body[data-menu]'))
 						Qad.$('button#menu').click();
 				}
 			});
