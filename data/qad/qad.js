@@ -1193,7 +1193,7 @@ window.addEventListener('load',function() {
 				}
 			}
 			Qad.$('html').on('swipe', function(e) {
-				if (event.target.tagName == 'NAV')
+				if (event.target.parentNode.tagName == 'NAV' || event.target.tagName == 'NAV')
 					return;
 				else if (e.swipe == 'move') {
 					if (e.sx < 10 && e.sx > 0 && e.x >= 300 && !$('body[data-menu]')) {
