@@ -1282,8 +1282,8 @@ window.addEventListener('load',function() {
 		});
 	}
 	if (Qad.$('.menu')) {
-		menu = function(e) {
-			if (e.target.id == Qad.$('ul[open]').attr('for'))
+		ul = function(e) {
+			if (!Qad.$('ul[open]') || Qad.$('ul[open]').attr('for') == e.target.id)
 				return;
 			pos = Qad.$('ul[open]').pos();
 			if ((e.y < pos.top || e.x < pos.left || e.y > pos.top+pos.height || e.x > pos.left+pos.width) && e.target.tagName != 'LI')
@@ -1294,11 +1294,11 @@ window.addEventListener('load',function() {
 				el.onclick = function(e){
 					if (Qad.$('ul[for='+el.id+']')) {
 						if (Qad.$('ul[for='+el.id+']').style['display'] == 'block') {
-							Qad.$('html').on('mouse',null,'menu');
+							Qad.$('html').on('mouse',null,'ul');
 							Qad.$('ul[for='+el.id+']').style['display'] = '';
 							Qad.$('ul[for='+el.id+']').attr('open',false);
 						}else{
-							Qad.$('html').on('mouse',menu,'menu');
+							Qad.$('html').on('mouse',ul,'ul');
 							Qad.$('ul[for='+el.id+']').style['display'] = 'block';
 							Qad.$('ul[for='+el.id+']').attr('open',true);
 						}
