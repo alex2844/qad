@@ -255,8 +255,16 @@ button#menu + nav a, nav.panel a {
 	opacity: .87;
 	cursor: pointer;
 }
-button#menu + nav a:hover, nav.panel a:hover {
+button#menu+nav a span, nav.panel a span {
+	top: -7px;
+	left: 14px;
+	position: relative;
+}
+button#menu + nav a.active, nav.panel a.active, button#menu + nav a:hover, nav.panel a:hover {
 	background: #f1f1f1;
+}
+button#menu + nav a.active, nav.panel a.active {
+	color: @color;
 }
 button.menu {
 	border-radius: 50%;
