@@ -84,7 +84,12 @@ elif [ "$1" == "min" ]; then
 	done
 	cd $pwd;
 	if [ -e 'qad.js' ]; then
-		curl -X POST -s --data-urlencode 'input@qad.js' 'http://javascript-minifier.com/raw' > 'qad';
+		res=`curl -X POST -s --data-urlencode 'input@qad.js' 'http://javascript-minifier.com/raw'` # > 'qad';
+		if [ "${res:0:3}" != "502" ]; then
+			echo $res > 'qad';
+		else
+			exit;
+		fi
 		if [ ! -z "$2" ]; then
 			mv 'qad' '../../page/'$2'/data/qad/qad.min.js';
 		else
