@@ -258,7 +258,7 @@ nav details.header summary:after {
 	color: #fff;
 	top: 120px;
 }
-nav details.header summary img {
+nav details.header summary img, nav details.header summary .avatar {
 	position: absolute;
 	top: 16px;
 	border-radius: 50%;
