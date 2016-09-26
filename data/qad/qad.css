@@ -246,6 +246,41 @@ nav.panel {
 	display: block;
 	margin: 0;
 }
+nav details.header summary {
+	background: url(http://localhost:8080/data/images/background.jpg);
+	background-size: cover;
+	height: 128px;
+	position: relative;
+}
+nav details.header summary:after {
+	position: absolute;
+	right: 16px;
+	color: #fff;
+	top: 120px;
+}
+nav details.header summary img {
+	position: absolute;
+	top: 16px;
+	border-radius: 50%;
+	background: #fff;
+	width: 80px;
+	height: 80px;
+}
+nav details.header summary h1 {
+	position: absolute;
+	top: 96px;
+	color: #fff;
+	text-align: left;
+	text-transform: none;
+	margin-bottom: 0;
+}
+nav details.header summary h2 {
+	position: absolute;
+	top: 132px;
+	margin-top: -5px;
+	text-transform: none;
+	color: #f1f1f1;
+}
 button#menu + nav a, nav.panel a {
 	display: block;
 	padding: 16px;
