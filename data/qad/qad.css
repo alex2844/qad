@@ -231,7 +231,7 @@ button#menu + nav, nav.panel {
 	width: 300px;
 	/* height: calc(100vh - 64px); */
 	height: 100vh;
-	overflow-y: scroll;
+	overflow-y: auto;
 	/* margin-top: 64px; */
 	padding: 0;
 	background: #fff;
