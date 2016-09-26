@@ -247,7 +247,7 @@ nav.panel {
 	margin: 0;
 }
 nav details.header summary {
-	background: url(http://localhost:8080/data/images/background.jpg);
+	background: url(@location/data/images/background.jpg);
 	background-size: cover;
 	height: 128px;
 	position: relative;
