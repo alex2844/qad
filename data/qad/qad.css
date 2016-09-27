@@ -12,8 +12,10 @@ Copyright (c) 2016 Alex Smith
 	font-family: 'Material Icons';
 	font-style: normal;
 	font-weight: 400;
+	src: url(@location/data/fonts/MaterialIcons-Regular.eot);
 	src: local('Material Icons'), local('MaterialIcons-Regular'),
 		url(@location/data/fonts/MaterialIcons-Regular.woff2) format('woff2'),
+		url(@location/data/fonts/MaterialIcons-Regular.woff) format('woff'),
 		url(@location/data/fonts/MaterialIcons-Regular.ttf) format('truetype');
 }
 header + .clear:not(.onload) {
