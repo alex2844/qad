@@ -118,7 +118,7 @@ var Qad={
 				obj.innerHTML = val;
 			return obj;
 		}
-		obj.status = function(s) {
+		obj.status = function(s,f) {
 			if (obj.innerHTML == 'done' || obj.innerHTML == 'close')
 				return;
 			var tmp = obj.innerHTML;
@@ -133,6 +133,10 @@ var Qad={
 				return;
 			}
 			obj.classList.remove('spinner');
+			if (typeof f == 'function')
+				setTimeout(function() {
+					f();
+				},1000);
 			setTimeout(function() {
 				obj.innerHTML = tmp;
 				obj.style['background'] = Qad.$('meta[name="theme-color"]').content;
