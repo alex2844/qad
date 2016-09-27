@@ -139,7 +139,10 @@ var Qad={
 				},1000);
 			setTimeout(function() {
 				obj.innerHTML = tmp;
-				obj.style['background'] = Qad.$('meta[name="theme-color"]').content;
+				if (obj.tagName == 'INPUT')
+					obj.style['background'] = 'none';
+				else
+					obj.style['background'] = Qad.$('meta[name="theme-color"]').content;
 			},2000);
 		}
 		obj.on = function(e,f,c) {
