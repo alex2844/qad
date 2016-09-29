@@ -139,7 +139,7 @@ var Qad={
 				},1000);
 			setTimeout(function() {
 				obj.innerHTML = tmp;
-				if (obj.tagName == 'INPUT')
+				if (obj.tagName == 'INPUT' || obj.tagName == 'SELECT')
 					obj.style['background'] = 'none';
 				else
 					obj.style['background'] = Qad.$('meta[name="theme-color"]').content;
