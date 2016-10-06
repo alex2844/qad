@@ -452,7 +452,7 @@ var Qad={
 			};
 			return new label(d);
 		},
-		maps: function(address,zoom,id) {
+		maps: function(address,zoom,id,callback) {
 			document.maps = function() {
 				var geocoder = new google.maps.Geocoder();
 				var map = new google.maps.Map((id?Qad.$('#'+id):Qad.$('#map')), {
@@ -495,6 +495,8 @@ var Qad={
 							console.log('Geocode was not successful for the following reason: '+status);
 						}
 					});
+				if (typeof(callback) == 'function')
+					callback();
 			}
 			if (typeof(google) == 'undefined' || typeof(google.maps) == 'undefined') {
 				s = Qad.$('/script');
