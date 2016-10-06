@@ -409,6 +409,13 @@ var Qad={
 			}else
 				document.me();
 		},
+		center: function(d) {
+			var bounds = new google.maps.LatLngBounds();
+			d.getPath().forEach(function(element,index) {
+				bounds.extend(element)
+			});
+			return bounds.getCenter();
+		},
 		label: function(d) {
 			label = function(d) {
 				if (typeof(d.position.lat) != 'function')
