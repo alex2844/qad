@@ -604,9 +604,13 @@ var Qad={
 			t = Qad.$((id ? '#'+id : 'body')).getBoundingClientRect().top,
 			start = null;
 		if (id) {
-			if (Qad.$('header'))
-				t -= Qad.$('header').pos().height;
-			if (Qad.$('header nav.tabs'))
+			if (Qad.$('header')) {
+				if (Qad.$('header').pos().height == 299)
+					t -= 110;
+				else
+					t -= Qad.$('header').pos().height;
+			}
+			if (Qad.$('header nav.tabs') && !Qad.$('header[data-effect]'))
 				t -= Qad.$('nav.tabs').pos().height+5;
 		}
 		requestAnimationFrame(step);
