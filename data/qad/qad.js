@@ -1277,7 +1277,8 @@ window.addEventListener('load',function() {
 			el.onclick = function(e){
 				if (el.href != '#' && el.href.indexOf('#') != -1) {
 					var id = el.href.split('#')[1];
-					open(id);
+					if (Qad.$('div.tabs#'+id))
+						open(id);
 					if (Qad.$('#'+id))
 						Qad.up(id);
 					else
