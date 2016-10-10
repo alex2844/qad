@@ -155,26 +155,32 @@ var Qad={
 					break;
 				case 'swipe':
 					var swipe, startX, startY, startTime;
-					obj.addEventListener('touchstart', function(e) {
+					obj.addEventListener((document.ontouchstart === null ? 'touchstart' : 'mousedown'), function(e) {
 						swipe = 'none';
-						startX = Math.round(e.changedTouches[0].pageX);
-						startY = Math.round(e.changedTouches[0].pageY);
+						startX = Math.round((document.ontouchstart === null ? e.changedTouches[0].pageX : e.clientX));
+						startY = Math.round((document.ontouchstart === null ? e.changedTouches[0].pageY : e.clientY));
 						startTime = new Date().getTime();
 					}, false);
-					obj.addEventListener('touchmove', function(e) {
+					obj.addEventListener((document.ontouchstart === null ? 'touchmove' : 'mousemove'), function(e) {
+						if (!startX || !startY)
+							return;
 						if (((new Date().getTime())-startTime) < 50)
 							e.preventDefault();
 						f({
-							x: e.changedTouches[0].pageX,
-							y: e.changedTouches[0].pageY,
+							x: (document.ontouchstart === null ? e.changedTouches[0].pageX : e.clientX),
+							y: (document.ontouchstart === null ? e.changedTouches[0].pageY : e.clientY),
 							sx: startX,
 							sy: startY,
 							swipe: 'move'
 						});
 					}, false);
-					obj.addEventListener('touchend', function(e) {
-						var distX = e.changedTouches[0].pageX-startX;
-						var distY = e.changedTouches[0].pageY-startY;
+					obj.addEventListener((document.ontouchstart === null ? 'touchend' : 'mouseup'), function(e) {
+						var distX = (document.ontouchstart === null ? e.changedTouches[0].pageX : e.clientX)-startX;
+						var distY = (document.ontouchstart === null ? e.changedTouches[0].pageX : e.clientY)-startY;
+						var sx = startX;
+						var sy = startY;
+						startX = null;
+						startY = null;
 						if (Math.abs(distX) >= 50 && Math.abs(distY) <= 50)
 							swipe = (distX < 0)? 'left' : 'right';
 						else if (Math.abs(distY) >= 50 && Math.abs(distX) <= 50)
@@ -188,10 +194,10 @@ var Qad={
 						else if (((new Date().getTime())-startTime) > 300)
 							swipe = 'none';
 						f({
-							x: e.changedTouches[0].pageX,
-							y: e.changedTouches[0].pageY,
-							sx: startX,
-							sy: startY,
+							x: (document.ontouchstart === null ? e.changedTouches[0].pageX : e.clientX),
+							y: (document.ontouchstart === null ? e.changedTouches[0].pageY : e.clientY),
+							sx: sx,
+							sy: sy,
 							swipe: swipe
 						});
 					}, false);
@@ -199,7 +205,6 @@ var Qad={
 					return;
 					break;
 			}
-			console.log(e);
 			if (typeof(f) == 'function') {
 				if(!(obj in Qad.event))
 					Qad.event[obj] = {};
@@ -1213,7 +1218,13 @@ window.addEventListener('load',function() {
 				}
 			}
 			Qad.$('html').on('swipe', function(e) {
-				if (event.target.parentNode.tagName == 'NAV' || event.target.tagName == 'NAV' || Qad.$('button#menu').disabled)
+				if (
+					($(event.target) && $(event.target) === $('button#menu + nav')) ||
+					($(event.target).parent && $(event.target).parent === $('button#menu + nav')) ||
+					($(event.target).parent.parent && $(event.target).parent.parent === $('button#menu + nav')) ||
+					($(event.target).parent.parent.parent && $(event.target).parent.parent.parent === $('button#menu + nav')) ||
+					Qad.$('button#menu').disabled
+				)
 					return;
 				else if (e.swipe == 'move') {
 					if (e.sx < 10 && e.sx > 0 && e.x >= 300 && !Qad.$('body[data-menu]')) {
