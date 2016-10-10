@@ -1208,7 +1208,7 @@ window.addEventListener('load',function() {
 					Qad.$('button#menu').click();
 			}
 			Qad.$('button#menu').onclick = function() {
-				$('nav').style = null;
+				$('nav').attr('style',false);
 				if (Qad.$('body[data-menu]')) {
 					Qad.$('body').attr('data-menu',false);
 					Qad.$('html').on('mouse',null,'menu');
