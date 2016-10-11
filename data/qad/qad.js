@@ -1465,7 +1465,7 @@ window.addEventListener('load',function() {
 window.addEventListener('message',function(e) {
 	var d;
 	if (typeof(e.data) == 'string' && (e.data.slice(0,1) == '[' || e.data.slice(0,1) == '{' || e.data.slice(0,2) == ' {'))
-		d = $$.json(e.data);
+		d = Qad.json(e.data);
 	else
 		d = e.data;
 	if (d.callback && typeof(window[d.callback]) == 'function')
@@ -1473,5 +1473,17 @@ window.addEventListener('message',function(e) {
 	else if (typeof(message) == 'function')
 		message(d,e);
 });
+window.onscroll = function() {
+	Qad.for('[data-effect]:not([data-preloadeffect])',function(el) {
+		var scroll = document.documentElement.clientHeight + document.body.scrollTop - Qad.$(el).pos().top;
+		if (-50 < scroll && 50 > scroll && Qad.$(el).pos().top > document.documentElement.clientHeight) {
+			Qad.$(el).attr('data-preloadeffect',Qad.$(el).attr('data-effect'));
+			Qad.$(el).attr('data-effect',false);
+			setTimeout(function() {
+				Qad.$('[data-preloadeffect]:not([data-effect])').attr('data-effect',Qad.$('[data-preloadeffect]:not([data-effect])').attr('data-preloadeffect'));
+			}, 1)
+		}
+	});
+}
 var $$ = Qad;
 var $ = $$.$;
