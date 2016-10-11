@@ -17,7 +17,7 @@ var Qad={
 	$:function(el) {
 		var obj;
 		if (el) {
-			if (typeof el == 'string') {
+			if (typeof(el) == 'string') {
 				if (el.indexOf('/') == 0) {
 					if (el == '/svg')
 						return document.createElementNS('http://www.w3.org/2000/svg','svg')
@@ -133,7 +133,7 @@ var Qad={
 				return;
 			}
 			obj.classList.remove('spinner');
-			if (typeof f == 'function')
+			if (typeof(f) == 'function')
 				setTimeout(function() {
 					f();
 				},1000);
@@ -530,7 +530,7 @@ var Qad={
 		if (type == 'date' && !isNaN(data)) {
 			if (!data)
 				data = new Date(Date.now());
-			else if (typeof date != 'object')
+			else if (typeof(date) != 'object')
 				data = new Date(1000*data);
 			d = function() {
 				var d = f(data.getDate()),
@@ -1197,7 +1197,7 @@ window.addEventListener('load',function() {
 	if (Qad.$()['actions'] && typeof(actions)!='undefined')
 		actions[Qad.$()['actions']]();
 	window.requestFileSystem = window.requestFileSystem || window.webkitRequestFileSystem;
-	if (typeof console !=="undefined" && console.log)
+	if (typeof(console) !=="undefined" && console.log)
 		console.info("%c Сюда вставлять не что не надо, иначе откроете доступ к своему аккаунту!",'color:red;font-weight:bold;font-style:italic;font-size:16px;');
 	if (Qad.$('button#menu + nav')) {
 		if (Qad.$('html').pos().width > 1366)
@@ -1283,7 +1283,7 @@ window.addEventListener('load',function() {
 				s = '?'+s.slice(1);
 			if (location.origin != 'file://' && location.origin.indexOf('chrome-extension')==-1)
 				history.pushState(null, null, (s!='' ? s+'&' : '?')+'tab='+id);
-			if (typeof tabs == 'function')
+			if (typeof(tabs) == 'function')
 				tabs(id);
 		}
 		var i = 0;
@@ -1443,7 +1443,7 @@ window.addEventListener('load',function() {
 		});
 	}else if (Qad.$('html[dev]') && Qad.$()['dev'])
 		new Function('return '+decodeURIComponent(Qad.$()['dev']))();
-	if (typeof main == 'function')
+	if (typeof(main) == 'function')
 		main();
 	if (typeof(open) == 'function') {
 		if (Qad.$()['tab'])
@@ -1451,7 +1451,7 @@ window.addEventListener('load',function() {
 		else if (Qad.$('nav.tabs a.active'))
 			open(Qad.$('nav.tabs a.active').href.split('#')[1]);
 	}
-	if (Qad.$('iframe.load') && typeof load == 'function') {
+	if (Qad.$('iframe.load') && typeof(load) == 'function') {
 		load(Qad.$('iframe.load body').innerHTML);
 		Qad.$('iframe.load').onload = function() {
 			load(Qad.$('iframe.load body').innerHTML);
@@ -1461,6 +1461,17 @@ window.addEventListener('load',function() {
 	}
 	if (Qad.$('header + .clear:not(.onload)'))
 		Qad.$('header + .clear:not(.onload)').classList.add('onload');
+});
+window.addEventListener('message',function(e) {
+	var d;
+	if (typeof(e.data) == 'string' && (e.data.slice(0,1) == '[' || e.data.slice(0,1) == '{' || e.data.slice(0,2) == ' {'))
+		d = $$.json(e.data);
+	else
+		d = e.data;
+	if (d.callback && typeof(window[d.callback]) == 'function')
+		window[d.callback](d,e);
+	else if (typeof(message) == 'function')
+		message(d,e);
 });
 var $$ = Qad;
 var $ = $$.$;
