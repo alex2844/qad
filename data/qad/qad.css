@@ -1109,6 +1109,12 @@ footer [data-right] {
 		left: 300px;
 		width: calc(100% - 300px);
 	}
+	body[data-menu] header:after {
+		padding-left: 320px;
+	}
+	header #button-header {
+		z-index: 3;
+	}
 	button#menu {
 		display: none;
 	}
