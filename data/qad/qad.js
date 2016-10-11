@@ -1172,7 +1172,7 @@ window.onpopstate = function() {
 }
 */
 window.addEventListener('load',function() {
-	if (!navigator.cookieEnabled) {
+	if (!navigator.cookieEnabled && location.origin != 'file://' && location.origin.indexOf('chrome-extension')==-1) {
 		location.href = '/?browser';
 		return;
 	}
