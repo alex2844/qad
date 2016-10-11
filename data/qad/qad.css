@@ -89,15 +89,6 @@ body {
 	background: #f1f1f1;
 	font-family: sans-serif;
 	position: relative;
-	/* -webkit-animation-name: reset, fade-in;
-	-webkit-animation-duration: 1.5s;
-	-webkit-animation-timing-function: ease-in;
-	-moz-animation-name: reset, fade-in;
-	-moz-animation-duration: 1.5s;
-	-moz-animation-timing-function: ease-in;
-	animation-name: reset, fade-in;
-	animation-duration: 1.5s;
-	animation-timing-function: ease-in; */
 	top: 0px !important;
 }
 h1 {
@@ -406,11 +397,8 @@ table, .card {
 	background-color: #fff;
 	border-radius: 0.125rem;
 	box-shadow: 0 2px 2px 0 rgba(0,0,0,.14),0 3px 1px -2px rgba(0,0,0,.2),0 1px 5px 0 rgba(0,0,0,.12);
-	-webkit-animation-duration: 1.5s;
 	animation-duration: 1.5s;
-	-webkit-animation-name: slideUp;
 	animation-name: slideUp;
-	-webkit-animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 	animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 	/* margin: 10px; */
 	margin: 1%;
@@ -741,10 +729,8 @@ div#header-panel {
 	height: 47px;
 	outline: solid rgba(0,0,0,0.5) 10000px;
 	color: rgb(117, 117, 117);
-	-webkit-animation-duration: 0.2s;
 	animation-duration: 0.2s;
-	-webkit-animation-name: slideRight;
-	animation-name: slideRight;
+	animation-name: slideLeft;
 }
 input[type="search"]::-webkit-search-cancel-button {
 	-webkit-appearance: none;
@@ -1010,35 +996,6 @@ label.checkbox {
 [onclick], li[id] {
 	cursor: pointer;
 }
-[data-effect] {
-	overflow: hidden;
-	position: relative;
-}
-[data-effect] h3 {
-	position: absolute;
-	color: #757575;
-	top: 0;
-	left: 0;
-	text-shadow: -2px -1px 5px #fff;
-	background: rgba(255,255,255,0.3);
-	outline: solid rgba(255,255,255,0.3) 10000px;
-	opacity: 0;
-	margin: 10%;
-	text-transform: uppercase;
-}
-[data-effect]:hover h3 {
-	opacity: 1;
-}
-[data-effect=zoom] * {
-	-webkit-transition: all 0.5s linear;
-	transition: all 0.5s linear;
-	-webkit-transform: scale3d(1, 1, 1);
-	transform: scale3d(1, 1, 1);
-}
-[data-effect=zoom] *:hover {
-	-webkit-transform: scale3d(1.2, 1.2, 1);
-	transform: scale3d(1.2, 1.2, 1);
-}
 [data-tooltip]{
 	display: inline;
 	position: relative;
@@ -1087,6 +1044,56 @@ footer [data-right] {
 }
 [data-right] {
 	float: right;
+}
+[data-effect] {
+	overflow: hidden;
+	position: relative;
+}
+[data-effect] h3 {
+	position: absolute;
+	color: #757575;
+	top: 0;
+	left: 0;
+	text-shadow: -2px -1px 5px #fff;
+	background: rgba(255,255,255,0.3);
+	outline: solid rgba(255,255,255,0.3) 10000px;
+	opacity: 0;
+	margin: 10%;
+	text-transform: uppercase;
+}
+[data-effect]:hover h3 {
+	opacity: 1;
+}
+[data-effect=zoom] * {
+	transition: all 0.5s linear;
+	transform: scale3d(1, 1, 1);
+}
+[data-effect=zoom] *:hover {
+	transform: scale3d(1.2, 1.2, 1);
+}
+[data-effect=zoomLoop] {
+	animation: zoomLoop 1s linear infinite;
+}
+[data-effect=zoomIn] {
+	animation: zoomIn 1s both;
+}
+[data-effect=zoomOut] {
+	animation: zoomOut 1s both;
+}
+[data-effect=shake] {
+	animation: shake 3s both;
+}
+[data-effect=left] {
+	animation: slideLeft 3s both;
+}
+[data-effect=right] {
+	animation: slideRight 3s both;
+}
+[data-effect=up] {
+	animation: slideUp 3s both;
+}
+[data-effect=down] {
+	animation: slideDown 3s both;
 }
 @media all and (min-width: 1367px) {
 	.parallax {
@@ -1172,18 +1179,82 @@ footer [data-right] {
 		float: left;
 	}
 }
-@keyframes reset {
-	0% {opacity: 0;}
-	100% {opacity: 0;}
+@keyframes zoomLoop {
+	0% {transform: scale3d(1);}
+	50% {transform: scale3d(1.2, 1.2, 1);}
+	100% {transform: scale3d(1);}
 }
-@keyframes fade-in {
-	0% {opacity: 0;}
-	40% {opacity: 0;}
-	100% {opacity: 1;}
+@keyframes zoomIn {
+	from {
+		opacity: 0;
+		transform: scale3d(.3, .3, .3);
+	}
+	50% {
+		opacity: 1;
+	}
+}
+@keyframes zoomOut {
+	from {
+		opacity: 1;
+	}
+	50% {
+		opacity: 0;
+		transform: scale3d(.3, .3, .3);
+	}
+	to {
+		opacity: 0;
+	}
+}
+@keyframes shake {
+	from, to {
+		transform: translate3d(0, 0, 0);
+	}
+	5%, 15%, 25%, 35%, 45%, 55%, 65%, 75%, 85%, 95% {
+		transform: translate3d(-10px, 0, 0);
+	}
+	10%, 20%, 30%, 40%, 50%, 60%, 70%, 80%, 90% {
+		transform: translate3d(10px, 0, 0);
+	}
+}
+@keyframes slideLeft {
+	0% {
+		opacity: 0;
+		transform: translateX(100%);
+	}
+	100% {
+		transform: translateX(0);
+		opacity: 1;
+	}
+}
+@keyframes slideRight {
+	0% {
+		opacity: 0;
+		transform: translateX(-100%);
+	}
+	100% {
+		transform: translateX(0);
+		opacity: 1;
+	}
 }
 @keyframes slideUp {
-	0% {transform: translateY(6.25rem);}
-	100% {transform: translateY(0);}
+	0% {
+		opacity: 0;
+		transform: translateY(6.25rem);
+	}
+	100% {
+		transform: translateY(0);
+		opacity: 1;
+	}
+}
+@keyframes slideDown {
+	0% {
+		opacity: 0;
+		transform: translateY(-6.25rem);
+	}
+	100% {
+		transform: translateY(0);
+		opacity: 1;
+	}
 }
 @keyframes spinner {
 	0% {
@@ -1206,10 +1277,6 @@ footer [data-right] {
 		transform: rotate(1440deg);
 		border-top: 5px #3F51B5 solid;
 	}
-}
-@keyframes slideRight {
-	0% {left: 100%;}
-	100% {left: 0;}
 }
 @keyframes scroll {
 	from {bottom: 10px;}
