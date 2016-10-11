@@ -1095,6 +1095,11 @@ footer [data-right] {
 [data-effect=down] {
 	animation: slideDown 3s both;
 }
+@media print {
+	#button-float, header #button-header, button#menu {
+		display: none !important;
+	}
+}
 @media all and (min-width: 1367px) {
 	.parallax {
 		height: 50vh;
