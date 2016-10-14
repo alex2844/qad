@@ -102,7 +102,8 @@ if [ -z "$2" ]; then exit 0; fi
 if [ -z "$3" ]; then exit 0; fi
 if [ ! -e "../../page/$1/index.html" ]; then exit 0; fi
 
-company='qwedl';
+domain='ml';
+company='pcmasters';
 color=$(cat ../../page/$1/index.html | grep 'name="theme-color"' | sed 's/.*content="//g' | sed 's/".*//g');
 orientation=$(cat ../../page/$1/index.html | grep 'name="screen-orientation"' | sed 's/.*content="//g' | sed 's/".*//g');
 os=$(cat ../../page/$1/index.html | grep 'name="os"' | sed 's/.*content="//g' | sed 's/".*//g');
@@ -111,6 +112,7 @@ dir=$(pwd);
 date=`date +%y%m%d-%H%M`;
 
 echo 'Inc: '$company;
+echo 'Domain: '$domain;
 echo 'App: '$1;
 echo 'Version: '$2;
 echo 'Title: '$3;
@@ -208,7 +210,7 @@ cp app/src/main/assets/www/page/$1/$icon app/src/main/res/drawable-xxhdpi/ic_lau
 cp app/src/main/assets/www/page/$1/$icon app/src/main/assets/www/icon.png;
 cp app/src/main/assets/www/page/$1/$icon nw/;
 sed '0,/mWebView.loadUrl(.*);/s/mWebView.loadUrl(.*);/mWebView.loadUrl("file:\/\/\/android_asset\/www\/page\/'$1'\/index.html");/' -i app/src/main/java/com/example/app/MainActivity.java;
-sed -r 's/applicationId ".*"/applicationId "com.'$company'.'$1'"/g' app/build.gradle  > app/build.gen.gradle;
+sed -r 's/applicationId ".*"/applicationId "'$domain'.'$company'.'$1'"/g' app/build.gradle  > app/build.gen.gradle;
 mv app/build.gen.gradle app/build.gradle;
 sed -r 's/versionName ".*"/versionName "'$2'"/g' app/build.gradle  > app/build.gen.gradle;
 mv app/build.gen.gradle app/build.gradle;
