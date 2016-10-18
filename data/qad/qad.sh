@@ -109,7 +109,7 @@ orientation=$(cat ../../page/$1/index.html | grep 'name="screen-orientation"' | 
 os=$(cat ../../page/$1/index.html | grep 'name="os"' | sed 's/.*content="//g' | sed 's/".*//g');
 icon=$(cat ../../page/$1/index.html | grep 'rel="icon"' | sed 's/.*href="//g' | sed 's/".*//g');
 dir=$(pwd);
-date=`date +%y%m%d-%H%M`;
+date=`date +%y%m%d%H%M`;
 
 echo 'Inc: '$company;
 echo 'Domain: '$domain;
@@ -211,6 +211,8 @@ cp app/src/main/assets/www/page/$1/$icon app/src/main/assets/www/icon.png;
 cp app/src/main/assets/www/page/$1/$icon nw/;
 sed '0,/mWebView.loadUrl(.*);/s/mWebView.loadUrl(.*);/mWebView.loadUrl("file:\/\/\/android_asset\/www\/page\/'$1'\/index.html");/' -i app/src/main/java/com/example/app/MainActivity.java;
 sed -r 's/applicationId ".*"/applicationId "'$domain'.'$company'.'$1'"/g' app/build.gradle  > app/build.gen.gradle;
+mv app/build.gen.gradle app/build.gradle;
+sed -r 's/versionCode .*/versionCode '$date'/g' app/build.gradle  > app/build.gen.gradle;
 mv app/build.gen.gradle app/build.gradle;
 sed -r 's/versionName ".*"/versionName "'$2'"/g' app/build.gradle  > app/build.gen.gradle;
 mv app/build.gen.gradle app/build.gradle;
