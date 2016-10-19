@@ -453,7 +453,7 @@ class Qad{
 					}else{
 						if (isset($rArray['callback'])) {
 							header('Content-Type: application/x-javascript');
-							echo $rArray['callback'].'("'.$response.'");';
+							echo $rArray['callback'].'("'.addslashes($response).'");';
 						}else
 							echo $response;
 					}
