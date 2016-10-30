@@ -64,6 +64,20 @@ class Qad{
 		return str_pad($value % $modulo, 6, '0', STR_PAD_LEFT);
 	}
 
+	public function auth($data) {
+		if (!isset($_SERVER['PHP_AUTH_USER'])) {
+			header('WWW-Authenticate: Basic realm="My Realm"');
+			header('HTTP/1.0 401 Unauthorized');
+			exit;
+		}else{
+			$error = true;
+			foreach($data as $l=>$p)
+				if($_SERVER['PHP_AUTH_USER'] == $l && $_SERVER['PHP_AUTH_PW'] == $p)
+					$error = false;
+			if ($error)
+				exit;
+		}
+	}
 	public function passport($data,$key='',$scope='') {
 		if (!is_array($data))
 			$data = json_decode($data,true);
