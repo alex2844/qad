@@ -11,8 +11,9 @@ Copyright (c) 2016 Alex Smith
 header('Content-Type: text/html; charset=utf-8');
 session_start();
 class Qad{
-	public static $nosql;
 	public static $config;
+	public static $nosql;
+	public static $document;
 	
 	public function __construct() {
 		$conf = dirname(__DIR__).'/config.php';
@@ -432,6 +433,59 @@ class Qad{
 				}
 				break;
 			}
+		}
+	}
+	public function document($obj,$exec='',$html=null) {
+		if ($exec == 'attr') {
+			$xml = (array) simplexml_import_dom($obj);
+			return $xml['@attributes'];
+		}else if ($exec == 'innerHTML') {
+			if (gettype($html) == 'string') {
+				while ($obj->hasChildNodes())
+					$obj->removeChild($obj->firstChild);
+				if (!empty($html)) {
+					$tmpDoc = new DOMDocument('1.0', 'UTF-8');
+					$tmpDoc->loadHTML(mb_convert_encoding($html, 'HTML-ENTITIES', 'UTF-8'));
+					$tmpDoc->encoding = 'utf-8';
+					foreach ($tmpDoc->getElementsByTagName('body')->item(0)->childNodes as $node) {
+						$node = $obj->ownerDocument->importNode($node, true);
+						$obj->appendChild($node);
+					}
+				}
+			}else
+				return implode(array_map([$obj->ownerDocument,"saveHTML"],iterator_to_array($obj->childNodes)));
+		}else if (preg_match('/http:\/\//', $obj) || preg_match('/https:\/\//', $obj) || preg_match('/.php/', $obj) || preg_match('/.html/', $obj)) {
+			libxml_use_internal_errors(true);
+			self::$document = new DOMDocument('1.0', 'UTF-8');
+			self::$document->loadHTMLFile($obj);
+			self::$document->encoding = 'utf-8';
+			return self::$document;
+		}else{
+			$find = explode(' ', $obj);
+			$count = count($find);
+			$res = self::$document;
+			for ($i = 0; $i < $count; ++$i) {
+				$v = $find[$i];
+				if (preg_match('/\./', $v)) {
+					$arr = [];
+					$v = explode('.', $v);
+					$el = self::$document->getElementsByTagName(($v[0] != '' ? $v[0] : '*'));
+					for ($j = 0; $j < $el->length; ++$j)
+						if ($el->item($j)->attributes->getNamedItem('class')->nodeValue == $v[1])
+							$arr[] = $res = $el->item($j);
+					if ($exec == 'all' && ($i+1)==$count)
+						return $arr;
+				}else if (preg_match('/\#/', $v)) {
+					$v = explode('#', $v);
+					$res = $res->getElementById($v[1]);
+				}else{
+					if ($exec == 'all' && ($i+1)==$count)
+						$res = $res->getElementsByTagName($v);
+					else
+						$res = $res->getElementsByTagName($v)[0];
+				}
+			}
+			return $res;
 		}
 	}
 	public function rest($serviceClass) {
