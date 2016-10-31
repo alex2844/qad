@@ -13,6 +13,7 @@ session_start();
 class Qad{
 	public static $config;
 	public static $nosql;
+	public static $sql;
 	public static $document;
 	
 	public function __construct() {
@@ -240,6 +241,125 @@ class Qad{
 				return true;
 			else
 				return false;
+		}
+	}
+	public function sql($exec,$p1='',$p2='',$p3='',$p4='') {
+		switch($exec) {
+			case 'create': {
+				$q = 'create table if not exists '.$p1.' (`id` integer primary key autoincrement, `created` default null';
+				foreach ($p2 as $k)
+					$q .= ', `'.$k.'` text default null';
+				$q .= ')';
+				$stmt = self::$sql->prepare($q);
+				$stmt->execute();
+				break;
+			}
+			case 'search': {
+				if ($p3 == '')
+					$p3 = 0;
+				$find = explode(':',$p1);
+				$q = 'select id from "'.$find[0].'" where "'.$find[1].'" like ? order by id desc '.(!empty($p2) ? 'limit '.$p3.','.$p2 : '');
+				$stmt = self::$sql->prepare($q);
+				$stmt->execute(array('%'.str_replace('*','',$find[2]).'%'));
+				$res = array();
+				foreach ($stmt->fetchAll() as $n)
+					$res[] = $n['id'];
+				return json_encode($res);
+				break;
+			}
+			case 'delete': {
+				$stmt = self::$sql->prepare('delete from '.$p1.' WHERE id = ?');
+				$res = $stmt->execute(array($p2));
+				return json_encode(['status'=>$res]);
+				break;
+			}
+			case 'select': {
+				if (gettype($p2) == 'integer' || empty($p2)) {
+					if ($p3 == '')
+						$p3 = 0;
+					$q = 'select '.(!empty($p4) ? 'id,'.implode(',',$p4) : '*').' from '.$p1.' order by id desc '.(!empty($p2) ? 'limit '.$p3.','.$p2 : '');
+					$stmt = self::$sql->prepare($q);
+					$stmt->execute();
+					$ret = array();
+					foreach ($stmt->fetchAll() as $n) {
+						$ret[] = array(
+							'id' => $n['id'],
+							'response' => array_diff_key($n,array_flip(array('id')))
+						);
+					}
+					return $ret;
+				}else if (gettype($p2) == 'string') {
+					$q = 'select '.(!empty($p4) ? 'id,'.implode(',',$p4) : '*').' from '.$p1.' where '.$p2.' = ?';
+					$stmt = self::$sql->prepare($q);
+					$stmt->execute(array($p3));
+					$ret = $stmt->fetch();
+					if ($ret) {
+						$ret = array_diff_key($ret,array_flip(array('id')));
+						return json_encode(['id'=>$p3,'response'=>$ret]);
+					}else
+						return json_encode(['id'=>null]);
+				}
+				break;
+			}
+			case 'update': {
+				$q = 'update '.$p1.' set ';
+				$i == 0;
+				$count = count($p3);
+				foreach ($p3 as $n=>$t) {
+					++$i;
+					$q .= $n.' = :'.$n;
+					if ($i < $count)
+						$q .= ', ';
+				}
+				$q .= ' where id = :id';
+				$p3['id'] = $p2;
+				$stmt = self::$sql->prepare($q);
+				$res = $stmt->execute($p3);
+				return json_encode(['status'=>$res]);
+				break;
+			}
+			case 'insert': {
+				$q = 'insert into '.$p1.' (';
+				$count = count($p2);
+				for ($i = 1, $j = 0; $i <=2; ++$i)
+					foreach ($p2 as $n=>$t) {
+						++$j;
+						$q .= ($i == 1 ? '' : ':').$n;
+						if ($j < $count)
+							$q .= ', ';
+						else{
+							if ($i == 1)
+								$q .= ', created) values (';
+							$j = 0;
+						}
+					}
+				$q .= ', :created)';
+				$p2['created'] = time();
+				$stmt = self::$sql->prepare($q);
+				$stmt->execute($p2);
+				return json_encode(['id'=>(int) self::$sql->lastInsertId()]);
+				break;
+			}
+			default: {
+				try {
+					if (empty($p1)) {
+						if (isset(self::$config) && !empty(self::$config['db_host']))
+							$p1 = self::$config['db_host'];
+						else
+							$p1 = 'sql/';
+					}
+					if (file_exists($p1)) {
+						self::$sql = new PDO('sqlite:'.$p1.$exec.'.sqlite');
+						self::$sql->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+						self::$sql->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_NAMED);
+						return self::$sql;
+					}else
+						exit('Connect error');
+				} catch(Exception $e) {
+					exit('Connect error');
+				}
+				break;
+			}
 		}
 	}
 	public function nosql($exec,$p1='',$p2='',$p3='',$p4='') {
