@@ -14,11 +14,19 @@ if [ "$1" == "install" ]; then
 fi
 if [ "$1" == "" ] || [ "$1" == "help" ]; then
 	echo 'Help Qad-cli Fraemwork';
-	echo './qad.sh install'; #TODO
+	#echo './qad.sh install';
 	echo './qad.sh min [project]';
-	echo './qad.sh clear'; #TODO
+	#echo './qad.sh clear';
 	echo './qad.sh project version title [new|key]';
+	echo './qad.sh dev';
 	exit;
+elif [ "$1" == "dev" ]; then
+	cd ../../;
+	dir=$(pwd);
+	cd ~;
+	git clone git@github.com:alex2844/qad.git;
+	mkdir ~/qad/data/ -p; wget -O ~/qad/index.html https://github.com/alex2844/qad/raw/master/index.html; cp -r $dir/data/qad ~/qad/data/; cp -r $dir/data/fonts ~/qad/data/; cp $dir/service-worker.js ~/qad/; cp $dir/sitemap.php ~/qad/; cd ~/qad/; git status
+	echo "alias qad='mkdir ~/qad/data/ -p; wget -O ~/qad/index.html https://github.com/alex2844/qad/raw/master/index.html; cp -r $dir/data/qad ~/qad/data/; cp -r $dir/data/fonts ~/qad/data/; cp $dir/service-worker.js ~/qad/; cp $dir/sitemap.php ~/qad/; cd ~/qad/; git status'" >> ~/.bashrc;
 elif [ "$1" == "min" ]; then
 	pwd=$(pwd);
 	mkdir -p '../../upload/color/';
