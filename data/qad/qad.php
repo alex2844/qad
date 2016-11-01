@@ -143,10 +143,11 @@ class Qad{
 	public function shab() {
 		$file = file_get_contents('index.html');
 		$shab['header'] = preg_replace(array(
-			"'<header[^>](.*?)>.*?</header>'si",
+			"'<header(.*?)data-content=\"(.*?)\"(.*?)>(.*?)>.*?</header>'si",
+			"'<nav(.*?)>(.*?)</nav>'si",
 			'/ tabs/'
 		),array(
-			'<header $1></header>'
+			'<header class="min" data-content="$2"></header>'
 		),explode('<section>',$file)[0]).'<section>';
 		$shab['footer'] = '</section>'.explode('</section>',$file)[1];
 		return $shab;
