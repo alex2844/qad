@@ -235,45 +235,48 @@ var Qad={
 			return obj.cloneNode(true);
 		}
 		obj.template = function(d,t) {
+			var key = function(d,key) {
+				if (t && key)
+					d[key] = JSON.parse(d[key]);
+				$key = (key ? d[key] : d);
+				obj.innerHTML += obj.shab.replace(/{(.*?)}/gim, function(m,v) {
+					if (!$key)
+						return;
+					else if (v == '@' && key)
+						return key;
+					else if (v.indexOf('@') == 0) {
+						if (v.indexOf('/') != -1) {
+							p = v.replace('@','').split('/');
+							if (p.length == 2)
+								return $key[p[0]][p[1]];
+							else if (p.length == 3)
+								return $key[p[0]][p[1]][p[2]];
+						}else if ($key[v.replace('@','')])
+							return $key[v.replace('@','')];
+						else
+							return '';
+					}else if (v.slice(0,1) == '$' || v.slice(0,1) == '(') {
+						v = v.replace(/@(.*?);/gim, function(p) {
+							p = p.replace(';','');
+							if (p == '@' && key)
+								return key;
+							else if (p.indexOf('@') == 0)
+								return $key[p.replace('@','')];
+						});
+						var res = new Function('return '+v)();
+						return (res ? res : '');
+					}
+				});
+				delete $key;
+			}
 			if (!obj.shab)
 				obj.shab = obj.innerHTML.replace(/data-src/g,'src');
 			obj.innerHTML = '';
-			for (key in d) {
-				//if (key != 'count') {
-					if (t)
-						d[key] = JSON.parse(d[key]);
-					$key = d[key];
-					obj.innerHTML += obj.shab.replace(/{(.*?)}/gim, function(m,v) {
-						if (!d[key])
-							return;
-						else if (v == '@')
-							return key;
-						else if (v.indexOf('@') == 0) {
-							if (v.indexOf('/') != -1) {
-								p = v.replace('@','').split('/');
-								if (p.length == 2)
-									return d[key][p[0]][p[1]];
-								else if (p.length == 3)
-									return d[key][p[0]][p[1]][p[2]];
-							}else if (d[key][v.replace('@','')])
-								return d[key][v.replace('@','')];
-							else
-								return '';
-						}else if (v.slice(0,1) == '$' || v.slice(0,1) == '(') {
-							v = v.replace(/@(.*?);/gim, function(p) {
-								p = p.replace(';','');
-								if (p == '@')
-									return key;
-								else if (p.indexOf('@') == 0)
-									return d[key][p.replace('@','')];
-							});
-							var res = new Function('return '+v)();
-							return (res ? res : '');
-						}
-					});
-					delete $key;
-				}
-			//}
+			if (d.response)
+				key(d);
+			else
+				for (k in d)
+					key(d,k);
 			if (obj.tagName == 'DIV' || obj.tagName == 'ARTICLE')
 				obj.style['display'] = 'block';
 			else
