@@ -274,13 +274,16 @@ var Qad={
 			obj.innerHTML = '';
 			if (d.response)
 				key(d);
-			else
+			else if (d.length && d.length > 0)
 				for (k in d)
 					key(d,k);
+			else
+				return false;
 			if (obj.tagName == 'DIV' || obj.tagName == 'ARTICLE')
 				obj.style['display'] = 'block';
 			else
 				obj.style['display'] = 'table-row-group';
+			return true;
 		}
 		obj.parent = Qad.$(obj.parentNode);
 		return obj;
