@@ -142,14 +142,20 @@ class Qad{
 	}
 	public function shab() {
 		$file = file_get_contents('index.html');
-		$shab['header'] = preg_replace(array(
-			"'<header(.*?)data-content=\"(.*?)\"(.*?)>(.*?)>.*?</header>'si",
-			"'<nav(.*?)>(.*?)</nav>'si",
-			'/ tabs/'
-		),array(
-			'<header class="min" data-content="$2"></header>'
-		),explode('<section>',$file)[0]).'<section>';
-		$shab['footer'] = '</section>'.explode('</section>',$file)[1];
+		$shab = array();
+		if (strpos($file, '<section>') === false) {
+			$shab['header'] = explode('<body>',$file)[0].'<body>';
+			$shab['footer'] = '</body>'.explode('</body>',$file)[1];
+		}else{
+			$shab['header'] = preg_replace(array(
+				"'<header(.*?)data-content=\"(.*?)\"(.*?)>(.*?)>.*?</header>'si",
+				"'<nav(.*?)>(.*?)</nav>'si",
+				'/ tabs/'
+			),array(
+				'<header class="min" data-content="$2"></header>'
+			),explode('<section>',$file)[0]).'<section>';
+			$shab['footer'] = '</section>'.explode('</section>',$file)[1];
+		}
 		return $shab;
 	}
 	public function mail($to, $subject, $message, $headers='') {
