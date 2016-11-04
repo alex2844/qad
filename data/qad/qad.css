@@ -999,13 +999,17 @@ label.checkbox {
 [onclick], li[id] {
 	cursor: pointer;
 }
-[data-tooltip]{
-	display: inline;
+[data-tooltip] {
 	position: relative;
+}
+:not(td)[data-tooltip] {
+	display: inline;
+}
+:not(td)[data-tooltip]:hover:after {
+	bottom: 36px;
 }
 [data-tooltip]:hover:after{
 	content: attr(data-tooltip);
-	bottom: 36px;
 	left: 20%;
 	padding: 5px 15px;
 	position: absolute;
