@@ -636,8 +636,11 @@ button, .button {
 	display: block;
 }
 table > thead > tr > th, table > tbody > tr > th, table > tfoot > tr > th, table > thead > tr > td, table > tbody > tr > td, table > tfoot > tr > td {
+	vertical-align: top;
 	padding: 1.6rem;
 	padding: 12px 18px 12px 24px;
+}
+table:not(.f) > thead > tr > th, table:not(.f) > tbody > tr > th, table:not(.f) > tfoot > tr > th, table:not(.f) > thead > tr > td, table:not(.f) > tbody > tr > td, table:not(.f) > tfoot > tr > td {
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
