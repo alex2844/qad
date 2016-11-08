@@ -1179,7 +1179,7 @@ footer [data-right] {
 	table > thead, table > tfoot {
 		display: none;
 	}
-	table > tbody > tr {
+	table > thead + tbody > tr {
 		display: block;
 		margin-bottom: 1.6rem;
 		-webkit-box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.12), 0 1px 2px 0 rgba(0, 0, 0, 0.24);
@@ -1187,12 +1187,12 @@ footer [data-right] {
 		box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.12), 0 1px 2px 0 rgba(0, 0, 0, 0.24);
 		background: #fff;
 	}
-	table > tbody > tr > td {
+	table > thead + tbody > tr > td {
 		display: block;
 		vertical-align: middle;
 		text-align: right;
 	}
-	table > tbody > tr > td[data-title]:before {
+	table > thead + tbody > tr > td[data-title]:before {
 		content: attr(data-title);
 		float: left;
 	}
