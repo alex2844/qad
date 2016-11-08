@@ -265,9 +265,15 @@ class Qad{
 				if ($p3 == '')
 					$p3 = 0;
 				$find = explode(':',$p1);
-				$q = 'select id from "'.$find[0].'" where "'.$find[1].'" like ? order by id desc '.(!empty($p2) ? 'limit '.$p3.','.$p2 : '');
-				$stmt = self::$sql->prepare($q);
-				$stmt->execute(array('%'.str_replace('*','',$find[2]).'%'));
+				if (preg_match('/\*/', $find[count($find)-1])) {
+					$q = 'select id from "'.$find[0].'" where "'.$find[1].'" like ? order by id desc '.(!empty($p2) ? 'limit '.$p3.','.$p2 : '');
+					$stmt = self::$sql->prepare($q);
+					$stmt->execute(array('%'.str_replace('*','',$find[count($find)-1]).'%'));
+				}else{
+					$q = 'select id from "'.$find[0].'" where "'.$find[1].'" = ? order by id desc '.(!empty($p2) ? 'limit '.$p3.','.$p2 : '');
+					$stmt = self::$sql->prepare($q);
+					$stmt->execute(array($find[count($find)-1]));
+				}
 				$res = array();
 				foreach ($stmt->fetchAll() as $n)
 					$res[] = $n['id'];
@@ -309,6 +315,15 @@ class Qad{
 				break;
 			}
 			case 'update': {
+				foreach ($p3 as $n=>$t) {
+					if (preg_match('/\/\//', $n)) {
+						$p3[explode('//', $n)[1]] = $t;
+						unset($p3[$n]);
+					}else if (preg_match('/\//', $n)) {
+						$p3[explode('/', $n)[1]] = $t;
+						unset($p3[$n]);
+					}
+				}
 				$q = 'update '.$p1.' set ';
 				$i == 0;
 				$count = count($p3);
@@ -326,6 +341,15 @@ class Qad{
 				break;
 			}
 			case 'insert': {
+				foreach ($p2 as $n=>$t) {
+					if (preg_match('/\/\//', $n)) {
+						$p2[explode('//', $n)[1]] = $t;
+						unset($p2[$n]);
+					}else if (preg_match('/\//', $n)) {
+						$p2[explode('/', $n)[1]] = $t;
+						unset($p2[$n]);
+					}
+				}
 				$q = 'insert into '.$p1.' (';
 				$count = count($p2);
 				for ($i = 1, $j = 0; $i <=2; ++$i)
