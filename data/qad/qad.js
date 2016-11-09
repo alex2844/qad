@@ -885,11 +885,14 @@ var Qad={
 		frame: 0,
 		el: null,
 		time: null,
+		callback: null,
 		set: function(image) {
 			if (Qad.$(this.el).tagName == 'IMG')
 				Qad.$(this.el).src = image;
 			else
 				Qad.$(this.el).style['background-image'] = "url("+image+")";
+			if (this.callback)
+				this.callback(this.frame);
 		},
 		init: function() {
 			if (!this.src && !this.el)
