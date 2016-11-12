@@ -67,17 +67,19 @@ class Qad{
 	}
 
 	public function auth($data) {
-		if (!isset($_SERVER['PHP_AUTH_USER'])) {
-			header('WWW-Authenticate: Basic realm="My Realm"');
-			header('HTTP/1.0 401 Unauthorized');
-			exit;
-		}else{
-			$error = true;
-			foreach($data as $l=>$p)
-				if($_SERVER['PHP_AUTH_USER'] == $l && $_SERVER['PHP_AUTH_PW'] == $p)
-					$error = false;
-			if ($error)
+		if (count($data) > 0) {
+			if (!isset($_SERVER['PHP_AUTH_USER'])) {
+				header('WWW-Authenticate: Basic realm="My Realm"');
+				header('HTTP/1.0 401 Unauthorized');
 				exit;
+			}else{
+				$error = true;
+				foreach($data as $l=>$p)
+					if($_SERVER['PHP_AUTH_USER'] == $l && $_SERVER['PHP_AUTH_PW'] == $p)
+						$error = false;
+				if ($error)
+					exit;
+			}
 		}
 	}
 	public function passport($data,$key='',$scope='') {
