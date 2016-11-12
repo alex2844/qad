@@ -12,8 +12,9 @@ header('Content-Type: text/html; charset=utf-8');
 session_start();
 class Qad{
 	public static $config;
-	public static $nosql;
+	public static $cache;
 	public static $sql;
+	public static $nosql;
 	public static $document;
 	
 	public function __construct() {
@@ -288,6 +289,36 @@ class Qad{
 				return true;
 			else
 				return false;
+		}
+	}
+	public function cache($exec,$name='') {
+		switch($exec) {
+			case 'start': {
+				if (file_exists(dirname(__DIR__).'/../upload/cache/')) {
+					self::$cache = dirname(__DIR__).'/../upload/cache/html_'.md5(getcwd().(!empty($name) ? $name : '')).'_'.md5($_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI']).'.cache';
+					if (file_exists(self::$cache) && (time()-86400)<filemtime(self::$cache)) {
+						echo file_get_contents(self::$cache);
+						exit;
+					}
+					ob_start();
+				}
+				break;
+			}
+			case 'clear': {
+				if (file_exists(dirname(__DIR__).'/../upload/cache/'))
+					array_map('unlink', glob(dirname(__DIR__).'/../upload/cache/html_'.md5(getcwd().(!empty($name) ? $name : '')).'_*.cache'));
+				break;
+			}
+			case 'stop': {
+				if (isset(self::$cache)) {
+					$cached = fopen(self::$cache, 'w');
+					fwrite($cached, ob_get_contents());
+					fclose($cached);
+					ob_end_flush();
+					self::$cache = null;
+				}
+				break;
+			}
 		}
 	}
 	public function sql($exec,$p1='',$p2='',$p3='',$p4='') {
