@@ -299,30 +299,34 @@ class Qad{
 				break;
 			}
 			case 'select': {
-				if (gettype($p2) == 'integer' || empty($p2)) {
-					if ($p3 == '')
-						$p3 = 0;
-					$q = 'select '.(!empty($p4) ? 'id,'.implode(',',$p4) : '*').' from '.$p1.' order by id desc '.(!empty($p2) ? 'limit '.$p3.','.$p2 : '');
-					$stmt = self::$sql->prepare($q);
-					$stmt->execute();
-					$ret = array();
-					foreach ($stmt->fetchAll() as $n) {
-						$ret[] = array(
-							'id' => $n['id'],
-							'response' => array_diff_key($n,array_flip(array('id')))
-						);
+				try {
+					if (gettype($p2) == 'integer' || empty($p2)) {
+						if ($p3 == '')
+							$p3 = 0;
+						$q = 'select '.(!empty($p4) ? 'id,'.implode(',',$p4) : '*').' from '.$p1.' order by id desc '.(!empty($p2) ? 'limit '.$p3.','.$p2 : '');
+						$stmt = self::$sql->prepare($q);
+						$stmt->execute();
+						$ret = array();
+						foreach ($stmt->fetchAll() as $n) {
+							$ret[] = array(
+								'id' => $n['id'],
+								'response' => array_diff_key($n,array_flip(array('id')))
+							);
+						}
+						return $ret;
+					}else if (gettype($p2) == 'string') {
+						$q = 'select '.(!empty($p4) ? 'id,'.implode(',',$p4) : '*').' from '.$p1.' where '.$p2.' = ?';
+						$stmt = self::$sql->prepare($q);
+						$stmt->execute(array($p3));
+						$ret = $stmt->fetch();
+						if ($ret) {
+							$ret = array_diff_key($ret,array_flip(array('id')));
+							return json_encode(['id'=>$p3,'response'=>$ret]);
+						}else
+							return json_encode(['id'=>null]);
 					}
-					return $ret;
-				}else if (gettype($p2) == 'string') {
-					$q = 'select '.(!empty($p4) ? 'id,'.implode(',',$p4) : '*').' from '.$p1.' where '.$p2.' = ?';
-					$stmt = self::$sql->prepare($q);
-					$stmt->execute(array($p3));
-					$ret = $stmt->fetch();
-					if ($ret) {
-						$ret = array_diff_key($ret,array_flip(array('id')));
-						return json_encode(['id'=>$p3,'response'=>$ret]);
-					}else
-						return json_encode(['id'=>null]);
+				} catch(Exception $e) {
+					return false;
 				}
 				break;
 			}
