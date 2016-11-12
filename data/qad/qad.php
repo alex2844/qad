@@ -321,10 +321,12 @@ class Qad{
 						$stmt = self::$sql->prepare($q);
 						$stmt->execute(array($p3));
 						$ret = $stmt->fetch();
-						if ($ret) {
-							$ret = array_diff_key($ret,array_flip(array('id')));
-							return json_encode(['id'=>$p3,'response'=>$ret]);
-						}else
+						if ($ret)
+							return json_encode(array(
+								'id' => $ret['id'],
+								'response' => array_diff_key($ret,array_flip(array('id')))
+							));
+						else
 							return json_encode(['id'=>null]);
 					}
 				} catch(Exception $e) {
