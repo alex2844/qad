@@ -293,20 +293,34 @@ class Qad{
 	}
 	public function cache($exec,$name='') {
 		switch($exec) {
+			case 'json': {
+				if (file_exists(dirname(__DIR__).'/../upload/cache/') && !empty($name)) {
+					if (empty(self::$cache)) {
+						self::$cache = dirname(__DIR__).'/../upload/cache/'.md5(getcwd().(!empty($name) ? $name : '')).'_json.cache';
+						if (file_exists(self::$cache) && (time()-86400)<filemtime(self::$cache))
+							return file_get_contents(self::$cache);
+					}else{
+						$cached = fopen(self::$cache, 'w');
+						fwrite($cached, $name);
+						fclose($cached);
+						self::$cache = null;
+					}
+				}
+				break;
+			}
 			case 'start': {
 				if (file_exists(dirname(__DIR__).'/../upload/cache/')) {
-					self::$cache = dirname(__DIR__).'/../upload/cache/html_'.md5(getcwd().(!empty($name) ? $name : '')).'_'.md5($_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI']).'.cache';
-					if (file_exists(self::$cache) && (time()-86400)<filemtime(self::$cache)) {
-						echo file_get_contents(self::$cache);
-						exit;
-					}
+					self::$cache = dirname(__DIR__).'/../upload/cache/'.md5(getcwd().(!empty($name) ? $name : '')).'_'.md5($_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI']).'.cache';
+					if (file_exists(self::$cache) && (time()-86400)<filemtime(self::$cache))
+						return file_get_contents(self::$cache);
 					ob_start();
 				}
+				return null;
 				break;
 			}
 			case 'clear': {
 				if (file_exists(dirname(__DIR__).'/../upload/cache/'))
-					array_map('unlink', glob(dirname(__DIR__).'/../upload/cache/html_'.md5(getcwd().(!empty($name) ? $name : '')).'_*.cache'));
+					array_map('unlink', glob(dirname(__DIR__).'/../upload/cache/'.md5(getcwd().(!empty($name) ? $name : '')).'_*.cache'));
 				break;
 			}
 			case 'stop': {
