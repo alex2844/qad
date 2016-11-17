@@ -234,6 +234,9 @@ var Qad={
 		obj.clone = function() {
 			return obj.cloneNode(true);
 		}
+		obj.remove = function() {
+			return obj.parentNode.removeChild(obj);
+		}
 		obj.template = function(d,t) {
 			var key = function(d,key) {
 				if (t && key)
