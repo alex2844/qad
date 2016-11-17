@@ -286,6 +286,8 @@ var Qad={
 			return true;
 		}
 		obj.parent = Qad.$(obj.parentNode);
+		if (typeof HTMLDialogElement != 'function' && obj.tagName == 'DIALOG' && !obj.hasAttribute('role'))
+			dialogPolyfill.registerDialog(obj);
 		return obj;
 	},
 	template: function(s) {
@@ -1567,6 +1569,15 @@ window.addEventListener('load',function() {
 				}
 			}
 		}
+	}
+	if (typeof HTMLDialogElement != 'function') {
+		var script = Qad.$('/script'),
+			link = Qad.$('/link');
+		script.src = 'https://cdnjs.cloudflare.com/ajax/libs/dialog-polyfill/0.4.4/dialog-polyfill.js';
+		link.href = 'https://cdnjs.cloudflare.com/ajax/libs/dialog-polyfill/0.4.4/dialog-polyfill.css';
+		link.rel = 'stylesheet';
+		Qad.$('head').add(script);
+		Qad.$('head').add(link);
 	}
 	if (Qad.$('meta[name="analytics"]')) {
 		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
