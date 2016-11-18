@@ -277,7 +277,7 @@ var Qad={
 			obj.innerHTML = '';
 			if (d.response)
 				key(d);
-			else if (d.length && d.length > 0)
+			else if (Object.keys(d).length > 0)
 				for (k in d)
 					key(d,k);
 			else
