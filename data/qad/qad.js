@@ -1345,6 +1345,8 @@ window.addEventListener('load',function() {
 	}
 	var locarray = location.href.split('#')[0].replace(location.search,'').split('/');
 	location.file = (locarray[(locarray.length-1)]?locarray[(locarray.length-1)]:'index.html');
+	if (location.file.slice(-1) == '?')
+		location.file = location.file.slice(0,-1);
 	delete locarray[(locarray.length-1)];
 	if (location.file.indexOf('.') == -1) {
 		location.pathname += '/';
