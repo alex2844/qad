@@ -134,6 +134,7 @@ echo 'Date: '$date;
 
 cd ~/.config/;
 if [ ! -e "nw" ]; then
+	sudo apt install zip unzip libc6:i386 libncurses5:i386 libstdc++6:i386 zlib1g:i386 lib32z1
 	nw='0.16.1'
 	mkdir nw
 	cd nw
