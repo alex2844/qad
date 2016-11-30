@@ -240,6 +240,10 @@ if [ ! -z "$color" ]; then
 	mv app/src/main/res/values/styles.gen.xml app/src/main/res/values/styles.xml;
 	sed -r 's/colorPrimaryDark">.*</colorPrimaryDark">'$color'</g' app/src/main/res/values/styles.xml > app/src/main/res/values/styles.gen.xml;
 	mv app/src/main/res/values/styles.gen.xml app/src/main/res/values/styles.xml;
+	sed -r 's/colorPrimary">.*</colorPrimary">'$color'</g' app/src/main/res/values-v21/styles.xml > app/src/main/res/values-v21/styles.gen.xml;
+	mv app/src/main/res/values-v21/styles.gen.xml app/src/main/res/values-v21/styles.xml;
+	sed -r 's/colorPrimaryDark">.*</colorPrimaryDark">'$color'</g' app/src/main/res/values-v21/styles.xml > app/src/main/res/values-v21/styles.gen.xml;
+	mv app/src/main/res/values-v21/styles.gen.xml app/src/main/res/values-v21/styles.xml;
 	sed -r 's/@color/'$color'/g' app/src/main/assets/www/data/qad/qad.css  > app/src/main/assets/www/data/qad/qad.gen.css;
 	mv app/src/main/assets/www/data/qad/qad.gen.css app/src/main/assets/www/data/qad/qad.css;
 fi
