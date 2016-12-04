@@ -1663,5 +1663,7 @@ window.onscroll = function() {
 		}
 	});
 }
-var $$ = Qad;
-var $ = $$.$;
+if (!Qad.$('html[qad-noglobal]')) {
+	var $$ = Qad;
+	var $ = $$.$;
+}
