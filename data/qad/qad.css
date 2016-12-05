@@ -585,6 +585,12 @@ ul.emoji li {
 	cursor: pointer;
 	font-size: 24px;
 }
+.genavatar {
+	line-height: 40px;
+	border-radius: 50%;
+	text-align: center;
+	color: white;
+}
 #slider span {
 	color: #8cc43f;
 	position: relative;

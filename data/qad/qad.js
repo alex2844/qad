@@ -293,6 +293,20 @@ var Qad={
 			dialogPolyfill.registerDialog(obj);
 		return obj;
 	},
+	genavatar: function(obj) {
+		if (!obj)
+			return '#333333';
+		var hash = 0,
+			color = '#',
+			s = (typeof(obj) == 'object' ? (obj.getAttribute('data-value') ? obj.getAttribute('data-value') : obj.innerHTML) : obj);
+		for (var i = 0; i < s.length; i++)
+			hash = s.charCodeAt(i) + ((hash << 5) - hash);
+		for (var i = 0; i < 3; i++)
+			color += ('00'+((hash >> (i * 8)) & 0xFF).toString(16)).substr(-2);
+		if (typeof(obj) == 'object')
+			obj.innerHTML = s.substr(0,1);
+		return color;
+	},
 	template: function(s) {
 		s = s.replace(/(^\s+|\s+$)/g, '').replace(/\s+/g, ' ').replace(/\{([\s\S]+?)\}/g, function(m, v) {
 			return "'+("+v+"||'')+'";
