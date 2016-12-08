@@ -470,7 +470,16 @@ class Qad{
 						else
 							$p1 = 'sql/';
 					}
-					if (file_exists($p1)) {
+					if (empty($p2) && !empty(self::$config['db_login']))
+						$p2 = self::$config['db_login'];
+					if (empty($p3) && !empty(self::$config['db_password']))
+						$p3 = self::$config['db_password'];
+					if (!empty($p1) && !empty($p2) && !empty($p3)) {
+						self::$sql = new PDO('mysql:host='.$p1.';dbname='.$exec, $p2, $p3, array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8"));
+						self::$sql->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+						self::$sql->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_NAMED);
+						return self::$sql;
+					}else if (file_exists($p1)) {
 						self::$sql = new PDO('sqlite:'.$p1.$exec.'.sqlite');
 						self::$sql->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 						self::$sql->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_NAMED);
