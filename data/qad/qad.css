@@ -458,6 +458,9 @@ dialog h2 {
 	width: 100%;
 	/* margin-bottom: -8px; */
 }
+.card img + h2 {
+	margin: -5px 0 0 0;
+}
 .card > p, .card .p {
 	/* margin: 8px 0 0 0; */
 	margin: 0;
