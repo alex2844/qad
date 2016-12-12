@@ -1017,7 +1017,7 @@ label.checkbox {
 :not(td)[data-tooltip]:hover:after {
 	bottom: 36px;
 }
-[data-tooltip]:hover:after{
+[data-tooltip]:hover:after {
 	content: attr(data-tooltip);
 	left: 20%;
 	padding: 5px 15px;
@@ -1032,8 +1032,12 @@ label.checkbox {
 	max-width: 170px;
 	text-align: center;
 }
-#button-float [data-tooltip]:hover:after{
+#button-float [data-tooltip]:hover:after {
 	left: -200%;
+}
+#button-header [data-tooltip]:hover:after {
+	bottom: 0;
+	left: -100%;
 }
 [data-center] {
 	display: block;
