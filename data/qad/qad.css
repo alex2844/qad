@@ -316,6 +316,13 @@ ul.menu {
 	display: none;
 	z-index: 1;
 }
+ul.menu span {
+	font-size: 14px;
+	width: calc(100% - 32px);
+}
+ul.menu i, ul.menu span {
+	vertical-align: middle;
+}
 footer {
 	text-align: center;
 	background: #fff;
