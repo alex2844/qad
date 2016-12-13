@@ -1038,6 +1038,10 @@ var Qad={
 				}
 			});
 		}
+		if (Qad.$$('div#notification').length == 2)
+			Qad.for('div#notification', function(el) {
+				el.remove();
+			});
 		var div = Qad.$('/div');
 		div.id = 'notification';
 		div.innerHTML = (typeof(title)=='string'?title:title.title);
@@ -1052,10 +1056,10 @@ var Qad={
 				}
 		}
 		Qad.$('body').add(div);
-		console.log(div);
 		if (time) {
 			setTimeout(function() {
-				Qad.$('#notification').remove();
+				div.remove();
+				//Qad.$('#notification').remove();
 			},time);
 		}
 		console.log("%c"+(typeof(title)=='string'?title:title.title),'color:DodgerBlue;font-weight:bold;');
