@@ -547,6 +547,15 @@ details > p {
 	padding: 16px;
 	margin: 0;
 }
+li details summary {
+	color: initial;
+	padding: 0 16px 0 0;
+	text-transform: none;
+}
+li details summary:after {
+	position: absolute;
+	right: 8px;
+}
 ul {
 	display: block;
 	padding: 8px 0;
