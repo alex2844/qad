@@ -1040,6 +1040,7 @@ var Qad={
 		}
 		if (Qad.$$('div#notification').length == 2)
 			Qad.for('div#notification', function(el) {
+				clearTimeout(el.time);
 				el.remove();
 			});
 		var div = Qad.$('/div');
@@ -1057,7 +1058,7 @@ var Qad={
 		}
 		Qad.$('body').add(div);
 		if (time) {
-			setTimeout(function() {
+			div.time = setTimeout(function() {
 				div.remove();
 				//Qad.$('#notification').remove();
 			},time);
@@ -1464,18 +1465,20 @@ var Qad={
 					if (!Qad.$('ul[open]') || Qad.$('ul[open]').attr('for') == e.target.id)
 						return;
 					pos = Qad.$('ul[open]').pos();
-					if ((e.y < pos.top || e.x < pos.left || e.y > pos.top+pos.height || e.x > pos.left+pos.width) && e.target.tagName != 'LI')
+					if ((e.y < pos.top || e.x < pos.left || e.y > pos.top+pos.height || e.x > pos.left+pos.width) && !Qad.$(e.target).attr('data-menu'))
 						Qad.$('#'+Qad.$('ul[open]').attr('for')).click();
 				}
-				Qad.for('.menu', function(el){
+				Qad.for('.menu', function(el) {
 					if (el.tagName != 'UL')
-						el.onclick = function(e){
+						el.onclick = function(e) {
 							if (Qad.$('ul[for='+el.id+']')) {
 								if (Qad.$('ul[for='+el.id+']').style['display'] == 'block') {
 									Qad.$('html').on('mouse',null,'ul');
 									Qad.$('ul[for='+el.id+']').style['display'] = '';
 									Qad.$('ul[for='+el.id+']').attr('open',false);
 								}else{
+									if (Qad.$('ul[open]'))
+										Qad.$('#'+Qad.$('ul[open]').attr('for')).click();
 									Qad.$('html').on('mouse',ul,'ul');
 									Qad.$('ul[for='+el.id+']').style['display'] = 'block';
 									Qad.$('ul[for='+el.id+']').attr('open',true);
@@ -1483,6 +1486,9 @@ var Qad={
 								e.preventDefault();
 							}
 						}
+				});
+				Qad.for('.menu *', function(el) {
+					Qad.$(el).attr('data-menu',true);
 				});
 				break;
 			}
