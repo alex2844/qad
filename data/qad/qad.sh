@@ -115,7 +115,7 @@ company='pcmasters';
 color=$(cat ../../page/$1/index.html | grep 'name="theme-color"' | sed 's/.*content="//g' | sed 's/".*//g');
 orientation=$(cat ../../page/$1/index.html | grep 'name="screen-orientation"' | sed 's/.*content="//g' | sed 's/".*//g');
 os=$(cat ../../page/$1/index.html | grep 'name="os"' | sed 's/.*content="//g' | sed 's/".*//g');
-icon=$(cat ../../page/$1/index.html | grep 'rel="icon"' | sed 's/.*href="//g' | sed 's/".*//g');
+#icon=$(cat ../../page/$1/index.html | grep 'rel="icon"' | sed 's/.*href="//g' | sed 's/".*//g');
 dir=$(pwd);
 date=`date +%y%m%d%H%M`;
 
@@ -127,7 +127,7 @@ echo 'Title: '$3;
 echo 'Color: '$color;
 echo 'Orientation: '$orientation;
 echo 'Os: '$os;
-echo 'Icon: '$icon;
+#echo 'Icon: '$icon;
 echo 'Dir: '$dir;
 echo 'Build: '$dir/../../build/$1/;
 echo 'Date: '$date;
@@ -212,12 +212,23 @@ else
 	exit 0;
 fi
 
-cp app/src/main/assets/www/page/$1/$icon app/src/main/res/drawable-hdpi/ic_launcher.png;
-cp app/src/main/assets/www/page/$1/$icon app/src/main/res/drawable-mdpi/ic_launcher.png;
-cp app/src/main/assets/www/page/$1/$icon app/src/main/res/drawable-xhdpi/ic_launcher.png;
-cp app/src/main/assets/www/page/$1/$icon app/src/main/res/drawable-xxhdpi/ic_launcher.png;
-cp app/src/main/assets/www/page/$1/$icon app/src/main/assets/www/icon.png;
-cp app/src/main/assets/www/page/$1/$icon nw/;
+#cp app/src/main/assets/www/page/$1/$icon app/src/main/res/drawable-hdpi/ic_launcher.png;
+#cp app/src/main/assets/www/page/$1/$icon app/src/main/res/drawable-mdpi/ic_launcher.png;
+#cp app/src/main/assets/www/page/$1/$icon app/src/main/res/drawable-xhdpi/ic_launcher.png;
+#cp app/src/main/assets/www/page/$1/$icon app/src/main/res/drawable-xxhdpi/ic_launcher.png;
+#cp app/src/main/assets/www/page/$1/$icon app/src/main/assets/www/icon.png;
+#cp app/src/main/assets/www/page/$1/$icon nw/;
+cp app/src/main/assets/www/page/$1/qad-icons.zip app/src/main/;
+cp app/src/main/assets/www/page/$1/qad-icons.zip nw/;
+cd ~/.config/qad/app/src/main/;
+unzip -o qad-icons.zip;
+rm icon.png;
+cd ~/.config/qad/nw;
+unzip -o qad-icons.zip;
+rm -r res;
+cd ~/.config/qad/;
+rm app/src/main/qad-icons.zip;
+rm nw/qad-icons.zip;
 sed '0,/mWebView.loadUrl(.*);/s/mWebView.loadUrl(.*);/mWebView.loadUrl("file:\/\/\/android_asset\/www\/page\/'$1'\/index.html");/' -i app/src/main/java/com/example/app/MainActivity.java;
 sed -r 's/applicationId ".*"/applicationId "'$domain'.'$company'.'$1'"/g' app/build.gradle  > app/build.gen.gradle;
 mv app/build.gen.gradle app/build.gradle;
@@ -320,7 +331,7 @@ zip -r ../../../../../nw/app.nw *
 cd ../../../../../nw/
 if [ -z "$os" ] || [ "$(echo $os | grep -io "linux")" = "linux" ]; then
 	cp -r ~/.config/nw/nwjs-*-linux-ia32/ $1-lin/
-	cp icon.png $1-lin/
+	#cp icon.png $1-lin/
 	cp app.desktop $1-lin/
 	cp setup.sh $1-lin/
 	cat $1-lin/nw app.nw > $1-lin/app && chmod +x $1-lin/app
@@ -332,7 +343,7 @@ if [ -z "$os" ] || [ "$(echo $os | grep -io "linux")" = "linux" ]; then
 fi
 if [ -z "$os" ] || [ "$(echo $os | grep -io "windows")" = "windows" ]; then
 	cp -r ~/.config/nw/nwjs-*-win-ia32/ $1-win/
-	cp icon.png $1-win/
+	#cp icon.png $1-win/
 	cat $1-win/nw.exe app.nw > $1-win/app.exe
 	rm $1-win/nw.exe
 	if [ ! -z "$4" ]; then
