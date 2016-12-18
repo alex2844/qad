@@ -1350,7 +1350,7 @@ var Qad={
 			c(devtools);
 		window.devtools = devtools;
 	},
-	init: function(type) {
+	init: function(type, action) {
 		switch (type) {
 			case 'button#menu + nav': {
 				if (Qad.$('html').pos().width > 1366)
@@ -1431,6 +1431,8 @@ var Qad={
 					if (typeof(tabs) == 'function')
 						tabs(id);
 				}
+				if (action)
+					open(action);
 				var i = 0;
 				Qad.for('nav.tabs a', function(el){
 					Qad.$(el).attr('data-index',i);
@@ -1670,9 +1672,9 @@ window.addEventListener('load',function() {
 		main();
 	if (typeof(open) == 'function') {
 		if (Qad.$()['tab'])
-			open(Qad.$()['tab']);
+			Qad.init('nav.tabs',Qad.$()['tab']);
 		else if (Qad.$('nav.tabs a.active'))
-			open(Qad.$('nav.tabs a.active').href.split('#')[1]);
+			Qad.init('nav.tabs',Qad.$('nav.tabs a.active').href.split('#')[1]);
 	}
 	if (Qad.$('iframe.load') && typeof(load) == 'function') {
 		load(Qad.$('iframe.load body').innerHTML);
