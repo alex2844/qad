@@ -121,16 +121,18 @@ class Qad{
 	public function keywords($str,$skip='') {
 		if (gettype($str) == 'array')
 			$str = implode(' ',$str);
-		$str = mb_strtolower($str);
-		if (!empty($skip))
-			$skip = array_map('mb_strtolower', $skip);
+		if (function_exists('mb_strtolower')) {
+			$str = mb_strtolower($str);
+			if (!empty($skip))
+				$skip = array_map('mb_strtolower', $skip);
+		}
 		$str = @preg_replace(array("'<[\/\!]*?[^<>]*?>'si","'([\r\n])[\s]+'si","'&[a-z0-9]{1,6};'si","'( +)'si"),array("","\\1 "," "," "),strip_tags($str));
 		$rearray = array("~","!","@","#","$","%","^","&","*","(",")","_","+","`",'"',"№",";",":","?","-","=","|","\"","\\","/","[","]","{","}","'",",",".","<",">","\r\n","\n","\t","«","»");
 		$str = @str_replace($rearray," ",$str);
 		$keywordcache = @explode(" ",$str);
 		$rearray = array();
 		foreach ($keywordcache as $word) {
-			if (mb_strlen($word) >= 5 && !is_numeric($word)) {
+			if (function_exists('mb_strlen') && mb_strlen($word) >= 5 && !is_numeric($word)) {
 				$adjective = mb_substr($word,-2);
 				if (empty($skip) || (!in_array($adjective,$skip) && !in_array($word,$skip)))
 					$rearray[$word] = (array_key_exists($word,$rearray)) ? ($rearray[$word] + 1) : 1;
