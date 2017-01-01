@@ -1438,26 +1438,27 @@ var Qad={
 							($(event.target).parent && $(event.target).parent === $('button#menu + nav')) ||
 							($(event.target).parent.parent && $(event.target).parent.parent === $('button#menu + nav')) ||
 							($(event.target).parent.parent.parent && $(event.target).parent.parent.parent === $('button#menu + nav')) ||
-							Qad.$('button#menu').disabled
+							Qad.$('button#menu').disabled ||
+							!Qad.$('button#menu + nav')
 						)
 							return;
 						else if (e.swipe == 'move') {
 							if (e.sx < 10 && e.sx > 0 && e.x >= 300 && !Qad.$('body[data-menu]')) {
-								Qad.$('nav').style['left'] = '0px';
+								Qad.$('button#menu + nav').style['left'] = '0px';
 								Qad.$('button#menu').click();
 							}else if (e.x < 300 && (e.x - e.sx) > 50) {
 								if (e.sx > 10 && !Qad.$('body[data-menu]'))
 									return;
-								Qad.$('nav').style['display'] = 'block';
-								Qad.$('nav').style['left'] = (e.x-300)+'px';
+								Qad.$('button#menu + nav').style['display'] = 'block';
+								Qad.$('button#menu + nav').style['left'] = (e.x-300)+'px';
 							}else if (e.x < 300 && (e.x - e.sx) < 50)
-								Qad.$('nav').style['display'] = 'none';
+								Qad.$('button#menu + nav').style['display'] = 'none';
 						}else{
 							if (e.sx < 50 && !Qad.$('body[data-menu]')) {
 								if (e.x > 100)
 									Qad.$('button#menu').click();
 								else
-									Qad.$('nav').style['display'] = 'none';
+									Qad.$('button#menu + nav').style['display'] = 'none';
 							}else if (e.x < 300 && Qad.$('body[data-menu]'))
 								Qad.$('button#menu').click();
 						}
