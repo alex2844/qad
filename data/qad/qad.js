@@ -343,6 +343,68 @@ var Qad={
 			res = typeof(obj)+(typeof(obj)=='string' ? '('+obj.length+') "'+obj+'"' : '('+obj+')');
 		return res;
 	},
+	debug: function(args) {
+		var debug = {
+			update: function() {
+				if (!location.pwd.match('/page/'))
+					return;
+				location.href = location.href.replace(location.pwd.split('/page/')[0], 'http://localhost:8080');
+			},
+			history: function(args) {
+				return {
+					args: args,
+					location: location.pwd,
+					qad_debug: Qad.json(localStorage.getItem('qad_debug')),
+					qad_debug_old: Qad.json(localStorage.getItem('qad_debug_old'))
+				}
+			},
+			save: function() {
+				localStorage.setItem('qad_debug', Qad.json({
+					error: Qad.debug.error,
+					log: Qad.debug.log,
+				}));
+			},
+			push: function(response) {
+				if (response)
+					args = response;
+				Qad.debug.log.push(args);
+				debug.save();
+			},
+			error: function(message, source, lineno) {
+				Qad.debug.error.push({
+					message: (source ? message : message.stack.split("\n")[0]),
+					source: (source ? source+':'+lineno : message.stack.split("\n").slice(1).join("\n"))
+				});
+				debug.save();
+			}
+		}
+		if (!Qad.debug.error) {
+			Qad.debug.error = [];
+			Qad.debug.log = [];
+			if (localStorage.getItem('qad_debug')) {
+				localStorage.setItem('qad_debug_old', localStorage.getItem('qad_debug'));
+				localStorage.removeItem('qad_debug');
+			}
+		}
+		if (args) {
+			if (typeof(args) == 'function') {
+				try {
+					var res = new Function('return '+args)()();
+					if (res) {
+						debug.push({
+							'function': args.toString(),
+							'return': res
+						});
+						return res;
+					}
+				}catch(e) {
+					debug.error(e);
+				}
+			}else
+				debug.push();
+		}
+		return debug;
+	},
 	json: function(data) {
 		if (typeof(data) == 'string')
 			data = JSON.parse(data);
@@ -1549,6 +1611,7 @@ window.onpopstate = function() {
 	location.reload();
 }
 */
+window.onerror = Qad.debug().error;
 window.addEventListener('load',function() {
 	if (!navigator.cookieEnabled && location.origin != 'file://' && location.origin.indexOf('chrome-extension')==-1) {
 		location.href = '/?browser';
