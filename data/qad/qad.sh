@@ -174,7 +174,7 @@ if [ ! -e "android-sdk-linux" ]; then
 	echo 'export ANDROID_HOME='$(pwd)'/' >> ~/.bashrc
 	echo 'export PATH=${PATH}:$ANDROID_HOME/gradle/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/tools:$ANDROID_HOME/build-tools/21.1.0/' >> ~/.bashrc
 	source ~/.bashrc
-	./tools/android update sdk --all --filter android-21,build-tools-23.0.3 --no-ui
+	./tools/android update sdk --all --filter android-25,build-tools-25.0.0 --no-ui
 fi
 cd ~/.config/
 if [ -e "/usr/bin/unzip" ] || [ -e "/usr/local/bin/unzip" ]; then
