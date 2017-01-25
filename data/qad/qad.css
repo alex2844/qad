@@ -523,7 +523,7 @@ dialog button {
 }
 dialog > .p, dialog > p {
 	overflow-y: auto;
-	height: calc(80vh - 120px);
+	max-height: calc(80vh - 120px);
 }
 summary {
 	outline: none;
