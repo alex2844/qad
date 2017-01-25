@@ -521,6 +521,10 @@ dialog img {
 dialog button {
 	margin: 4px;
 }
+dialog > .p, dialog > p {
+	overflow-y: auto;
+	height: calc(80vh - 120px);
+}
 summary {
 	outline: none;
 	cursor: pointer;
