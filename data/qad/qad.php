@@ -118,33 +118,96 @@ class Qad{
 		$s = str_replace(" ", "-", $s);
 		return $s;
 	}
-	public function keywords($str,$skip='') {
-		if (gettype($str) == 'array')
-			$str = implode(' ',$str);
-		if (function_exists('mb_strtolower')) {
-			$str = mb_strtolower($str);
-			if (!empty($skip))
-				$skip = array_map('mb_strtolower', $skip);
+	public function keywords($text, $skip=[]) {
+		$size = ['|<b(.*)>(.+)</b>|iU', '|<h3(.*)>(.+)</h3>|iU', '|<h2(.*)>(.+)</h2>|iU', '|<h1(.*)>(.+)</h1>|iU'];
+		if (count($skip) == 0)
+			$skip  = ['не','как','в','на','и','а','что','его','к','для','вы','это','с','0','же','о','но','он','чтобы','все','если','за',
+				'сб', 'очень','этом','так','однако','лучше','также','после','сразу', 'должен', 'быть', 'то','туда','просто','когда',
+				'был', 'по', 'во', 'вс', 'во', 'году', 'года', 'при', 'уже', 'ни','до','только','никогда','а','м', 'от', 'у', 'ещ', 'е', 'или',
+				'даже', 'того', 'могут', 'которые', 'может', 'поэтому', 'вашей', 'вероятно', 'важно', 'очень', 'том', 'снова', 'пока', 'чаще', 'еще', 'большое',
+				'они', 'были', 'одном', 'об', 'из', 'ежегодном', 'говорится', 'между', 'замечены', 'деле', 'время', 'всего', 'ее', 'вошел'];
+		$text = preg_replace("//iu", "", $text);
+		$text = function_exists('mb_strtolower') ? mb_strtolower($text) : strtolower($text);
+		$keywords = [];
+		preg_replace_callback($size, function($matches) use (&$keywords, $size) {
+			preg_match_all('~<([^/][^>]*?)>~', $matches[0], $matches[3]);
+			$matches[3] = explode(' ', $matches[3][1][0])[0];
+			$matches[4] = array_search('|<'.$matches[3].'(.*)>(.+)</'.$matches[3].'>|iU', $size)+2;
+			$keywords[0] .= str_repeat($matches[2].'; ', $matches[4]*2);
+		}, $text);
+		$text = strip_tags($text);
+		$text = preg_replace("/[^a-zA-ZА-Яа-я0-9\-\s]/iu", "", $text);
+		$words = preg_split("/[\s]+/", $text);
+		$hash = [];
+		$result = [];
+		foreach ($words as $idx => $word) {
+			if (!$word || is_numeric($word) || in_array($word, $skip))
+				continue;
+			if (!isset($hash[$word]))
+				$hash[$word] = $word;
+			if (!isset($result[$word]))
+				$result[$word] = [
+					'word' => $word,
+					'count' => 0, //substr_count($keywords[0], $word),
+					'indx' => []
+				];
+			++$result[$word]['count'];
+			$result[$word]['indx'][] = $idx;
 		}
-		$str = @preg_replace(array("'<[\/\!]*?[^<>]*?>'si","'([\r\n])[\s]+'si","'&[a-z0-9]{1,6};'si","'( +)'si"),array("","\\1 "," "," "),strip_tags($str));
-		$rearray = array("~","!","@","#","$","%","^","&","*","(",")","_","+","`",'"',"№",";",":","?","-","=","|","\"","\\","/","[","]","{","}","'",",",".","<",">","\r\n","\n","\t","«","»");
-		$str = @str_replace($rearray," ",$str);
-		$keywordcache = @explode(" ",$str);
-		$rearray = array();
-		foreach ($keywordcache as $word) {
-			if (function_exists('mb_strlen') && mb_strlen($word) >= 5 && !is_numeric($word)) {
-				$adjective = mb_substr($word,-2);
-				if (empty($skip) || (!in_array($adjective,$skip) && !in_array($word,$skip)))
-					$rearray[$word] = (array_key_exists($word,$rearray)) ? ($rearray[$word] + 1) : 1;
+		uasort($result, function($w1, $w2) {
+			return ($w1['count'] < $w2['count'] ? 1 : -1);
+		});
+		$resultMerge = array_count_values(explode('; ', substr($keywords[0], 0, -2)));
+		$keywords = (sizeof($result) > 20 ? array_slice($result, 0, 20) : $result);
+		foreach ($keywords as $w => $obj) {
+			foreach ($obj['indx'] as $inx) {
+				foreach (['left','right'] as $k) {
+					$n = $inx;
+					${$k} = [
+						'v' => null,
+						'c' => 0,
+						'buf' => ''
+					];
+					while (true) {
+						if ($k == 'left')
+							--$n;
+						else
+							++$n;
+						${$k}['v'] = isset($words[$n]) ? $words[$n] : null;
+						if (!is_null(${$k}['v']) && (is_numeric(${$k}['v']) || in_array(${$k}['v'], $skip))) {
+							${$k}['buf'] = ($k == 'left' ? ${$k}['v'].' '.${$k}['buf'] : ${$k}['buf'].' '.${$k}['v']);
+							continue;
+						}
+						if (isset($keywords[${$k}['v']])) {
+							${$k}['c'] = ceil($keywords[${$k}['v']]['count'] / 2);
+							${$k}['buf'] = ($k == 'left' ? ${$k}['v'].' '.${$k}['buf'] : ${$k}['buf'].' '.${$k}['v']);
+							break;
+						}
+						${$k}['buf'] = '';
+						break;
+					};
+					${$k}['buf'] = trim(${$k}['buf']);
+					if(${$k}['buf']) {
+						$word = trim(($k == 'left' ? ${$k}['buf'].' '.$obj['word'] : $obj['word'].' '.${$k}['buf']));
+						if (!isset($resultMerge[$word]))
+							$resultMerge[$word] = $obj['count']+${$k}['c'];
+						++$resultMerge[$word];
+					}
+				}
+				if ($left['buf'] && $right['buf']) {
+					$word = trim($left['buf'].' '.$obj['word'].' '.$right['buf']);
+					if (!isset($resultMerge[$word]))
+						$resultMerge[$word] = $obj['count']+$right['c']+$left['c'];
+					$resultMerge[$word] += 2;
+				}
 			}
 		}
-		@arsort($rearray);
-		$keywordcache = @array_slice($rearray,0,10);
-		$keywords = "";
-		foreach ($keywordcache as $word=>$count) {
-			$keywords.= ",".$word;
-		}
-		return substr($keywords,1);
+		uasort($resultMerge, function($w1, $w2) {
+			return ($w1 < $w2 ? 1 : -1);
+		});
+		$keywords = (sizeof($resultMerge) > 10 ? array_slice($resultMerge, 0, 10) : $resultMerge);
+		//return $keywords;
+		return implode(', ', array_keys($keywords));
 	}
 	public function otp($p1,$p2) {
 		$validChars =  array('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '2', '3', '4', '5', '6', '7', '=');
