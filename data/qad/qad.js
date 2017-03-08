@@ -39,8 +39,8 @@ var Qad={
 				obj = el;
 		}else{
 			var vars = {};
-			var parts = location.search.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
-				vars[key] = value;
+			var parts = location.search.replace(/[?&]+([^=&]+)([^&]*)/gi, function(m,key,value) {
+				vars[key] = (value.slice(0, 1) == '=' ? value.slice(1) : value);
 			});
 			return vars;
 		}
@@ -405,11 +405,18 @@ var Qad={
 		}
 		return debug;
 	},
-	json: function(data) {
+	json: function(data, url) {
 		if (typeof(data) == 'string')
 			data = JSON.parse(data);
 		else if (typeof(data) == 'object')
-			data = JSON.stringify(data);
+			data = (url 
+				?
+					decodeURIComponent(Object.keys(data).map(k => {
+						return encodeURIComponent(k)+'='+encodeURIComponent(data[k])
+					}).join('&'))
+				:
+					JSON.stringify(data)
+			);
 		return data;
 	},
 	find: function(a,v) {
@@ -906,8 +913,12 @@ var Qad={
 		text: function() {
             Qad.$('textarea[name='+Qad.code.id+']').value = Qad.$('iframe[data-code='+Qad.code.id+'] body').$();
 		},
-		focus: function(id) {
-		    Qad.code.id = id;
+		focus: function(id, force) {
+			if (force) {
+				Qad.code.id = id.name;
+				Qad.$('iframe[data-code='+code.id+']').contentWindow.focus();
+			}else
+				Qad.code.id = id;
 		},
 		button: function() {
 		    return '\
@@ -952,7 +963,7 @@ var Qad={
 		        this[k] = o[k];
 		    html = Qad.$(this.el).$();
 		    this.id = Qad.$(this.el).id;
-            Qad.$(this.el).$((this.button ? '<h2>'+this.button()+'</h2><br />' : '' )+'<iframe onmouseover="Qad.code.focus(\''+this.id+'\')" frameborder="no" style="width:98%;margin-left:5px" data-code="'+this.id+'"></iframe><br /><textarea name="'+this.id+'" hidden>'+html+'</textarea>');
+            Qad.$(this.el).$((this.button ? '<h2>'+this.button()+'</h2><br />' : '' )+'<iframe onmouseover="Qad.code.focus(\''+this.id+'\')" onmouseout="Qad.code.text(\''+this.id+'\')" frameborder="no" style="width:98%;margin-left:5px" data-code="'+this.id+'"></iframe><br /><textarea name="'+this.id+'" hidden>'+html+'</textarea>');
             Qad.$('iframe[data-code="'+this.id+'"]').contentDocument.open(); 
             Qad.$('iframe[data-code="'+this.id+'"]').contentDocument.write(html); 
             Qad.$('iframe[data-code="'+this.id+'"]').contentDocument.close();
