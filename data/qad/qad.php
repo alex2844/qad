@@ -10,7 +10,7 @@ Copyright (c) 2016 Alex Smith
 */
 header('Content-Type: text/html; charset=utf-8');
 session_start();
-class Qad{
+class Qad {
 	public static $config;
 	public static $cache;
 	public static $sql;
@@ -66,7 +66,18 @@ class Qad{
 		$modulo = pow(10, 6);
 		return str_pad($value % $modulo, 6, '0', STR_PAD_LEFT);
 	}
-
+	public function config($arr) {
+		self::$config = $arr;
+		$conf = dirname(__DIR__).'/config.php';
+		$c = fopen($conf, 'w');
+		fputs($c, "<?php\nreturn [\n");
+		foreach ($arr as $k=>$v) {
+			if (!empty($v))
+				fputs($c, '"'.$k.'"=>"'.preg_replace('/"/','/\'/',$v)."\",\n");
+		}
+		fputs($c, "];");
+		fclose($c);
+	}
 	public function auth($data) {
 		if (count($data) > 0) {
 			if (!isset($_SERVER['PHP_AUTH_USER'])) {
@@ -75,9 +86,10 @@ class Qad{
 				exit;
 			}else{
 				$error = true;
-				foreach($data as $l=>$p)
+				foreach($data as $l=>$p) {
 					if($_SERVER['PHP_AUTH_USER'] == $l && $_SERVER['PHP_AUTH_PW'] == $p)
 						$error = false;
+				}
 				if ($error)
 					exit;
 			}
@@ -105,6 +117,42 @@ class Qad{
 		setcookie('passport'.($key!=''?'::'.$key:''), $passport, time()+60*60*24*30, '/');
 		$_SESSION['passport'.($key!=''?'::'.$key:'')] = md5($passport);
 		return $passport;
+	}
+	public function csrf($check=false) {
+		if ($check) {
+			if (hash_equals($_SESSION['csrf'], $_REQUEST['csrf']))
+				return true;
+			else
+				return false;
+		}else{
+			if (empty($_SESSION['csrf']))
+				$_SESSION['csrf'] = bin2hex(random_bytes(32));
+			return '<input type="hidden" name="csrf" value="'.$_SESSION['csrf'].'" />';
+		}
+	}
+	public function upload($path, $file, $accept='*/*') {
+		$result = [];
+		if (!empty($file['name'])) {
+			$path = dirname(__DIR__).'/'.$path;
+			$type = explode('/', mime_content_type($file['tmp_name']));
+			$atype = explode('/', $accept);
+			if (empty($name = end(explode('/', $path))))
+				$path .= $name = uniqid().'.'.$type[1];
+			else if (substr($name, -1) == '.') {
+				$name .= $type[1];
+				$path .= $type[1];
+			}
+			if (($accept == '*/*') || ($atype[0] == $type[0] && ($atype[1] == '*' || $atype[1] == $type[1]))) {
+				if (move_uploaded_file($file['tmp_name'], $path))
+					$result[] = $name;
+			}
+		}
+		return implode(',', $result);
+	}
+	public static function dump($a=[]) {
+		echo '<pre id="dump">';
+		print_r($a);
+		echo '</pre>';
 	}
 	public function furl($s) {
 		$s = (string) $s;
@@ -398,6 +446,28 @@ class Qad{
 				}
 				break;
 			}
+		}
+	}
+	public function db($sql='', $param=null) {
+		try {
+			if (empty(self::$sql)) {
+				if (self::$config['db_driver'] == 'mysql')
+					self::$sql = new PDO('mysql:host='.self::$config['db_host'].';dbname='.self::$config['db_name'], $config['db_login'], $config['db_password'], array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8"));
+				else if (self::$config['db_driver'] == 'sqlite')
+					self::$sql = new PDO('sqlite:'.$_SERVER['DOCUMENT_ROOT'].'/'.self::$config['db_name'].'.sqlite');
+				else
+					die ('empty $config["db_driver"]');
+				self::$sql->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+				self::$sql->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_OBJ);
+			}
+			$q = self::$sql->prepare($sql);
+			$q->execute($param);
+			if (!(stripos($sql, 'insert') === false))
+				return self::$sql->lastInsertId();
+			return $q;
+		}catch (Exception $e) {
+			echo json_encode([$e, $sql, $param]);
+			throw $e;
 		}
 	}
 	public function sql($exec,$p1='',$p2='',$p3='',$p4='') {
@@ -804,7 +874,113 @@ class Qad{
 			return $res;
 		}
 	}
+	public static function redirect($url=null, $params=[], $time=0) {
+		if ($url)
+			header('Refresh: '.$time.'; url='.$url.($params ? '?'.http_build_query($params) : ''));
+		else
+			return $_SERVER['REQUEST_URI'];
+	}
+	public static function pagination($count=10, $page=1, $list=null, $limits=null, $total=null) {
+		if ($page == 0)
+			$page = 1;
+		if ($list) {
+			$url = (stristr($_SERVER['REQUEST_URI'], 'page='.$page) === FALSE
+						? (stristr($_SERVER['REQUEST_URI'], '?') === FALSE
+							? $_SERVER['REQUEST_URI'].'?page=#page#'
+							: $_SERVER['REQUEST_URI'].'&page=#page#'
+						)
+						: str_replace('page='.$page, 'page=#page#', $_SERVER['REQUEST_URI'])
+					);
+			return [
+				'list' => array_slice($list, 0, -1),
+				'button' => [
+					'prev' => ($page > 1 ? ($page-1) : null),
+					'prev_url' => str_replace('#page#', $page-1, $url),
+					'next' => (count($list) > $count ? ($page+1) : null),
+					'next_url' => str_replace('#page#', $page+1, $url),
+					'url' => $url,
+					'count' => $count,
+					'total' => $total,
+					'limits' => $limits,
+					'pages' => ($limits ? ceil($total / $count) : null),
+					'page' => $page
+				]
+			];
+		}else
+			return ($page-1)*$count.', '.($count+1);
+	}
+	public static function params($param=null, $default=null, $prefix=null) {
+		$params = (object) array_merge($_FILES, array_merge(['argo' => explode('&', $_SERVER['QUERY_STRING'])[0]], $_REQUEST));
+		if (!empty($_SERVER['argv'][1])) {
+			foreach (array_slice($_SERVER['argv'], 1) as $com) {
+				if (substr($com, 0, 2) != '--')
+					continue;
+				$c = explode('=', substr($com, 2));
+				$params->{$c[0]} = $c[1];
+			}
+		}
+		if ($param) {
+			if (empty($params->{$param}))
+				return $default;
+			else{
+				if ($prefix && count(explode('/', $params->{$param})) == 1)
+					return $prefix.'/'.$params->{$param};
+				else
+					return $params->{$param};
+			}
+		}else
+			return $params;
+	}
+	public static function routing($route=null)  {
+		if (!$route)
+			$route = $_GET['controller'];
+		if (empty($route))
+			return false;
+		$controller = explode('/', $route);
+		if (!file_exists('page/'.$controller[0].'/controllers.php')) {
+			if (file_exists('page/'.$controller[0].'/'.$controller[1].'.php'))
+				include 'page/'.$controller[0].'/'.$controller[1].'.php';
+			else{
+				header('HTTP/1.1 404 Not Found');
+				header('Status: 404 Not Found');
+			}
+			exit;
+		}
+		include 'page/'.$controller[0].'/controllers.php';
+		$controller[] = ucfirst($controller[0]).'Controller';
+		if (count($controller) == 3 && $controller[1] == '')
+			$controller[1] = 'index';
+		else if (count($controller) == 2)
+			$controller = array_merge(array_slice($controller,0,1), ['index'], array_slice($controller, 1));
+		$controller[] = new $controller[2]();
+		if (method_exists($controller[3], 'onready'))
+			echo call_user_func([$controller[3], 'onready'], $_GET);
+		if (method_exists($controller[3], ucfirst($controller[1]).'Action'))
+			echo call_user_func([$controller[3], ucfirst($controller[1]).'Action'], $_GET);
+		else{
+			header('HTTP/1.1 404 Not Found');
+			header('Status: 404 Not Found');
+			exit;
+		}
+		if (method_exists($controller[3], 'onload'))
+			echo call_user_func([$controller[3], 'onload'], $_GET);
+	}
+	public static function model($api) {
+		foreach ($api as $model) {
+			if (file_exists('api/'.$model.'.php'))
+				include_once('api/'.$model.'.php');
+		}
+	}
+	public static function template($t, $data=[]) {
+		ob_start();
+		ob_implicit_flush(false);
+		extract($data, EXTR_OVERWRITE);
+		include 'page/'.$t.'.php';
+		return ob_get_clean();
+	}
 	public function rest($serviceClass) {
+		if (stristr($_SERVER['SCRIPT_FILENAME'], '/api/') === FALSE)
+			return;
 		if (array_key_exists('method', array_change_key_case($_REQUEST, CASE_LOWER))) {
 			$rArray = array_change_key_case($_REQUEST, CASE_LOWER);
 			$method = $rArray['method'];
@@ -826,7 +1002,7 @@ class Qad{
 					$pArray[strtolower($key)] = $rArray[strtolower($key)];
 				if (count($pArray) == $pCount && !in_array(null, $pArray)) {
 					$response = call_user_func_array(array($serviceClass, $method), $pArray);
-					if (gettype($response) == 'array') {
+					if (gettype($response) == 'array' || gettype($response) == 'object') {
 						if (isset($rArray['callback'])) {
 							header('Content-Type: application/x-javascript');
 							echo $rArray['callback'].'('.json_encode($response).');';
