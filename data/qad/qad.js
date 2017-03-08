@@ -743,7 +743,7 @@ var Qad={
 		if (!$('iframe.load'))
 			return;
 		if (typeof(params) != 'string')
-			params = Qad.http_build_query(params);
+			params = Qad.json(params, true);
 		Qad.$('.load').src = 'server.php?'+params;
 	},
 	api: function(method,callback,params) {
@@ -768,25 +768,13 @@ var Qad={
 		document.api.oauth = function() {
 			Qad.session.set('oauth-token-'+provider,null);
 			Qad.session.set('oauth-scope',params.scope);
-			//Qad.session.set('oauth-redirect',location.href);
 			location.href = params.base+'?method='+provider+'&oauth-redirect='+location.href;
 		};
 		if (Qad.session.get('oauth-token-'+provider))
 			params.access_token = Qad.session.get('oauth-token-'+provider);
-		// if (location.origin.indexOf('chrome-extension')==-1) {
 		var script = Qad.$('/script');
-		script.src = method+'?callback=document.api.callback&'+Qad.http_build_query(params);
+		script.src = method+'?callback=document.api.callback&'+Qad.json(params, true);
 		Qad.$('head').add(script);
-		/*
-		}else{
-			var xhr = new XMLHttpRequest();
-			xhr.open('GET', method+'?'+Qad.http_build_query(params));
-			xhr.onload = function () {
-				document.api.callback(JSON.parse(xhr.responseText));
-			}
-			xhr.send();
-		}
-		*/
 	},
 	fs: {
 		open: function(name,callback) {
@@ -1175,82 +1163,65 @@ var Qad={
 		}
 	},
 	gencss: function(css,file) {
-		/* if (!window.requestFileSystem) {
-			Qad.$('link[rel="stylesheet/qad"]').rel = 'stylesheet';
-			Qad.$('head').innerHTML += '<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">';
-			Qad.$('body').style['display'] = 'block';
-		}else{ */
-			if (Qad.session.get('theme-color'))
-				Qad.$('meta[name=theme-color]').content = '#'+Qad.session.get('theme-color');
-			else if (!css)
-				css = (Qad.$('meta[name="theme-color"]')?Qad.$('meta[name="theme-color"]').content.slice(1):'style');
-			else
-				Qad.$('meta[name=theme-color]').content = '#'+css;
-			if (file) {
-				link = Qad.$('/link');
-				link.rel = 'stylesheet/qad';
-				link.href = file;
-				Qad.$('head').add(link);
-			}
-			var style = function() {
-				var style;
-				var xhr = new XMLHttpRequest();
-				xhr.open('GET', Qad.$('link[rel="stylesheet/qad"]').href);
-				xhr.onload = function () {
-					console.log(Qad.$('link[rel="stylesheet/qad"]'));
-					style = xhr.responseText;
-					if (location.origin == 'file://')
-						style = style.replace(/\@location/g,location.href.split('/page')[0]);
-					else if (Qad.$('link[rel="stylesheet/qad"]').href.indexOf('master') != -1)
-						style = style.replace(/\@location/g,Qad.$('link[rel="stylesheet/qad"]').href.split('data')[0]);
-					else
-						style = style.replace(/\@location/g,Qad.$('link[rel="stylesheet/qad"]').href.split('data')[0]);
-					var parts = style.replace(/@(.*?): (.*?);/gim, function(m,key,value) {
-						style = style.replace('@'+key+': '+value+';','');
-						if (value.indexOf('meta.') != -1)
-							value = Qad.$('meta[name="'+value.replace('meta.','')+'"]').content;
-						else if (value.indexOf('data-') != -1)
-							value = Qad.$('body').getAttribute(value);
-						style = style.replace(new RegExp('@'+key, 'g'), value);
-					});
-					style = Qad.compiler.css(style);
-					if (!window.requestFileSystem) {
+		if (Qad.session.get('theme-color'))
+			Qad.$('meta[name=theme-color]').content = '#'+Qad.session.get('theme-color');
+		else if (!css)
+			css = (Qad.$('meta[name="theme-color"]')?Qad.$('meta[name="theme-color"]').content.slice(1):'style');
+		else
+			Qad.$('meta[name=theme-color]').content = '#'+css;
+		if (file) {
+			link = Qad.$('/link');
+			link.rel = 'stylesheet/qad';
+			link.href = file;
+			Qad.$('head').add(link);
+		}
+		var style = function() {
+			var style;
+			var xhr = new XMLHttpRequest();
+			xhr.open('GET', Qad.$('link[rel="stylesheet/qad"]').href);
+			xhr.onload = function () {
+				console.log(Qad.$('link[rel="stylesheet/qad"]'));
+				style = xhr.responseText;
+				if (location.origin == 'file://')
+					style = style.replace(/\@location/g,location.href.split('/page')[0]);
+				else if (Qad.$('link[rel="stylesheet/qad"]').href.indexOf('master') != -1)
+					style = style.replace(/\@location/g,Qad.$('link[rel="stylesheet/qad"]').href.split('data')[0]);
+				else
+					style = style.replace(/\@location/g,Qad.$('link[rel="stylesheet/qad"]').href.split('data')[0]);
+				var parts = style.replace(/@(.*?): (.*?);/gim, function(m,key,value) {
+					style = style.replace('@'+key+': '+value+';','');
+					if (value.indexOf('meta.') != -1)
+						value = Qad.$('meta[name="'+value.replace('meta.','')+'"]').content;
+					else if (value.indexOf('data-') != -1)
+						value = Qad.$('body').getAttribute(value);
+					style = style.replace(new RegExp('@'+key, 'g'), value);
+				});
+				style = Qad.compiler.css(style);
+				if (!window.requestFileSystem) {
+					add = Qad.$('/style');
+					add.innerHTML = style;
+					Qad.$('head').add(add);
+				}else
+					Qad.fs.add('style/'+css+'.css',style,function(e) {
+						setTimeout(function() {
+							Qad.$('link[rel="stylesheet/qad"]').href = e.toURL;
+							Qad.$('link[rel="stylesheet/qad"]').rel = 'stylesheet';
+						},500);
+					},null,function(){
 						add = Qad.$('/style');
 						add.innerHTML = style;
 						Qad.$('head').add(add);
-					}else
-						Qad.fs.add('style/'+css+'.css',style,function(e) {
-							setTimeout(function() {
-								Qad.$('link[rel="stylesheet/qad"]').href = e.toURL;
-								Qad.$('link[rel="stylesheet/qad"]').rel = 'stylesheet';
-							},500);
-						},null,function(){
-							add = Qad.$('/style');
-							add.innerHTML = style;
-							Qad.$('head').add(add);
-						});
-				}
-				xhr.onerror = function() {
-					Qad.$('link[rel="stylesheet/qad"]').rel = 'stylesheet';
-				}
-				xhr.send();
+					});
 			}
-			Qad.fs.exist('style/'+css+'.css',function(e){
-				Qad.$('link[rel="stylesheet/qad"]').href = e.toURL();
+			xhr.onerror = function() {
 				Qad.$('link[rel="stylesheet/qad"]').rel = 'stylesheet';
-			},style);
-		//}
-	},
-	http_build_query: function(data) {
-		var key, use_val, use_key, i = 0, tmp_arr = [];
-		for(key in data){
-			use_key = key;
-			use_val = data[key].toString();
-			use_val = use_val.replace(/%20/g, '+');
-			tmp_arr[i] = use_key+'='+use_val;
-			i++;
+			}
+			xhr.send();
 		}
-		return tmp_arr.join('&');
+		Qad.fs.exist('style/'+css+'.css',function(e){
+			Qad.$('link[rel="stylesheet/qad"]').href = e.toURL();
+			Qad.$('link[rel="stylesheet/qad"]').rel = 'stylesheet';
+		},style);
 	},
 	md5: function(s) {
 		var binl_md5 = function(x, len) {
