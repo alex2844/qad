@@ -20,9 +20,9 @@ var Qad={
 			if (typeof(el) == 'string') {
 				if (el.indexOf('/') == 0) {
 					if (el == '/svg')
-						return document.createElementNS('http://www.w3.org/2000/svg','svg')
+						return Qad.$(document.createElementNS('http://www.w3.org/2000/svg','svg'));
 					else
-						return document.createElement(el.slice(1));
+						return Qad.$(document.createElement(el.slice(1)));
 				}else if (el.indexOf('iframe') != -1) {
 					iframe = el.split(' ');
 					if (iframe.length > 1 && document.querySelector(iframe[0]))
@@ -32,7 +32,7 @@ var Qad={
 					var forms = document.forms;
 					for (var i in el)
 						forms = forms[el[i]];
-					return forms;
+					return Qad.$(forms);
 				}
 				obj = document.querySelector(el);
 			}else
@@ -119,9 +119,12 @@ var Qad={
 			return obj;
 		}
 		obj.status = function(s,f) {
-			if (obj.innerHTML == 'done' || obj.innerHTML == 'close')
-				return;
-			var tmp = obj.innerHTML;
+			//if (obj.innerHTML == 'done' || obj.innerHTML == 'close')
+				//return;
+			if (obj.dataset.time)
+				clearTimeout(obj.dataset.time);
+			if (!obj.dataset.html)
+				obj.dataset.html = obj.innerHTML;
 			if (s == true) {
 				obj.innerHTML = 'done';
 				obj.style['background'] = '#4CAF50';
@@ -136,16 +139,20 @@ var Qad={
 			if (typeof(f) == 'function')
 				setTimeout(function() {
 					f();
-				},1000);
-			setTimeout(function() {
-				obj.innerHTML = tmp;
+				}, 1000);
+			obj.status.time = setTimeout(function() {
+				obj.innerHTML = obj.dataset.html;
 				if (obj.tagName == 'INPUT' || obj.tagName == 'SELECT')
 					obj.style['background'] = 'none';
 				else
 					obj.style['background'] = Qad.$('meta[name="theme-color"]').content;
-			},2000);
+			}, 2000);
 		}
 		obj.on = function(e,f,c) {
+			if (!e) {
+				obj.preventDefault();
+				return obj;
+			}
 			switch (e) {
 				case 'mouse':
 					e = 'mousedown';
@@ -1605,7 +1612,7 @@ window.addEventListener('load',function() {
 	if (location.file.slice(-1) == '?')
 		location.file = location.file.slice(0,-1);
 	delete locarray[(locarray.length-1)];
-	if (location.file.indexOf('.') == -1) {
+	if (location.file.indexOf('.') == -1 && location.pathname != '/') {
 		location.pathname += '/';
 		return;
 	}
