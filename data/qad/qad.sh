@@ -91,6 +91,7 @@ elif [ "$1" == "min" ]; then
 		done
 	done
 	cd $pwd;
+	exit;
 	if [ -e 'qad.js' ]; then
 		res=`curl -X POST -s --data-urlencode 'input@qad.js' 'http://javascript-minifier.com/raw'` # > 'qad';
 		if [ "${res:0:3}" != "502" ]; then
