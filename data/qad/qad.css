@@ -1102,11 +1102,11 @@ footer [data-left] {
 [data-left] {
 	float: left;
 }
-button[data-color] {
+button[data-color], div[data-color] {
 	background-color: @color !important;
 	color: #fff !important;
 }
-label[data-color], i[data-color] {
+label[data-color], i[data-color], span[data-color] {
 	color: @color !important;
 }
 ul.menu[data-right] {
