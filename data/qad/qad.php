@@ -454,7 +454,11 @@ class Qad {
 				if (self::$config['db_driver'] == 'mysql')
 					self::$sql = new PDO('mysql:host='.self::$config['db_host'].';dbname='.self::$config['db_name'], $config['db_login'], $config['db_password'], array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8"));
 				else if (self::$config['db_driver'] == 'sqlite')
-					self::$sql = new PDO('sqlite:'.$_SERVER['DOCUMENT_ROOT'].'/'.self::$config['db_name'].'.sqlite');
+					self::$sql = new PDO('sqlite:'.(
+						file_exists(self::$config['db_name'].'.sqlite')
+						? self::$config['db_name'].'.sqlite'
+						: $_SERVER['DOCUMENT_ROOT'].'/'.self::$config['db_name'].'.sqlite'
+					));
 				else
 					die ('empty $config["db_driver"]');
 				self::$sql->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
