@@ -18,7 +18,7 @@ class Qad {
 	public static $document;
 	
 	public function __construct() {
-		$conf = dirname(__DIR__).'/config.php';
+		$conf = (file_exists('data/config.php') ? 'data/config.php' : dirname(__DIR__).'/config.php');
 		if (file_exists($conf))
 			self::$config = include($conf);
     }	
@@ -68,7 +68,7 @@ class Qad {
 	}
 	public function config($arr) {
 		self::$config = $arr;
-		$conf = dirname(__DIR__).'/config.php';
+		$conf = (file_exists('data/config.php') ? 'data/config.php' : dirname(__DIR__).'/config.php');
 		$c = fopen($conf, 'w');
 		fputs($c, "<?php\nreturn [\n");
 		foreach ($arr as $k=>$v) {
