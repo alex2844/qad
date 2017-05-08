@@ -448,7 +448,7 @@ class Qad {
 			}
 		}
 	}
-	public function db($sql='', $param=null) {
+	public function db($sql='', $param=null, $exec=true) {
 		try {
 			if (empty(self::$sql)) {
 				if (self::$config['db_driver'] == 'mysql')
@@ -465,9 +465,11 @@ class Qad {
 				self::$sql->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_OBJ);
 			}
 			$q = self::$sql->prepare($sql);
-			$q->execute($param);
-			if (!(stripos($sql, 'insert') === false))
-				return self::$sql->lastInsertId();
+			if ($exec) {
+				$q->execute($param);
+				if (!(stripos($sql, 'insert') === false))
+					return self::$sql->lastInsertId();
+			}
 			return $q;
 		}catch (Exception $e) {
 			echo json_encode([$e, $sql, $param]);
