@@ -914,7 +914,7 @@ class Qad {
 			return ($page-1)*$count.', '.($count+1);
 	}
 	public static function params($param=null, $default=null, $prefix=null) {
-		$params = (object) array_merge($_FILES, array_merge(['argo' => explode('&', $_SERVER['QUERY_STRING'])[0]], $_REQUEST));
+		$params = (object) array_merge(['argo' => explode('&', $_SERVER['QUERY_STRING'])[0]], $_FILES, $_GET, $_POST, $_COOKIE, $_SESSION);
 		if (!empty($_SERVER['argv'][1])) {
 			foreach (array_slice($_SERVER['argv'], 1) as $com) {
 				if (substr($com, 0, 2) != '--')
