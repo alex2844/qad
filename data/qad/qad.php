@@ -916,7 +916,7 @@ class Qad {
 			return ($page-1)*$count.', '.($count+1);
 	}
 	public static function params($param=null, $default=null, $prefix=null) {
-		$params = (object) array_merge(['argo' => explode('&', $_SERVER['QUERY_STRING'])[0]], $_FILES, $_GET, $_POST, $_COOKIE, $_SESSION);
+		$params = (object) array_change_key_case(array_merge(['argo' => explode('&', $_SERVER['QUERY_STRING'])[0]], $_FILES, $_GET, $_POST, $_COOKIE, $_SESSION), CASE_LOWER);
 		if (!empty($_SERVER['argv'][1])) {
 			foreach (array_slice($_SERVER['argv'], 1) as $com) {
 				if (substr($com, 0, 2) != '--')
@@ -987,9 +987,9 @@ class Qad {
 	public function rest($serviceClass) {
 		if (stristr($_SERVER['SCRIPT_FILENAME'], '/api/') === FALSE)
 			return;
-		if (array_key_exists('method', array_change_key_case($_REQUEST, CASE_LOWER))) {
-			$rArray = array_change_key_case($_REQUEST, CASE_LOWER);
-			$method = $rArray['method'];
+		if ($this->params('method') || !empty($serviceClass::$method)) {
+			$rArray = (array) $this->params();
+			$method = $this->params('method', (!empty($serviceClass::$method) ? $serviceClass::$method : null));
 			if (method_exists($serviceClass, $method)) {
 				$ref = new ReflectionMethod($serviceClass, $method);
 				$params = $ref->getParameters();
