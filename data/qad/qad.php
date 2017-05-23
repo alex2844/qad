@@ -276,7 +276,7 @@ class Qad {
 			if (empty($p2))
 				return ['check'=>false];
 			$currentTimeSlice = floor(time() / 30);
-			$calculatedCode = $this->getCode($p1, $currentTimeSlice,$validChars);
+			$calculatedCode = self::getCode($p1, $currentTimeSlice,$validChars);
 			if ($calculatedCode == $p2)
 				return ['check'=>true];
 			else
@@ -328,52 +328,51 @@ class Qad {
 		$errno = 0;
 		$errstr = '';
 		try {
-			if(!$socket = fsockopen(self::$config['smtp_host'], self::$config['smtp_port'], $errno, $errstr, 30)){
+			if (!$socket = fsockopen(self::$config['smtp_host'], self::$config['smtp_port'], $errno, $errstr, 30))
 				throw new Exception($errno.".".$errstr);
-			}
-			if (!$this->_parseServer($socket, 220))
+			if (!self::_parseServer($socket, 220))
 				throw new Exception('Connection error');
 			$server_name = $_SERVER["SERVER_NAME"];
 			fputs($socket, "HELO $server_name\r\n");
-			if (!$this->_parseServer($socket, 250)) {
+			if (!self::_parseServer($socket, 250)) {
 				fclose($socket);
 				throw new Exception('Error of command sending: HELO');
 			}
 			fputs($socket, "AUTH LOGIN\r\n");
-			if (!$this->_parseServer($socket, 334)) {
+			if (!self::_parseServer($socket, 334)) {
 				fclose($socket);
 				throw new Exception('Autorization error');
 			}
 			fputs($socket, base64_encode(self::$config['smtp_user']) . "\r\n");
-			if (!$this->_parseServer($socket, 334)) {
+			if (!self::_parseServer($socket, 334)) {
 				fclose($socket);
 				throw new Exception('Autorization error');
 			}
 			fputs($socket, base64_encode(self::$config['smtp_pass']) . "\r\n");
-			if (!$this->_parseServer($socket, 235)) {
+			if (!self::_parseServer($socket, 235)) {
 				fclose($socket);
 				throw new Exception('Autorization error');
 			}
 			fputs($socket, "MAIL FROM: <".self::$config['smtp_user'].">\r\n");
-			if (!$this->_parseServer($socket, 250)) {
+			if (!self::_parseServer($socket, 250)) {
 				fclose($socket);
 				throw new Exception('Error of command sending: MAIL FROM');
 			}
 			$arr = explode(',', $to);
 			foreach($arr as $key=>$email) {
 				fputs($socket, "RCPT TO: <".$email.">\r\n");
-				if (!$this->_parseServer($socket, 250)) {
+				if (!self::_parseServer($socket, 250)) {
 					fclose($socket);
 					throw new Exception('Error of command sending: RCPT TO');
 				}
 			}
 			fputs($socket, "DATA\r\n");     
-			if (!$this->_parseServer($socket, 354)) {
+			if (!self::_parseServer($socket, 354)) {
 				fclose($socket);
 				throw new Exception('Error of command sending: DATA');
 			}
 			fputs($socket, $contentMail."\r\n.\r\n");
-			if (!$this->_parseServer($socket, 250)) {
+			if (!self::_parseServer($socket, 250)) {
 				fclose($socket);
 				throw new Exception("E-mail didn't sent");
 			}
@@ -987,9 +986,9 @@ class Qad {
 	public function rest($serviceClass) {
 		if (stristr($_SERVER['SCRIPT_FILENAME'], '/api/') === FALSE)
 			return;
-		if ($this->params('method') || !empty($serviceClass::$method)) {
-			$rArray = (array) $this->params();
-			$method = $this->params('method', (!empty($serviceClass::$method) ? $serviceClass::$method : null));
+		if (self::params('method') || !empty($serviceClass::$method)) {
+			$rArray = (array) self::params();
+			$method = self::params('method', (!empty($serviceClass::$method) ? $serviceClass::$method : null));
 			if (method_exists($serviceClass, $method)) {
 				$ref = new ReflectionMethod($serviceClass, $method);
 				$params = $ref->getParameters();
