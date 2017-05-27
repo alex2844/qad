@@ -16,11 +16,19 @@ class Qad {
 	public static $sql;
 	public static $nosql;
 	public static $document;
+	private static $debug = [
+		'status' => false,
+		'sql' => []
+	];
 	
 	public function __construct() {
 		$conf = (file_exists('data/config.php') ? 'data/config.php' : dirname(__DIR__).'/config.php');
 		if (file_exists($conf))
 			self::$config = include($conf);
+		if (self::$debug['status']) {
+			ini_set('display_errors', 1);
+			ini_set('error_reporting', 2047);
+		}
     }	
 	private function _parseServer($socket, $response) {
 		$responseServer = '';
@@ -153,6 +161,9 @@ class Qad {
 		echo '<pre id="dump">';
 		print_r($a);
 		echo '</pre>';
+	}
+	public static function debug() {
+		self::$debug['status'] = true;
 	}
 	public function furl($s) {
 		$s = (string) $s;
@@ -463,6 +474,8 @@ class Qad {
 				self::$sql->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 				self::$sql->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_OBJ);
 			}
+			if (self::$debug['status'])
+				self::$debug['sql'][] = ($param ? [$sql, $param] : $sql);
 			$q = self::$sql->prepare($sql);
 			if ($exec) {
 				$q->execute($param);
@@ -915,7 +928,8 @@ class Qad {
 			return ($page-1)*$count.', '.($count+1);
 	}
 	public static function params($param=null, $default=null, $prefix=null) {
-		$params = (object) array_change_key_case(array_merge(['argo' => explode('&', $_SERVER['QUERY_STRING'])[0]], $_FILES, $_GET, $_POST, $_COOKIE, $_SESSION), CASE_LOWER);
+		$query = (isset($_SERVER['QUERY_STRING']) ? $_SERVER['QUERY_STRING'] : '');
+		$params = (object) array_change_key_case(array_merge(['argo' => explode('&', $query)[0]], $_FILES, $_GET, $_POST, $_COOKIE, $_SESSION), CASE_LOWER);
 		if (!empty($_SERVER['argv'][1])) {
 			foreach (array_slice($_SERVER['argv'], 1) as $com) {
 				if (substr($com, 0, 2) != '--')
@@ -981,6 +995,8 @@ class Qad {
 		ob_implicit_flush(false);
 		extract($data, EXTR_OVERWRITE);
 		include 'page/'.$t.'.php';
+		if (self::$debug['status'])
+			self::dump(self::$debug['sql']);
 		return ob_get_clean();
 	}
 	public function rest($serviceClass) {
