@@ -148,7 +148,7 @@ if (!empty($_GET['page'])) {
 			return $replace;
 		},$file);
 	$t = array(
-		'/{(.*?)}/',
+		//'/{(.*?)}/',
 		'/ dev/',
 		'/ style="(.*?)"/',
 		'/<output(.*?)>/',
@@ -159,7 +159,7 @@ if (!empty($_GET['page'])) {
 		'/<body(.*?)>/'
 	);
 	$b = array(
-		'',
+		//'',
 		'',
 		'',
 		'',
