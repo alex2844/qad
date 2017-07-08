@@ -203,6 +203,8 @@ class Qad {
 			preg_match_all('~<([^/][^>]*?)>~', $matches[0], $matches[3]);
 			$matches[3] = explode(' ', $matches[3][1][0])[0];
 			$matches[4] = array_search('|<'.$matches[3].'(.*)>(.+)</'.$matches[3].'>|iU', $size)+2;
+			if (empty($keywords[0]))
+				$keywords[0] = '';
 			$keywords[0] .= str_repeat($matches[2].'; ', $matches[4]*2);
 		}, $text);
 		$text = strip_tags($text);
@@ -227,7 +229,7 @@ class Qad {
 		uasort($result, function($w1, $w2) {
 			return ($w1['count'] < $w2['count'] ? 1 : -1);
 		});
-		$resultMerge = array_count_values(explode('; ', substr($keywords[0], 0, -2)));
+		$resultMerge = (count($keywords) == 0 ? [] : array_count_values(explode('; ', substr($keywords[0], 0, -2))));
 		$keywords = (sizeof($result) > 20 ? array_slice($result, 0, 20) : $result);
 		foreach ($keywords as $w => $obj) {
 			foreach ($obj['indx'] as $inx) {
