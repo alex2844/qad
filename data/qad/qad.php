@@ -29,8 +29,12 @@ class Qad {
 		if (self::$debug['status']) {
 			ini_set('display_errors', 1);
 			ini_set('error_reporting', 2047);
+			self::$debug['memory'] = self::_memory();
 			self::$debug['time'] = self::_microtime();
 		}
+	}
+	private function _memory($start=null) {
+		return (!$start ? memory_get_usage() : sprintf('%.d bytes.', memory_get_usage()-$start));
 	}
 	private function _microtime($start=null) {
 		$time_arr = explode(' ', microtime());
@@ -482,7 +486,7 @@ class Qad {
 			else
 				$opts['http']['content'] = $query;
 			$context = stream_context_create($opts);
-			if ($res = @file_get_contents($url, 0, $context)) {
+			if ($res = file_get_contents($url, 0, $context)) {
 				if (empty($options['cache']) || $options['cache'] != 'no-cache')
 					self::cache('json', $res);
 			}else{
@@ -1041,6 +1045,7 @@ class Qad {
 		extract($data, EXTR_OVERWRITE);
 		include 'page/'.$t.'.php';
 		if ($debug && self::$debug['status']) {
+			self::$debug['memory'] = self::_memory(self::$debug['memory']);
 			self::$debug['time'] = self::_microtime(self::$debug['time']);
 			self::dump(self::$debug);
 		}
