@@ -29,11 +29,13 @@ class Qad {
 		if (self::$debug['status']) {
 			ini_set('display_errors', 1);
 			ini_set('error_reporting', 2047);
+			self::$debug['time'] = self::_microtime();
 		}
 	}
-	private function _microtime($start=0) {
+	private function _microtime($start=null) {
 		$time_arr = explode(' ', microtime());
-		return $time_arr[1]+$time_arr[0]-$start;
+		$time = $time_arr[1]+$time_arr[0];
+		return (!$start ? $time : sprintf('%.5f sec.', $time-$start));
 	}
 	private function _parseServer($socket, $response) {
 		$responseServer = '';
@@ -425,13 +427,16 @@ class Qad {
 				if (file_exists(dirname(__DIR__).'/../upload/cache/') && !empty($name)) {
 					if (empty(self::$cache)) {
 						self::$cache = dirname(__DIR__).'/../upload/cache/'.md5(getcwd().(!empty($name) ? $name : '')).'_json.cache';
-						if (file_exists(self::$cache) && (time()-86400)<filemtime(self::$cache))
-							return file_get_contents(self::$cache);
+						if (file_exists(self::$cache) && (time()-86400)<filemtime(self::$cache)) {
+							$name = self::$cache;
+							self::$cache = null;
+							return file_get_contents($name);
+						}
 					}else{
 						$cached = fopen(self::$cache, 'w');
+						self::$cache = null;
 						fwrite($cached, $name);
 						fclose($cached);
-						self::$cache = null;
 					}
 				}
 				break;
@@ -485,7 +490,8 @@ class Qad {
 			self::$debug['fetch'][] = [
 				'url' => $url,
 				'options' => $options,
-				'time' => round(self::_microtime($debug), 5)
+				//'time' => round(self::_microtime($debug), 5)
+				'time' => self::_microtime($debug)
 			];
 		return ($then == 'text' ? $res : (
 			$then == 'json' ? json_decode($res) : (
@@ -1030,8 +1036,10 @@ class Qad {
 		ob_implicit_flush(false);
 		extract($data, EXTR_OVERWRITE);
 		include 'page/'.$t.'.php';
-		if ($debug && self::$debug['status'])
+		if ($debug && self::$debug['status']) {
+			self::$debug['time'] = round(self::_microtime(self::$debug['time']), 5);
 			self::dump(self::$debug);
+		}
 		return ob_get_clean();
 	}
 	public function rest($serviceClass) {
