@@ -447,6 +447,26 @@ class Qad {
 				}
 				break;
 			}
+			case 'image': {
+				if (!file_exists(dirname(__DIR__).'/../upload/cache/') || empty($name))
+					return $name;
+				$href = strripos($name, 'http');
+				$file = explode('/', $name);
+				$file = end($file);
+				$file = explode('.', $file);
+				$file = [
+					implode('.', array_slice($file, 0, -1)),
+					end($file)
+				];
+				if ($href === false || $href > 0 || !in_array(strtolower($file[1]), ['gif', 'jpg', 'jpeg', 'png']))
+					return $name;
+				$file[] = '/upload/cache/'.md5(getcwd().$file[0]).'.'.$file[1];
+				self::$cache = dirname(__DIR__).'/..'.$file[2];
+				if (!(file_exists(self::$cache) && (time()-86400)<filemtime(self::$cache)))
+					file_put_contents(self::$cache, file_get_contents($name));
+				return $file[2];
+				break;
+			}
 			case 'start': {
 				if (file_exists(dirname(__DIR__).'/../upload/cache/')) {
 					self::$cache = dirname(__DIR__).'/../upload/cache/'.md5(getcwd().(!empty($name) ? $name : '')).'_'.md5($_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI']).'.cache';
