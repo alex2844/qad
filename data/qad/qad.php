@@ -19,7 +19,12 @@ class Qad {
 	private static $debug = [
 		'status' => false
 	];
-	
+	private static $color = [
+		'red' => "\033[31m%s\033[0m",
+		'green' => "\033[32m%s\033[0m",
+		'cyan' => "\033[36m%s\033[0m"
+	];
+
 	public function __construct() {
 		$conf = (file_exists('data/config.php') ? 'data/config.php' : dirname(__DIR__).'/config.php');
 		if (file_exists($conf))
@@ -32,11 +37,13 @@ class Qad {
 		}
 	}
 	public function err($errno=null, $errmsg=null, $filename=null, $linenum=null, $vars=null) {
+		$log = ($errmsg ? [
+			$errmsg.' ('.$errno.')',
+			$filename.' ('.$linenum.')'
+		] : $errno);
 		if (self::$debug['status'])
-			self::$debug['error'][] = ($errmsg ? [
-				$errmsg.' ('.$errno.')',
-				$filename.' ('.$linenum.')'
-			] : $errno);
+			self::$debug['error'][] = $log;
+		error_log(sprintf(self::$color['red'], print_r($log, true)));
 	}
 	private static function _memory($start=null) {
 		return (!$start ? memory_get_usage() : sprintf('%.d bytes.', memory_get_usage()-$start));
@@ -524,12 +531,15 @@ class Qad {
 				self::$cache = null;
 			}
 		}
-		if (self::$debug['status'])
-			self::$debug['fetch'][] = [
+		if ($res && self::$debug['status']) {
+			$log = [
 				'url' => $url,
 				'options' => $options,
 				'time' => self::_microtime($debug)
 			];
+			self::$debug['fetch'][] = $log;
+			error_log(sprintf(self::$color['green'], print_r($log, true)));
+		}
 		return ($then == 'text' ? $res : (
 			$then == 'json' ? json_decode($res) : (
 				$then == 'array' ? json_decode($res, true) : null
@@ -1076,7 +1086,11 @@ class Qad {
 		if ($debug && self::$debug['status']) {
 			self::$debug['memory'] = self::_memory(self::$debug['memory']);
 			self::$debug['time'] = self::_microtime(self::$debug['time']);
-			self::dump(self::$debug);
+			error_log(sprintf(self::$color['cyan'], print_r([
+				'memory' => self::$debug['memory'],
+				'time' => self::$debug['time']
+			], true)));
+			echo '<script>console.log('.json_encode(self::$debug).');</script>';
 		}
 		return ob_get_clean();
 	}
