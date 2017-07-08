@@ -17,9 +17,7 @@ class Qad {
 	public static $nosql;
 	public static $document;
 	private static $debug = [
-		'status' => false,
-		'db' => [],
-		'fetch' => []
+		'status' => false
 	];
 	
 	public function __construct() {
@@ -33,10 +31,17 @@ class Qad {
 			self::$debug['time'] = self::_microtime();
 		}
 	}
-	private function _memory($start=null) {
+	public function err($errno=null, $errmsg=null, $filename=null, $linenum=null, $vars=null) {
+		if (self::$debug['status'])
+			self::$debug['error'][] = ($errmsg ? [
+				$errmsg.' ('.$errno.')',
+				$filename.' ('.$linenum.')'
+			] : $errno);
+	}
+	private static function _memory($start=null) {
 		return (!$start ? memory_get_usage() : sprintf('%.d bytes.', memory_get_usage()-$start));
 	}
-	private function _microtime($start=null) {
+	private static function _microtime($start=null) {
 		$time_arr = explode(' ', microtime());
 		$time = $time_arr[1]+$time_arr[0];
 		return (!$start ? $time : sprintf('%.5f sec.', $time-$start));
@@ -427,7 +432,7 @@ class Qad {
 				return false;
 		}
 	}
-	public function cache($exec, $name='') {
+	public static function cache($exec, $name='') {
 		switch($exec) {
 			case 'json': {
 				if (file_exists(dirname(__DIR__).'/../upload/cache/') && !empty($name)) {
@@ -462,8 +467,10 @@ class Qad {
 					return $name;
 				$file[] = '/upload/cache/'.md5(getcwd().$file[0]).'.'.$file[1];
 				self::$cache = dirname(__DIR__).'/..'.$file[2];
-				if (!(file_exists(self::$cache) && (time()-86400)<filemtime(self::$cache)))
-					file_put_contents(self::$cache, file_get_contents($name));
+				if (!(file_exists(self::$cache) && (time()-86400)<filemtime(self::$cache))) {
+					if ($cache = @file_get_contents($name))
+						file_put_contents(self::$cache, $cache);
+				}
 				return $file[2];
 				break;
 			}
@@ -494,7 +501,7 @@ class Qad {
 			}
 		}
 	}
-	public function fetch($url, $options=[], $then='text') {
+	public static function fetch($url, $options=[], $then='text') {
 		if (self::$debug['status'])
 			$debug = self::_microtime();
 		$query = (empty($options['body']) ? '' : http_build_query($options['body']));
@@ -512,8 +519,8 @@ class Qad {
 				if (empty($options['cache']) || $options['cache'] != 'no-cache')
 					self::cache('json', $res);
 			}else{
-				if (self::$debug['status'])
-					self::$debug['error'][] = error_get_last();
+				if (file_exists(self::$cache))
+					$res = file_get_contents(self::$cache);
 				self::$cache = null;
 			}
 		}
@@ -529,7 +536,7 @@ class Qad {
 			)
 		));
 	}
-	public function db($sql='', $param=null, $exec=true) {
+	public static function db($sql='', $param=null, $exec=true) {
 		try {
 			if (empty(self::$sql)) {
 				if (self::$config['db_driver'] == 'mysql')
@@ -1137,3 +1144,4 @@ class Qad {
 	}
 }
 $qad = new Qad();
+set_error_handler('Qad::err');
