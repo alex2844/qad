@@ -482,15 +482,19 @@ class Qad {
 			else
 				$opts['http']['content'] = $query;
 			$context = stream_context_create($opts);
-			$res = file_get_contents($url, 0, $context);
-			if (empty($options['cache']) || $options['cache'] != 'no-cache')
-				self::cache('json', $res);
+			if ($res = @file_get_contents($url, 0, $context)) {
+				if (empty($options['cache']) || $options['cache'] != 'no-cache')
+					self::cache('json', $res);
+			}else{
+				if (self::$debug['status'])
+					self::$debug['error'][] = error_get_last();
+				self::$cache = null;
+			}
 		}
 		if (self::$debug['status'])
 			self::$debug['fetch'][] = [
 				'url' => $url,
 				'options' => $options,
-				//'time' => round(self::_microtime($debug), 5)
 				'time' => self::_microtime($debug)
 			];
 		return ($then == 'text' ? $res : (
@@ -516,7 +520,7 @@ class Qad {
 				self::$sql->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_OBJ);
 			}
 			if (self::$debug['status'])
-				self::$debug['sql'][] = ($param ? [$sql, $param] : $sql);
+				self::$debug['db'][] = ($param ? [$sql, $param] : $sql);
 			$q = self::$sql->prepare($sql);
 			if ($exec) {
 				$q->execute($param);
@@ -1037,7 +1041,7 @@ class Qad {
 		extract($data, EXTR_OVERWRITE);
 		include 'page/'.$t.'.php';
 		if ($debug && self::$debug['status']) {
-			self::$debug['time'] = round(self::_microtime(self::$debug['time']), 5);
+			self::$debug['time'] = self::_microtime(self::$debug['time']);
 			self::dump(self::$debug);
 		}
 		return ob_get_clean();
