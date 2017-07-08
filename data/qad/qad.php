@@ -18,7 +18,8 @@ class Qad {
 	public static $document;
 	private static $debug = [
 		'status' => false,
-		'sql' => []
+		'db' => [],
+		'fetch' => []
 	];
 	
 	public function __construct() {
@@ -29,7 +30,11 @@ class Qad {
 			ini_set('display_errors', 1);
 			ini_set('error_reporting', 2047);
 		}
-    }	
+	}
+	private function _microtime($start=0) {
+		$time_arr = explode(' ', microtime());
+		return $time_arr[1]+$time_arr[0]-$start;
+	}
 	private function _parseServer($socket, $response) {
 		$responseServer = '';
 		while (@substr($responseServer, 3, 1) != ' ') {
@@ -414,7 +419,7 @@ class Qad {
 				return false;
 		}
 	}
-	public function cache($exec,$name='') {
+	public function cache($exec, $name='') {
 		switch($exec) {
 			case 'json': {
 				if (file_exists(dirname(__DIR__).'/../upload/cache/') && !empty($name)) {
@@ -457,6 +462,36 @@ class Qad {
 				break;
 			}
 		}
+	}
+	public function fetch($url, $options=[], $then='text') {
+		if (self::$debug['status'])
+			$debug = self::_microtime();
+		$query = (empty($options['body']) ? '' : http_build_query($options['body']));
+		if ((!empty($options['cache']) && $options['cache'] == 'no-cache') || !$res = self::cache('json', $url.$query)) {
+			$opts = ['http' => [
+				'method' => (empty($options['method']) ? 'GET' : strtoupper($options['method'])),
+				'header' => (empty($options['header']) ? 'Content-type: application/x-www-form-urlencoded' : $options['header'])
+			]];
+			if ($opts['http']['method'] == 'GET' && !empty($query))
+				$url .= '?'.$query;
+			else
+				$opts['http']['content'] = $query;
+			$context = stream_context_create($opts);
+			$res = file_get_contents($url, 0, $context);
+			if (empty($options['cache']) || $options['cache'] != 'no-cache')
+				self::cache('json', $res);
+		}
+		if (self::$debug['status'])
+			self::$debug['fetch'][] = [
+				'url' => $url,
+				'options' => $options,
+				'time' => round(self::_microtime($debug), 5)
+			];
+		return ($then == 'text' ? $res : (
+			$then == 'json' ? json_decode($res) : (
+				$then == 'array' ? json_decode($res, true) : null
+			)
+		));
 	}
 	public function db($sql='', $param=null, $exec=true) {
 		try {
@@ -990,13 +1025,13 @@ class Qad {
 				include_once('api/'.$model.'.php');
 		}
 	}
-	public static function template($t, $data=[]) {
+	public static function template($t, $data=[], $debug=false) {
 		ob_start();
 		ob_implicit_flush(false);
 		extract($data, EXTR_OVERWRITE);
 		include 'page/'.$t.'.php';
-		if (self::$debug['status'])
-			self::dump(self::$debug['sql']);
+		if ($debug && self::$debug['status'])
+			self::dump(self::$debug);
 		return ob_get_clean();
 	}
 	public function rest($serviceClass) {

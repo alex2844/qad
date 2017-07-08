@@ -58,34 +58,34 @@ elif [ "$1" == "min" ]; then
 						qad=$pwd'/../../upload/color/'$color'.css';
 						cd $pwd;
 					fi
-					if [ -e "$qad" ]; then
-						sed -r 's/@color/#'$color'/g' $qad > $qad'.qad';
-						mv $qad'.qad' $qad;
-						sed -r 's/@color: meta.theme-color;//g' $qad > $qad'.qad';
-						mv $qad'.qad' $qad;
-						sed -i '/meta./d' $qad;
-						curl -X POST -s --data-urlencode 'input@'$qad 'http://cssminifier.com/raw' > $qad'.qad';
-						mv $qad'.qad' $qad;
-						if [ ! -z "$2" ]; then
-							mkdir -p '../../page/'$2'/data/qad/';
-							cp $qad '../../page/'$2'/data/qad/qad.min.css';
-							qad='../../page/'$2'/data/qad/qad.min.css';
-							sed -r 's/<script src=".*qad.js">/<script src="data\/qad\/qad.min.js">/g' $filename.$filetype > $filename.$filetype.qad;
-							mv $filename.$filetype'.qad' $filename.$filetype;
-							sed -r 's/<link.*stylesheet\/qad.*>/<link type="text\/css" rel="stylesheet" href="data\/qad\/qad.min.css" \/>/g' $filename.$filetype > $filename.$filetype.qad;
-							sed -r 's/@location\//..\/..\//g' $qad > $qad'.qad';
-						elif [ "$(echo $qadf | grep '://')" ]; then
-							sed -r 's/<link.*stylesheet\/qad.*>/<link type="text\/css" rel="stylesheet" href="'$color'.css" \/>/g' $filename.$filetype > $filename.$filetype.qad;
-							sed -r 's/@location\///g' $qad > $qad'.qad';
-						else
-							sed -r 's/<link.*stylesheet\/qad.*>/<link type="text\/css" rel="stylesheet" href="..\/..\/upload\/color\/'$color'.css" \/>/g' $filename.$filetype > $filename.$filetype.qad;
-							sed -r 's/@location\//..\/..\//g' $qad > $qad'.qad';
-						fi
-						mv $qad'.qad' $qad;
-						mv $filename.$filetype'.qad' $filename.$filetype;
-						sed ':a;N;$!ba;s/>\s*</></g' $filename.$filetype > $filename.$filetype.qad;
-						mv $filename.$filetype.qad $filename.$filetype;
-					fi
+					#if [ -e "$qad" ]; then
+						#sed -r 's/@color/#'$color'/g' $qad > $qad'.qad';
+						#mv $qad'.qad' $qad;
+						#sed -r 's/@color: meta.theme-color;//g' $qad > $qad'.qad';
+						#mv $qad'.qad' $qad;
+						#sed -i '/meta./d' $qad;
+						#curl -X POST -s --data-urlencode 'input@'$qad 'http://cssminifier.com/raw' > $qad'.qad';
+						#mv $qad'.qad' $qad;
+						#if [ ! -z "$2" ]; then
+							#mkdir -p '../../page/'$2'/data/qad/';
+							#cp $qad '../../page/'$2'/data/qad/qad.min.css';
+							#qad='../../page/'$2'/data/qad/qad.min.css';
+							#sed -r 's/<script src=".*qad.js">/<script src="data\/qad\/qad.min.js">/g' $filename.$filetype > $filename.$filetype.qad;
+							#mv $filename.$filetype'.qad' $filename.$filetype;
+							#sed -r 's/<link.*stylesheet\/qad.*>/<link type="text\/css" rel="stylesheet" href="data\/qad\/qad.min.css" \/>/g' $filename.$filetype > $filename.$filetype.qad;
+							#sed -r 's/@location\//..\/..\//g' $qad > $qad'.qad';
+						#elif [ "$(echo $qadf | grep '://')" ]; then
+							#sed -r 's/<link.*stylesheet\/qad.*>/<link type="text\/css" rel="stylesheet" href="'$color'.css" \/>/g' $filename.$filetype > $filename.$filetype.qad;
+							#sed -r 's/@location\///g' $qad > $qad'.qad';
+						#else
+							#sed -r 's/<link.*stylesheet\/qad.*>/<link type="text\/css" rel="stylesheet" href="..\/..\/upload\/color\/'$color'.css" \/>/g' $filename.$filetype > $filename.$filetype.qad;
+							#sed -r 's/@location\//..\/..\//g' $qad > $qad'.qad';
+						#fi
+						#mv $qad'.qad' $qad;
+						#mv $filename.$filetype'.qad' $filename.$filetype;
+						#sed ':a;N;$!ba;s/>\s*</></g' $filename.$filetype > $filename.$filetype.qad;
+						#mv $filename.$filetype.qad $filename.$filetype;
+					#fi
 				fi
 			done
 		done
