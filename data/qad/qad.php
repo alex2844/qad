@@ -187,8 +187,10 @@ class Qad {
 	}
 	public static function debug($i=null) {
 		self::$debug['status'] = true;
-		if ($i)
+		if ($i) {
 			self::$debug['debug'] = $i;
+			error_log(sprintf(self::$color['cyan'], print_r($i, true)));
+		}
 	}
 	public function furl($s) {
 		$s = (string) $s;
