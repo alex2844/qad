@@ -185,8 +185,10 @@ class Qad {
 		print_r($a);
 		echo '</pre>';
 	}
-	public static function debug() {
+	public static function debug($i=null) {
 		self::$debug['status'] = true;
+		if ($i)
+			self::$debug['debug'] = $i;
 	}
 	public function furl($s) {
 		$s = (string) $s;
