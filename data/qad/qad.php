@@ -439,12 +439,14 @@ class Qad {
 				return false;
 		}
 	}
-	public static function cache($exec, $name='') {
+	public static function cache($exec, $name='', $prefix='') {
+		if (!empty($prefix))
+			$prefix .= '_';
 		switch($exec) {
 			case 'json': {
 				if (file_exists(dirname(__DIR__).'/../upload/cache/') && !empty($name)) {
 					if (empty(self::$cache)) {
-						self::$cache = dirname(__DIR__).'/../upload/cache/'.md5(getcwd().(!empty($name) ? $name : '')).'_json.cache';
+						self::$cache = dirname(__DIR__).'/../upload/cache/'.$prefix.md5(getcwd().(!empty($name) ? $name : '')).'_json.cache';
 						if (file_exists(self::$cache) && (time()-86400)<filemtime(self::$cache)) {
 							$name = self::$cache;
 							self::$cache = null;
@@ -472,7 +474,7 @@ class Qad {
 				];
 				if ($href === false || $href > 0 || !in_array(strtolower($file[1]), ['gif', 'jpg', 'jpeg', 'png']))
 					return $name;
-				$file[] = '/upload/cache/'.md5(getcwd().$file[0]).'.'.$file[1];
+				$file[] = '/upload/cache/'.$prefix.md5(getcwd().$file[0]).'.'.$file[1];
 				self::$cache = dirname(__DIR__).'/..'.$file[2];
 				if (!(file_exists(self::$cache) && (time()-86400)<filemtime(self::$cache))) {
 					if ($cache = @file_get_contents($name))
@@ -483,7 +485,7 @@ class Qad {
 			}
 			case 'start': {
 				if (file_exists(dirname(__DIR__).'/../upload/cache/')) {
-					self::$cache = dirname(__DIR__).'/../upload/cache/'.md5(getcwd().(!empty($name) ? $name : '')).'_'.md5($_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI']).'.cache';
+					self::$cache = dirname(__DIR__).'/../upload/cache/'.$prefix.md5(getcwd().(!empty($name) ? $name : '')).'_'.md5($_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI']).'.cache';
 					if (file_exists(self::$cache) && (time()-86400)<filemtime(self::$cache))
 						return file_get_contents(self::$cache);
 					ob_start();
@@ -492,8 +494,12 @@ class Qad {
 				break;
 			}
 			case 'clear': {
-				if (file_exists(dirname(__DIR__).'/../upload/cache/'))
-					array_map('unlink', glob(dirname(__DIR__).'/../upload/cache/'.md5(getcwd().(!empty($name) ? $name : '')).'_*.cache'));
+				if (file_exists(dirname(__DIR__).'/../upload/cache/')) {
+					if (!empty($name))
+						array_map('unlink', glob(dirname(__DIR__).'/../upload/cache/'.$prefix.md5(getcwd().(!empty($name) ? $name : '')).'_*.cache'));
+					else if (!empty($prefix))
+						array_map('unlink', glob(dirname(__DIR__).'/../upload/cache/'.$prefix.'*'));
+				}
 				break;
 			}
 			case 'stop': {
@@ -508,11 +514,11 @@ class Qad {
 			}
 		}
 	}
-	public static function fetch($url, $options=[], $then='text') {
+	public static function fetch($url, $options=[], $then='text', $prefix=null) {
 		if (self::$debug['status'])
 			$debug = self::_microtime();
 		$query = (empty($options['body']) ? '' : http_build_query($options['body']));
-		if ((!empty($options['cache']) && $options['cache'] == 'no-cache') || !$res = self::cache('json', $url.$query)) {
+		if ((!empty($options['cache']) && $options['cache'] == 'no-cache') || !$res = self::cache('json', $url.$query, $prefix)) {
 			$opts = ['http' => [
 				'method' => (empty($options['method']) ? 'GET' : strtoupper($options['method'])),
 				'header' => (empty($options['header']) ? 'Content-type: application/x-www-form-urlencoded' : $options['header'])
@@ -524,7 +530,7 @@ class Qad {
 			$context = stream_context_create($opts);
 			if ($res = file_get_contents($url, 0, $context)) {
 				if (empty($options['cache']) || $options['cache'] != 'no-cache')
-					self::cache('json', $res);
+					self::cache('json', $res, $prefix);
 			}else{
 				if (file_exists(self::$cache))
 					$res = file_get_contents(self::$cache);
