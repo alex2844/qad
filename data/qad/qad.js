@@ -1635,6 +1635,15 @@ window.addEventListener('load',function() {
 	window.requestFileSystem = window.requestFileSystem || window.webkitRequestFileSystem;
 	if (typeof(console) !=="undefined" && console.log)
 		console.info("%c Сюда вставлять не что не надо, иначе откроете доступ к своему аккаунту!",'color:red;font-weight:bold;font-style:italic;font-size:16px;');
+	if (Qad.$('html[data-clearcache]'))
+		Qad.$('html[data-clearcache]').on('key', (e) => {
+			if (e.ctrlKey && e.altKey && e.keyCode == 82) {
+				alert('Server cache clear');
+				$$.fs.remove('style/');
+				location.href = Qad.$('html[data-clearcache]').dataset.clearcache;
+			}else if (e.ctrlKey && e.shiftKey && e.keyCode == 82)
+				alert('Client cache clear');
+		}, 'cache');
 	if (Qad.$('button#menu + nav'))
 		Qad.init('button#menu + nav');
 	if (Qad.$('link[rel="stylesheet/qad"]')) {
