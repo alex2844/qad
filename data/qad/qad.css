@@ -771,7 +771,7 @@ div#header-panel *:nth-child(1) {
 }
 div#header-panel *:nth-child(2) {
 	position: absolute;
-	top: 7px;
+	top: 10px;
 	left: 55px;
 	right: 55px;
 	width: calc(100% - 110px);
