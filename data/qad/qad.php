@@ -744,7 +744,7 @@ class Qad {
 			}
 		}
 	}
-	public function nosql($exec,$p1='',$p2='',$p3='',$p4='') {
+	public static function nosql($exec,$p1='',$p2='',$p3='',$p4='') {
 		switch($exec) {
 			case 'search': {
 				$p1 = mb_strtolower($p1);
@@ -1105,8 +1105,10 @@ class Qad {
 		return ob_get_clean();
 	}
 	public function rest($serviceClass) {
+		/*
 		if (stristr($_SERVER['SCRIPT_FILENAME'], '/api/') === FALSE)
 			return;
+		 */
 		if (self::params('method') || !empty($serviceClass::$method)) {
 			$rArray = (array) self::params();
 			$method = self::params('method', (!empty($serviceClass::$method) ? $serviceClass::$method : null));
