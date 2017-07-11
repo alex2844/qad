@@ -70,6 +70,9 @@ img:not([src]), div.tabs, body:not([data-panel]) #header-panel, body[data-panel]
 	float: left;
 	box-sizing: border-box;
 }
+.card .p * {
+	float: none !important;
+}
 ._1, ._2, ._3, ._4, ._5, ._6 {
 	margin: 0;
 }
@@ -393,6 +396,17 @@ section {
 	font-weight: 700;
 	text-align: center;
 	text-transform: uppercase;
+}
+.min + .clear + .parallax {
+	background-position-y: 64px;
+}
+.min.tabs + .clear + .parallax {
+	background-position-y: 111px;
+}
+.parallax + .card.top {
+	margin: -25vw auto 1% auto;
+	position: relative;
+	width: 80%;
 }
 .parallax:after {
 	content: 'keyboard_arrow_down';
