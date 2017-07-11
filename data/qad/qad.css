@@ -1308,6 +1308,11 @@ footer [data-right] {
 		width: 100% !important;
 	}
 }
+@media all and (orientation: portrait) {
+	.parallax + .card.top {
+		margin: -100vw auto 1% auto !important;
+	}
+}
 @keyframes zoomLoop {
 	0% {transform: scale3d(1);}
 	50% {transform: scale3d(1.2, 1.2, 1);}
