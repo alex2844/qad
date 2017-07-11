@@ -70,8 +70,8 @@ img:not([src]), div.tabs, body:not([data-panel]) #header-panel, body[data-panel]
 	float: left;
 	box-sizing: border-box;
 }
-._6 {
-	width: 100%;
+._1, ._2, ._3, ._4, ._5, ._6 {
+	margin: 0;
 }
 ._1 {
 	width: calc(16.67% - 0.04px);
@@ -87,6 +87,9 @@ img:not([src]), div.tabs, body:not([data-panel]) #header-panel, body[data-panel]
 }
 ._5 {
 	width: 83.33%;
+}
+._6 {
+	width: 100%;
 }
 a {
 	text-decoration: none;
@@ -702,10 +705,13 @@ table > thead > tr > th, table > tbody > tr > th, table > tfoot > tr > th, table
 	padding: 1.6rem;
 	padding: 12px 18px 12px 24px;
 }
-table:not(.f) > thead > tr > th, table:not(.f) > tbody > tr > th, table:not(.f) > tfoot > tr > th, table:not(.f) > thead > tr > td, table:not(.f) > tbody > tr > td, table:not(.f) > tfoot > tr > td {
+.cut, table:not(.f) > thead > tr > th, table:not(.f) > tbody > tr > th, table:not(.f) > tfoot > tr > th, table:not(.f) > thead > tr > td, table:not(.f) > tbody > tr > td, table:not(.f) > tfoot > tr > td {
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
+}
+.cut {
+	width: 100%;
 }
 table {
 	display: table;
