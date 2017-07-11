@@ -1107,7 +1107,7 @@ button[data-color], div[data-color] {
 	background-color: @color !important;
 	color: #fff !important;
 }
-label[data-color], i[data-color], span[data-color] {
+label[data-color], i[data-color], span[data-color], small[data-color] {
 	color: @color !important;
 }
 ul.menu[data-right] {
