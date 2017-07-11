@@ -74,7 +74,7 @@ img:not([src]), div.tabs, body:not([data-panel]) #header-panel, body[data-panel]
 	width: 100%;
 }
 ._1 {
-	width: 16.67%;
+	width: calc(16.67% - 0.04px);
 }
 ._2 {
 	width: 33.33%;
@@ -1262,6 +1262,24 @@ footer [data-right] {
 	table > thead + tbody > tr > td[data-title]:before {
 		content: attr(data-title);
 		float: left;
+	}
+	._1m {
+		width: 16.67% !important;
+	}
+	._2m {
+		width: 33.33% !important;
+	}
+	._3m {
+		width: 50% !important;
+	}
+	._4m {
+		width: 66.67% !important;
+	}
+	._5m {
+		width: 83.33% !important;
+	}
+	._6m {
+		width: 100% !important;
 	}
 }
 @keyframes zoomLoop {
