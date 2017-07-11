@@ -480,10 +480,8 @@ class Qad {
 					return $name;
 				$file[] = '/upload/cache/'.$prefix.md5(getcwd().$file[0]).'.'.$file[1];
 				self::$cache = dirname(__DIR__).'/..'.$file[2];
-				if (!(file_exists(self::$cache) && (time()-86400)<filemtime(self::$cache))) {
-					if ($cache = @file_get_contents($name))
-						file_put_contents(self::$cache, $cache);
-				}
+				if (!(file_exists(self::$cache) && (time()-86400)<filemtime(self::$cache)))
+					copy($name, self::$cache);
 				return $file[2];
 				break;
 			}
