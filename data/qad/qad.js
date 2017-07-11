@@ -160,6 +160,18 @@ var Qad={
 				case 'key':
 					e = 'keydown';
 					break;
+				case 'scroll': {
+					if (obj.tagName == 'BODY')
+						obj = window;
+					obj.addEventListener('scroll', e => {
+						e.top = document.body.scrollTop;
+						e.down = document.body.scrollHeight - (document.documentElement.clientHeight + document.body.scrollTop);
+						e.pos = (e.top == 0 ? 'top' : (e.down == 0 ? 'down' : null));
+						f(e);
+					});
+					return;
+					break;
+				}
 				case 'swipe':
 					var swipe, startX, startY, startTime;
 					obj.addEventListener((document.ontouchstart === null ? 'touchstart' : 'mousedown'), function(e) {
