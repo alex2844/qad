@@ -456,8 +456,8 @@ var Qad={
 				o(e1);
 			});
 		else if (typeof(i) == 'string' && document.querySelector(i))
-			[].forEach.call(document.querySelectorAll(i), function(e1) {
-				o(e1);
+			[].forEach.call(Qad.$$(i), function(e1) {
+				o(Qad.$(e1));
 			});
 		else
 			return false;
