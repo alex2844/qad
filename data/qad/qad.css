@@ -141,6 +141,12 @@ h2 {
 	min-height: 28px;
 	line-height: 28px;
 }
+h3 {
+	font-weight: 500;
+	text-transform: uppercase;
+	color: rgba(0,0,0,.54);
+	font-size: 18px;
+}
 p {
 	color: rgba(0, 0, 0, 0.701961);
 	padding-bottom: 24px;
