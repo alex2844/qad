@@ -17,7 +17,9 @@ var Qad={
 	$:function(el) {
 		var obj;
 		if (el) {
-			if (typeof(el) == 'string') {
+			if (el.target)
+				obj = el.target;
+			else if (typeof(el) == 'string') {
 				if (el.indexOf('/') == 0) {
 					if (el == '/svg')
 						return Qad.$(document.createElementNS('http://www.w3.org/2000/svg','svg'));
