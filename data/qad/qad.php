@@ -472,14 +472,17 @@ class Qad {
 				$file[] = '/upload/cache/'.$prefix.md5(getcwd().(!empty($name) ? $name : '')).'.css';
 				self::$cache = dirname(__DIR__).'/..'.$file[2];
 				if (!(file_exists(self::$cache) && (time()-86400)<filemtime(self::$cache)))
-					file_put_contents(self::$cache, str_replace([
-						'@color: meta.theme-color;'."\r\n",
-						'@color',
-						'@location'
+					file_put_contents(self::$cache, preg_replace([
+						"'@color: meta.theme-color;'",
+						"'@color'",
+						"'@location'",
+						"'(\/\/(.*?)\n)|(\/\*(.*?)\*\/)'si",
+						"'\r'",
+						"'\n'",
+						"'	'"
 					], [
 						'',
-						'#'.$file[1],
-						''
+						'#'.$file[1]
 					], file_get_contents($file[0])));
 				return $file[2];
 				break;
