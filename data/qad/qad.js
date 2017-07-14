@@ -1791,14 +1791,14 @@ window.onscroll = function() {
 	Qad.for('header.tabs nav.tabs a', el => {
 		var id = el.href.replace(location.href, '');
 		if (document.body.scrollTop == 0 && ((id == '') || ((location.file == 'index.html') && (id == '?index')))) {
-			if ($('header.tabs nav.tabs a.active'))
-				$('header.tabs nav.tabs a.active').classList.remove('active');
+			if (Qad.$('header.tabs nav.tabs a.active'))
+				Qad.$('header.tabs nav.tabs a.active').classList.remove('active');
 			el.classList.add('active');
 		}else if (id.slice(0, 1) == '#') {
-			var scroll = document.body.scrollTop + $('header').pos().height;
-			if (((scroll + 54) >= $(id).pos().top) && (($(id).pos().top  + $(id).pos().height >= scroll))) {
-				if ($('header.tabs nav.tabs a.active'))
-					$('header.tabs nav.tabs a.active').classList.remove('active');
+			var scroll = document.body.scrollTop + Qad.$('header').pos().height;
+			if (((scroll + 54) >= Qad.$(id).pos().top) && ((Qad.$(id).pos().top  + Qad.$(id).pos().height >= scroll))) {
+				if (Qad.$('header.tabs nav.tabs a.active'))
+					Qad.$('header.tabs nav.tabs a.active').classList.remove('active');
 				el.classList.add('active');
 			}
 		}
