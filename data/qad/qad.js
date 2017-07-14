@@ -1607,6 +1607,18 @@ var Qad={
 				});
 				break;
 			}
+			case '.parallax img': {
+				Qad.for('.parallax img', el => {
+					var parent = el.parent.pos(),
+						top = document.body.scrollTop,
+						height = window.innerHeight;
+					if (!(((top + height) >= parent.top) && ((parent.top  + parent.height >= top))))
+						return;
+					percent = (top + height - parent.top) / (parent.height + height);
+					el.style.transform = 'translate3D(-50%,'+Math.round(((el.pos().height - parent.height) * percent))+'px, 0)';
+				});
+				break;
+			}
 			default: {
 				console.error('No find type:' +type);
 			}
@@ -1677,6 +1689,8 @@ window.addEventListener('load',function() {
 		Qad.init('ul.emoji');
 	if (Qad.$('input[list][data-select]'))
 		Qad.init('input[list][data-select]');
+	if (Qad.$('.parallax img'))
+		Qad.init('.parallax img');
 	inc = document.querySelectorAll('#button-float button');
 	if (inc.length > 0) {
 		document.onkeydown = function(e) {
@@ -1803,6 +1817,8 @@ window.onscroll = function() {
 			}
 		}
 	});
+	if (Qad.$('.parallax img'))
+		Qad.init('.parallax img');
 }
 if (!Qad.$('html[qad-noglobal]')) {
 	var $$ = Qad;
