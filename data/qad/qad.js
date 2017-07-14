@@ -1788,6 +1788,21 @@ window.onscroll = function() {
 			}, 1)
 		}
 	});
+	Qad.for('header.tabs nav.tabs a', el => {
+		var id = el.href.replace(location.href, '');
+		if (document.body.scrollTop == 0 && ((id == '') || ((location.file == 'index.html') && (id == '?index')))) {
+			if ($('header.tabs nav.tabs a.active'))
+				$('header.tabs nav.tabs a.active').classList.remove('active');
+			el.classList.add('active');
+		}else if (id.slice(0, 1) == '#') {
+			var scroll = document.body.scrollTop + $('header').pos().height;
+			if (((scroll + 54) >= $(id).pos().top) && (($(id).pos().top  + $(id).pos().height >= scroll))) {
+				if ($('header.tabs nav.tabs a.active'))
+					$('header.tabs nav.tabs a.active').classList.remove('active');
+				el.classList.add('active');
+			}
+		}
+	});
 }
 if (!Qad.$('html[qad-noglobal]')) {
 	var $$ = Qad;
