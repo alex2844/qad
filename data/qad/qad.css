@@ -18,6 +18,9 @@ Copyright (c) 2016 Alex Smith
 		url(@location/data/fonts/MaterialIcons-Regular.woff) format('woff'),
 		url(@location/data/fonts/MaterialIcons-Regular.ttf) format('truetype');
 }
+header + .clear:not(.spinner) {
+	animation: onload 2s ease-in 2s forwards;
+}
 header + .clear:not(.onload) {
 	position: fixed;
 	left: 0;
@@ -34,7 +37,7 @@ header + .clear:not(.onload):after {
 	position: absolute;
 	margin: -25px 0 0 -25px;
 }
-header + .clear:not(.onload):after, .spinner {
+header + .clear:not(.onload):after, .spinner:not(.clear), header + .clear.spinner:after {
 	height: 50px;
 	width: 50px;
 	border-radius: 100px;
@@ -1433,4 +1436,7 @@ footer [data-right] {
 @keyframes scroll {
 	from {bottom: 10px;}
 	to {bottom: 5%;}
+}
+@keyframes onload {
+	to {height: 0;}
 }
