@@ -1808,7 +1808,7 @@ window.onscroll = function() {
 			if (Qad.$('header.tabs nav.tabs a.active'))
 				Qad.$('header.tabs nav.tabs a.active').classList.remove('active');
 			el.classList.add('active');
-		}else if (id.slice(0, 1) == '#') {
+		}else if (id.slice(0, 1) == '#' && Qad.$(id)) {
 			var scroll = document.body.scrollTop + Qad.$('header').pos().height;
 			if (((scroll + 54) >= Qad.$(id).pos().top) && ((Qad.$(id).pos().top  + Qad.$(id).pos().height >= scroll))) {
 				if (Qad.$('header.tabs nav.tabs a.active'))
