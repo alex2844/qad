@@ -1804,6 +1804,8 @@ window.onscroll = function() {
 	});
 	Qad.for('header.tabs nav.tabs a', el => {
 		var id = el.href.replace(location.href, '');
+		if (id == '#')
+			id = '';
 		if (document.body.scrollTop == 0 && ((id == '') || ((location.file == 'index.html') && (id == '?index')))) {
 			if (Qad.$('header.tabs nav.tabs a.active'))
 				Qad.$('header.tabs nav.tabs a.active').classList.remove('active');
