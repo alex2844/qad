@@ -487,6 +487,16 @@ class Qad {
 				return $file[2];
 				break;
 			}
+			case 'js': {
+				if (!file_exists(dirname(__DIR__).'/../upload/cache/') || empty($name))
+					return $name;
+				$file = '/upload/cache/'.$prefix.md5(getcwd().(!empty($name) ? $name : '')).'.js';
+				self::$cache = dirname(__DIR__).'/..'.$file;
+				if (!(file_exists(self::$cache) && (time()-86400)<filemtime(self::$cache)))
+					file_put_contents(self::$cache, file_get_contents($name));
+				return $file;
+				break;
+			}
 			case 'image': {
 				if (!file_exists(dirname(__DIR__).'/../upload/cache/') || empty($name))
 					return $name;
