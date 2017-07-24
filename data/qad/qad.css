@@ -80,7 +80,7 @@ img:not([src]), div.tabs, body:not([data-panel]) #header-panel, body[data-panel]
 	margin: 0;
 }
 ._1 {
-	width: calc(16.67% - 0.04px);
+	width: calc(16.67% - 0.05px);
 }
 ._2 {
 	width: 33.33%;
@@ -407,9 +407,11 @@ section {
 	text-align: center;
 	text-transform: uppercase;
 }
+/*
 .min + .clear + .parallax {
 	background-position-y: 64px;
 }
+*/
 .min.tabs + .clear + .parallax {
 	background-position-y: 111px;
 }
