@@ -887,9 +887,11 @@ var Qad={
 		id: null,
 		file: null,
 		accept: null,
+		style: 'min-height:150px;width:98%;margin-left:5px',
 		upload: function(id) {
 		    Qad.$('iframe[data-code='+id+']').contentWindow.focus();
 		    if (Qad.$('#'+id+' form').action) {
+				console.log(1);
 		        if (!Qad.$('iframe[name=file]')) {
 		            file = Qad.$('/iframe');
 		            file.name = 'file';
@@ -903,6 +905,7 @@ var Qad={
                 }
                 Qad.$('#'+id+' form').submit();
 		    }else{
+				console.log(2);
     		    files = window.event.target.files;
     		    for (var i = 0, f; f = files[i]; i++) {
                     var reader = new FileReader();
@@ -916,6 +919,11 @@ var Qad={
                     reader.readAsDataURL(f);
     		    }
 		    }
+		},
+		html: function() {
+			Qad.$('textarea[name='+Qad.code.id+']').hidden = (Qad.$('textarea[name='+Qad.code.id+']').hidden ? false : true);
+			Qad.$('iframe[data-code='+this.id+']').hidden = (Qad.$('iframe[data-code='+this.id+']').hidden ? false : true);
+			Qad.$('iframe[data-code='+this.id+'] body').$(Qad.$('textarea[name='+Qad.code.id+']').$());
 		},
 		format: function(type,attr,nofocus) {
             if (!nofocus)
@@ -968,6 +976,7 @@ var Qad={
                 <i onclick="Qad.code.format(\'justifyRight\')" class="material-icons">format_align_right</i>\
                 <i onclick="Qad.code.format(\'justifyCenter\')" class="material-icons">format_align_center</i>\
                 <i onclick="Qad.code.format(\'justifyLeft\')" class="material-icons">format_align_left</i>\
+                <i onclick="Qad.code.html()" class="material-icons">code</i>\
             ';
         },
 		init: function(o) {
@@ -975,7 +984,7 @@ var Qad={
 		        this[k] = o[k];
 		    html = Qad.$(this.el).$();
 		    this.id = Qad.$(this.el).id;
-            Qad.$(this.el).$((this.button ? '<h2>'+this.button()+'</h2><br />' : '' )+'<iframe onmouseover="Qad.code.focus(\''+this.id+'\')" onmouseout="Qad.code.text(\''+this.id+'\')" frameborder="no" style="width:98%;margin-left:5px" data-code="'+this.id+'"></iframe><br /><textarea name="'+this.id+'" hidden>'+html+'</textarea>');
+            Qad.$(this.el).$((this.button ? '<h2>'+this.button()+'</h2><br />' : '' )+'<iframe onmouseover="Qad.code.focus(\''+this.id+'\')" onmouseout="Qad.code.text(\''+this.id+'\')" frameborder="no" style="'+this.style+'" data-code="'+this.id+'"></iframe><br /><textarea name="'+this.id+'" style="margin-top:-10px;'+this.style+'" hidden>'+html+'</textarea>');
             Qad.$('iframe[data-code="'+this.id+'"]').contentDocument.open(); 
             Qad.$('iframe[data-code="'+this.id+'"]').contentDocument.write(html); 
             Qad.$('iframe[data-code="'+this.id+'"]').contentDocument.close();
