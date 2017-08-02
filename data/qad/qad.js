@@ -891,7 +891,6 @@ var Qad={
 		upload: function(id) {
 		    Qad.$('iframe[data-code='+id+']').contentWindow.focus();
 		    if (Qad.$('#'+id+' form').action) {
-				console.log(1);
 		        if (!Qad.$('iframe[name=file]')) {
 		            file = Qad.$('/iframe');
 		            file.name = 'file';
@@ -905,7 +904,6 @@ var Qad={
                 }
                 Qad.$('#'+id+' form').submit();
 		    }else{
-				console.log(2);
     		    files = window.event.target.files;
     		    for (var i = 0, f; f = files[i]; i++) {
                     var reader = new FileReader();
