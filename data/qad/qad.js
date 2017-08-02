@@ -889,6 +889,8 @@ var Qad={
 		accept: null,
 		style: 'min-height:150px;width:98%;margin-left:5px',
 		upload: function(id) {
+			if (!id || id == 'null')
+				id = Qad.code.id;
 		    Qad.$('iframe[data-code='+id+']').contentWindow.focus();
 		    if (Qad.$('#'+id+' form').action) {
 		        if (!Qad.$('iframe[name=file]')) {
@@ -900,7 +902,8 @@ var Qad={
 		        Qad.$('iframe[name=file]').onload = function() {
                     if (!Qad.$('iframe[name=file] body').$())
                         return;
-                    Qad.$('iframe[data-code='+id+']').contentWindow.document.execCommand('insertImage', false, Qad.$('iframe[name=file] body').$());
+					Qad.$('iframe[data-code='+id+']').contentWindow.document.execCommand('insertHTML', false, '<img src="'+Qad.$('iframe[name=file] body').$()+'" style="max-width: 100%" />');
+                    //Qad.$('iframe[data-code='+id+']').contentWindow.document.execCommand('insertImage', false, Qad.$('iframe[name=file] body').$());
                 }
                 Qad.$('#'+id+' form').submit();
 		    }else{
@@ -910,7 +913,8 @@ var Qad={
                     t = f;
                     reader.onload = function(e) {
                         if (t.type.match('image.*'))
-                            Qad.$('iframe[data-code='+id+']').contentWindow.document.execCommand('insertImage', false, e.target.result);
+                            Qad.$('iframe[data-code='+id+']').contentWindow.document.execCommand('insertHTML', false, '<img src="'+e.target.result+'" style="max-width: 100%" />');
+                            //Qad.$('iframe[data-code='+id+']').contentWindow.document.execCommand('insertImage', false, e.target.result);
                         else
                             Qad.$('iframe[data-code='+id+']').contentWindow.document.execCommand('insertHTML', false, '<a href="'+e.target.result+'" download="'+escape(t.name)+'"><li><strong>'+escape(t.name)+'</strong> ('+(t.type ? t.type : 'n/a')+') - '+t.size+' ('+t.lastModifiedDate.toLocaleDateString()+')</li></a>');
                     }
