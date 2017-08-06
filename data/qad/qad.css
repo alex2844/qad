@@ -21,7 +21,7 @@ Copyright (c) 2016 Alex Smith
 header + .clear:not(.spinner) {
 	animation: onload 2s ease-in 2s forwards;
 }
-header + .clear:not(.onload) {
+header + .clear:not(.onload), header + .clear.spinner {
 	position: fixed;
 	left: 0;
 	top: 0;
@@ -30,7 +30,7 @@ header + .clear:not(.onload) {
 	background: #f1f1f1;
 	z-index: 1;
 }
-header + .clear:not(.onload):after {
+header + .clear:not(.onload):after, header + .clear.spinner:after {
 	content: '';
 	left: 50%;
 	top: 50%;

@@ -122,17 +122,17 @@ var Qad={
 			return obj;
 		}
 		obj.status = function(s,f) {
-			//if (obj.innerHTML == 'done' || obj.innerHTML == 'close')
-				//return;
 			if (obj.dataset.time)
 				clearTimeout(obj.dataset.time);
 			if (!obj.dataset.html)
 				obj.dataset.html = obj.innerHTML;
 			if (s == true) {
-				obj.innerHTML = 'done';
+				if (!obj.classList.contains('onload'))
+					obj.innerHTML = 'done';
 				obj.style['background'] = '#4CAF50';
 			}else if (s == false) {
-				obj.innerHTML = 'close';
+				if (!obj.classList.contains('onload'))
+					obj.innerHTML = 'close';
 				obj.style['background'] = '#F44336';
 			}else{
 				obj.classList.add('spinner');
