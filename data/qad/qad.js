@@ -289,8 +289,12 @@ var Qad={
 				});
 				delete $key;
 			}
-			if (!obj.shab)
+			if (!obj.shab) {
+				Qad.for(obj.querySelectorAll('[data-action][data-on]'), el => {
+					el.attr('data-on', false);
+				});
 				obj.shab = obj.innerHTML.replace(/data-src/g,'src');
+			}
 			obj.innerHTML = '';
 			if (d.response)
 				key(d);
@@ -1627,6 +1631,26 @@ var Qad={
 				});
 				break;
 			}
+			case '[data-action]': {
+				Qad.for('[data-action]', e => {
+					e.f = '_'+e.dataset.action;
+					if (!e.dataset.on && typeof(window[e.f]) == 'function') {
+						e.dataset.on = true;
+						e.on('click', (ev) => {
+							window[e.f](ev);
+						}, 'action');
+					}
+				});
+				break;
+			}
+			case 'dialog [data-close]': {
+				Qad.for('dialog [data-close]', e => {
+					e.on('click', () => {
+						e.closest('dialog').close();
+					});
+				});
+				break;
+			}
 			default: {
 				console.error('No find type:' +type);
 			}
@@ -1699,6 +1723,10 @@ window.addEventListener('load',function() {
 		Qad.init('input[list][data-select]');
 	if (Qad.$('.parallax img'))
 		Qad.init('.parallax img');
+	if (Qad.$('[data-action]'))
+		Qad.init('[data-action]');
+	if (Qad.$('dialog [data-close]'))
+		Qad.init('dialog [data-close]');
 	inc = document.querySelectorAll('#button-float button');
 	if (inc.length > 0) {
 		document.onkeydown = function(e) {
