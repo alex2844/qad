@@ -17,9 +17,10 @@ var Qad={
 	$:function(el) {
 		var obj;
 		if (el) {
-			if (el.target)
+			if (el.target) {
+				el.preventDefault();
 				obj = el.target;
-			else if (typeof(el) == 'string') {
+			}else if (typeof(el) == 'string') {
 				if (el.indexOf('/') == 0) {
 					if (el == '/svg')
 						return Qad.$(document.createElementNS('http://www.w3.org/2000/svg','svg'));
@@ -151,10 +152,6 @@ var Qad={
 			}, 2000);
 		}
 		obj.on = function(e,f,c) {
-			if (!e) {
-				obj.preventDefault();
-				return obj;
-			}
 			switch (e) {
 				case 'mouse':
 					e = 'mousedown';
