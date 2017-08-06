@@ -317,6 +317,21 @@ var Qad={
 			dialogPolyfill.registerDialog(obj);
 		return obj;
 	},
+	download: function(file, name, type) {
+		var a = Qad.$('/a');
+		if (file.substr(0, 4) != 'http') {
+			var type = 'text';
+			file = URL.createObjectURL(
+				new Blob([file], {
+					type: (type ? type : 'text/plain')
+				})
+			);
+		}
+		a.href = file;
+		a.download = (name ? name : file.split('/').slice(-1).join());
+		a.click();
+		console.log(a);
+	},
 	genavatar: function(obj) {
 		if (!obj)
 			return '#333333';
