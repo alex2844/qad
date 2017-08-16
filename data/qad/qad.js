@@ -816,6 +816,24 @@ var Qad={
 		script.src = method+'?callback=document.api.callback&'+Qad.json(params, true);
 		Qad.$('head').add(script);
 	},
+	speech: function(e) {
+		if (typeof(Qad.rec) == 'undefined') {
+			Qad.rec = new webkitSpeechRecognition();
+			Qad.rec.lang = navigator.language;
+			Qad.rec.start();
+			Qad.rec.onresult = function(event) {
+				Qad.$(e).parent.find('input').value = event['results'][0][0]['transcript'];
+			}
+			Qad.rec.onstart = function() {
+				Qad.$(e).style['color'] = '#F44336';
+			}
+			Qad.rec.onend = function() {
+				Qad.$(e).style['color'] = '#757575';
+				delete Qad.rec;
+			}
+		}else
+			Qad.rec.stop();
+	},
 	fs: {
 		open: function(name,callback) {
 			window.requestFileSystem(window.TEMPORARY, 1024*1024, function(fs) {
@@ -1566,7 +1584,7 @@ var Qad={
 					if ((e.y < pos.top || e.x < pos.left || e.y > pos.top+pos.height || e.x > pos.left+pos.width) && !Qad.$(e.target).attr('data-menu'))
 						Qad.$('#'+Qad.$('ul[open]').attr('for')).click();
 				}
-				Qad.for('.menu', function(el) {
+				Qad.for(type, function(el) {
 					if (el.tagName != 'UL')
 						el.onclick = function(e) {
 							if (Qad.$('ul[for='+el.id+']')) {
@@ -1617,7 +1635,7 @@ var Qad={
 				break;
 			}
 			case 'input[list][data-select]': {
-				Qad.for('input[list][data-select]', function(el){
+				Qad.for(type, function(el) {
 					el.onchange = function() {
 						var optionFound = false,
 							datalist = this.list;
@@ -1635,7 +1653,7 @@ var Qad={
 				break;
 			}
 			case '.parallax img': {
-				Qad.for('.parallax img', el => {
+				Qad.for(type, el => {
 					var parent = el.parent.pos(),
 						top = document.body.scrollTop,
 						height = window.innerHeight;
@@ -1647,7 +1665,7 @@ var Qad={
 				break;
 			}
 			case '[data-action]': {
-				Qad.for('[data-action]', e => {
+				Qad.for(type, e => {
 					e.f = '_'+e.dataset.action;
 					if (!e.dataset.on && typeof(window[e.f]) == 'function') {
 						e.dataset.on = true;
@@ -1659,10 +1677,22 @@ var Qad={
 				break;
 			}
 			case 'dialog [data-close]': {
-				Qad.for('dialog [data-close]', e => {
+				Qad.for(type, e => {
 					e.on('click', () => {
 						e.closest('dialog').close();
 					});
+				});
+				break;
+			}
+			case 'label.speech': {
+				Qad.for(type, e => {
+					if (e.speech)
+						return;
+					e.speech = true;
+					console.log(e);
+					var speech = Qad.$('/i');
+					speech.onclick = Qad.speech;
+					e.add(speech);
 				});
 				break;
 			}
@@ -1742,6 +1772,8 @@ window.addEventListener('load',function() {
 		Qad.init('[data-action]');
 	if (Qad.$('dialog [data-close]'))
 		Qad.init('dialog [data-close]');
+	if (Qad.$('label.speech'))
+		Qad.init('label.speech');
 	inc = document.querySelectorAll('#button-float button');
 	if (inc.length > 0) {
 		document.onkeydown = function(e) {

@@ -1030,6 +1030,18 @@ input.label {
 .input.icon span {
 	left: 30px !important;
 }
+label.speech i {
+	font-family: 'Material Icons';
+	font-size: 26px;
+	font-style: normal;
+	color: #757575;
+}
+label.speech i:before {
+	position: absolute;
+	content: 'mic';
+	right: -26px;
+	top: 20px;
+}
 label.checkbox {
 	position: relative;
 	margin: .5rem;
