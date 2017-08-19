@@ -412,8 +412,8 @@ var Qad={
 			},
 			error: function(message, source, lineno) {
 				Qad.debug.error.push({
-					message: (source ? message : message.stack.split("\n")[0]),
-					source: (source ? source+':'+lineno : message.stack.split("\n").slice(1).join("\n"))
+					message: (source ? message : (message.stack ? message.stack.split("\n")[0] : message)),
+					source: (source ? source+':'+lineno : (message.stack ? message.stack.split("\n").slice(1).join("\n") : source))
 				});
 				debug.save();
 			}
