@@ -780,7 +780,7 @@ var Qad={
 			params = Qad.json(params, true);
 		Qad.$('.load').src = 'server.php?'+params;
 	},
-	api: function(method,callback,params) {
+	api: function(method, params, callback) {
 		if (method.indexOf('googleapis.com') != -1)
 			provider = 'google';
 		else if (method.indexOf('graph.facebook.com') != -1)                                                                    
@@ -791,12 +791,10 @@ var Qad={
 			provider = 'default';
 		if (!params)
 			params = {}
+		params.callback = 'document.api.callback';
 		document.api = {};
 		document.api.method = method;
-		if (callback)
-			document.api.callback = callback;
-		else
-			document.api.callback = function(){};
+		document.api.callback = (callback ? callback : () => {});
 		Qad.session.set('oauth-scope',null);
 		Qad.session.set('oauth-redirect',null);
 		document.api.oauth = function() {
@@ -807,7 +805,7 @@ var Qad={
 		if (Qad.session.get('oauth-token-'+provider))
 			params.access_token = Qad.session.get('oauth-token-'+provider);
 		var script = Qad.$('/script');
-		script.src = method+'?callback=document.api.callback&'+Qad.json(params, true);
+		script.src = method+'?'+Qad.json(params, true);
 		Qad.$('head').add(script);
 	},
 	speech: function(e) {
