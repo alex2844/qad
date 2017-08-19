@@ -15,10 +15,17 @@ fi
 if [ "$1" == "" ] || [ "$1" == "help" ]; then
 	echo 'Help Qad-cli Fraemwork';
 	#echo './qad.sh install';
+	echo './qad.sh update';
 	echo './qad.sh min [project]';
 	#echo './qad.sh clear';
 	echo './qad.sh project version title [new|key]';
 	echo './qad.sh dev';
+	exit;
+elif [ "$1" == "update" ]; then
+	wget -O qad.css https://github.com/alex2844/qad/raw/master/data/qad/qad.css;
+	wget -O qad.js https://github.com/alex2844/qad/raw/master/data/qad/qad.js;
+	wget -O qad.php https://github.com/alex2844/qad/raw/master/data/qad/qad.php;
+	wget -O qad.sh https://github.com/alex2844/qad/raw/master/data/qad/qad.sh;
 	exit;
 elif [ "$1" == "dev" ]; then
 	cd ../../;
