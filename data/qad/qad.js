@@ -4,7 +4,7 @@ Qad Framework (qad.js)
 -----------------------------------------------------
 https://qwedl.com/
 -----------------------------------------------------
-Copyright (c) 2016 Alex Smith
+Copyright (c) 2016-2017 Alex Smith
 =====================================================
 */
 var Qad={
@@ -14,7 +14,7 @@ var Qad={
 	$$: function(id) {
 		return document.querySelectorAll(id);
 	},
-	$:function(el) {
+	$: function(el) {
 		var obj;
 		if (el) {
 			if (el.target) {

@@ -5,7 +5,7 @@ Qad Framework (qad.php)
 -----------------------------------------------------
 https://qwedl.com/
 -----------------------------------------------------
-Copyright (c) 2016 Alex Smith
+Copyright (c) 2016-2017 Alex Smith
 =====================================================
 */
 header('Content-Type: text/html; charset=utf-8');
