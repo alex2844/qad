@@ -468,7 +468,6 @@ var Qad={
 		return -1;
 	},
 	for: function (i,o) {
-		//console.log(i.length);
 		if (typeof(i) == 'object' && i.length)
 			i.forEach(function(e1) {
 				o(e1);
@@ -651,14 +650,9 @@ var Qad={
 				document.maps();
 		}
 	},
-	/*random: function(min, max, num=1) {
-		var i, arr = [], res = [];
-		for (i = min; i <= max; i++ )
-			arr.push(i);
-		for (i = 0; i < num; i++)
-			res.push(arr.splice(Math.floor(Math.random() * (arr.length)), 1)[0]);
-		return res;
-	},*/
+	rand: (min, max) => {
+		return Math.floor(Math.random() * ((max ? max : 9) - (min ? min : 0) + 1)) + (min ? min : 0);
+	},
 	format: function(data,type,add) {
 		if (type == 'date' && !isNaN(data)) {
 			if (!data)
