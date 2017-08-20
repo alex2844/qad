@@ -320,12 +320,13 @@ var Qad={
 	loop: function(callback, params, time, loop, force_start) {
 		var e = null;
 		(p => {
-			if (loop) {
-				e = setInterval(() => callback(p, e), time);
-				if (force_start)
-					callback(p, e);
-			}else
-				e = setTimeout(() => callback(p, e), time);
+			if (loop == false)
+				setTimeout(() => callback(p), time);
+			else{
+				e = setInterval(() => callback(p, () => clearInterval(e)), time);
+				if (force_start != false)
+					callback(p, () => clearInterval(e));
+			}
 		})(params);
 	},
 	download: function(file, name, type) {
