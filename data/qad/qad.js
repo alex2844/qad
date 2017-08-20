@@ -317,6 +317,17 @@ var Qad={
 			dialogPolyfill.registerDialog(obj);
 		return obj;
 	},
+	loop: function(callback, params, time, loop, force_start) {
+		var e = null;
+		(p => {
+			if (loop) {
+				e = setInterval(() => callback(p, e), time);
+				if (force_start)
+					callback(p, e);
+			}else
+				e = setTimeout(() => callback(p, e), time);
+		})(params);
+	},
 	download: function(file, name, type) {
 		var a = Qad.$('/a');
 		if (file.substr(0, 4) != 'http') {
