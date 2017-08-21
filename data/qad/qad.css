@@ -1042,7 +1042,7 @@ label.speech i:before {
 	right: -26px;
 	top: 20px;
 }
-label.checkbox {
+label.checkbox, label.radio {
 	position: relative;
 	margin: .5rem;
 	cursor: pointer;
@@ -1082,6 +1082,54 @@ label.checkbox {
 	width: 1.1rem;
 	height: 1.1rem;
 	background: #fff;
+}
+input[type='radio']:before {
+	content: '';
+	position: absolute;
+	width: 14px;
+	height: 14px;
+	margin-top: -3px;
+	margin-left: -3px;
+	border: 2px solid #757575;
+	background: #f1f1f1;
+	text-align: center;
+	border-radius: 50%;
+	cursor: pointer;
+}
+input[type='radio']:checked:before {
+	border: 2px solid @color;
+}
+input[type='radio']:checked:after {
+	border-radius: 50%;
+	background: @color;
+	content: '';
+	position: absolute;
+	width: 10px;
+	height: 10px;
+	margin-top: 1px;
+	margin-left: 1px;
+}
+#navpage {
+	position: fixed;
+	bottom: 10px;
+	right: 10px;
+}
+#navpage input {
+	display: block;
+	margin: 10px;
+}
+#fullpage {
+	margin: 0;
+	text-rendering: optimizeLegibility;
+	position: relative;
+	overflow: hidden;
+	transition: 1s cubic-bezier(0.5, 0, 0.5, 1);
+}
+#fullpage > .page {
+	position: relative;
+	height: 100vh;
+	overflow: hidden;
+	box-sizing: border-box;
 }
 #notification span {
 	margin-left: 20px;
