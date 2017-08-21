@@ -1718,6 +1718,81 @@ var Qad={
 				});
 				break;
 			}
+			case '#fullpage': {
+				if (Qad.$('#fullpage .page')) {
+					Qad.$('body').style.overflow = 'hidden';
+					var fullpage = function(e) {
+						var obj = Qad.$('#fullpage'),
+							step = Qad.$(obj).find('.page').pos().height,
+							slength = (obj.style.transform ? parseInt(obj.style.transform.replace('translateY(', '')) : 0),
+							plength = parseInt(obj.offsetHeight / (Math.min(window.innerHeight, window.innerWidth) / step));
+						if (!obj.top)
+							obj.top = (obj.pos().top < 0 ? 0 : obj.pos().top);
+						if (e.key) {
+							if (['ArrowUp', 'PageUp'].indexOf(e.key) > -1) {
+								e.deltaY = -1;
+							}else if (['ArrowDown', 'PageDown'].indexOf(e.key) > -1) {
+								e.deltaY = 1;
+							}else if (['0','1','2','3','4','5','6','7','8','9'].indexOf(e.key) > -1 && Qad.$$('#fullpage .page')[e.key]) {
+								e = Qad.$$('.page')[e.key];
+							}else
+								return true;
+						}
+						if (typeof(e.preventDefault) == 'function')
+							e.preventDefault();
+						if (e.deltaY) {
+							if (e.deltaY > 0 && Math.abs(slength) < (plength - plength / Qad.$(obj).querySelectorAll('.page').length))
+								slength = slength - step;
+							else if (e.deltaY < 0 && slength < 0)
+								slength = slength + step;
+						}else
+							slength = obj.top + Qad.$(e).pos().top * -1 + slength;
+						if (obj.hold != true) {
+							obj.hold = true;
+							obj.style.transform = 'translateY('+(slength < 0 ? slength : 0)+'px)';
+							setTimeout(() => {
+								var i = 0;
+								Qad.for('#fullpage .page', el => {
+									if (el.pos().top == obj.top) {
+										if (Qad.$$('#navpage input')[i])
+											Qad.$$('#navpage input')[i].checked = true;
+										else if (Qad.$('#navpage input:checked'))
+											Qad.$('#navpage input:checked').checked = false;
+									}else
+										++i;
+								});
+								obj.hold = false;
+							}, 1000);
+						}
+					}
+					Qad.$('html').on('key', fullpage);
+					Qad.$('#fullpage').addEventListener('touchstart', e => {
+						sX = e.changedTouches[0].pageX;
+						sY = e.changedTouches[0].pageY;
+						stT = new Date().getTime();
+					});
+					Qad.$('#fullpage').addEventListener('touchmove', e => e.preventDefault());
+					Qad.$('#fullpage').addEventListener('touchend', e => {
+						var dY = e.changedTouches[0].pageY - sY;
+						if (((new Date().getTime() - stT) <= 500) && (Math.abs(dY) >= 100 && Math.abs(e.changedTouches[0].pageX - sX) <= 50)) {
+							e.key = (dY < 0 ? 'ArrowDown' : 'ArrowUp');
+							fullpage(e);
+						}
+					});
+					Qad.$('#fullpage').addEventListener('wheel', fullpage);
+					if (Qad.$('#navpage input'))
+						Qad.$('#navpage').on('click', e => {
+							var i = 0;
+							Qad.for('#navpage input', el => {
+								if (el == e.target)
+									fullpage(Qad.$$('#fullpage .page')[i]);
+								else
+									++i;
+							});
+						});
+				}
+				break;
+			}
 			default: {
 				console.error('No find type:' +type);
 			}
@@ -1796,6 +1871,8 @@ window.addEventListener('load',function() {
 		Qad.init('dialog [data-close]');
 	if (Qad.$('label.speech'))
 		Qad.init('label.speech');
+	if (Qad.$('#fullpage'))
+		Qad.init('#fullpage');
 	inc = document.querySelectorAll('#button-float button');
 	if (inc.length > 0) {
 		document.onkeydown = function(e) {
