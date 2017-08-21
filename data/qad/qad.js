@@ -17,7 +17,7 @@ var Qad={
 	$: function(el) {
 		var obj;
 		if (el) {
-			if (el.target) {
+			if (el.target && typeof(el.preventDefault) == 'function') {
 				el.preventDefault();
 				obj = el.target;
 			}else if (typeof(el) == 'string') {
@@ -332,7 +332,15 @@ var Qad={
 	clipboard: i => {
 		var tmp = Qad.$('/input'),
 			focus = document.activeElement;
-		tmp.value = i;
+		tmp.value = (
+			(typeof(i) == 'object')
+			? (
+				(['INPUT','TEXTAREA'].indexOf(i.tagName) > -1)
+				? i.value
+				: i.innerText
+			)
+			: i
+		);
 		document.body.appendChild(tmp);
 		tmp.select();
 		document.execCommand('copy');
