@@ -317,7 +317,7 @@ var Qad={
 			dialogPolyfill.registerDialog(obj);
 		return obj;
 	},
-	loop: function(callback, params, time, loop, force_start) {
+	loop: (callback, params, time, loop, force_start) => {
 		var e = null;
 		(p => {
 			if (loop == false)
@@ -328,6 +328,16 @@ var Qad={
 					callback(p, () => clearInterval(e));
 			}
 		})(params);
+	},
+	clipboard: i => {
+		var tmp = Qad.$('/input'),
+			focus = document.activeElement;
+		tmp.value = i;
+		document.body.appendChild(tmp);
+		tmp.select();
+		document.execCommand('copy');
+		document.body.removeChild(tmp);
+		focus.focus();
 	},
 	download: function(file, name, type) {
 		var a = Qad.$('/a');
