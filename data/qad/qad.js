@@ -1793,6 +1793,37 @@ var Qad={
 				}
 				break;
 			}
+			case '[contextmenu]': {
+				Qad.for(type, el => {
+					el.oncontextmenu = e => {
+						e.preventDefault();
+						var menu = Qad.$('menu[open]');
+						var hide = () => {
+							if (!menu)
+								return;
+							Qad.$('body').removeAttribute('data-menu');
+							menu.removeAttribute('open');
+							menu.style.left = '';
+							menu.style.top = '';
+							Qad.$('html').onclick = null;
+						}
+						if (menu)
+							hide();
+						Qad.$('body').attr('data-menu', true);
+						var menu = Qad.$('menu#'+el.attr('contextmenu'));
+						Qad.for(menu.querySelectorAll('menuitem'), item => {
+							item.root = el;
+						});
+						if (menu.attr('width'))
+							menu.style.width = menu.attr('width')+'px';
+						menu.style.left = (e.pageX - 10)+'px';
+						menu.style.top = (e.pageY - 10)+'px';
+						menu.attr('open', true);
+						Qad.$('html').onclick = hide;
+					};
+				});
+				break;
+			}
 			default: {
 				console.error('No find type:' +type);
 			}
@@ -1873,6 +1904,8 @@ window.addEventListener('load',function() {
 		Qad.init('label.speech');
 	if (Qad.$('#fullpage'))
 		Qad.init('#fullpage');
+	if (Qad.$('[contextmenu]'))
+		Qad.init('[contextmenu]');
 	inc = document.querySelectorAll('#button-float button');
 	if (inc.length > 0) {
 		document.onkeydown = function(e) {

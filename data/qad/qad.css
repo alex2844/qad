@@ -101,7 +101,7 @@ a {
 	text-decoration: none;
 	color: @color;
 }
-.material-icons, [data-action]:not([data-webfont]) {
+.material-icons, :not(menuitem)[data-action]:not([data-webfont]) {
 	font-family: 'Material Icons';
 	font-weight: normal;
 	font-style: normal;
@@ -236,6 +236,43 @@ header #button-header button {
 	background: transparent;
 	padding: 12px;
 	box-shadow: none;
+}
+menu {
+	display: none;
+	z-index: 100;
+	padding: 0;
+	margin: 0;
+	position: absolute;
+	font-weight: normal;
+	white-space: nowrap;
+	background: #fff;
+	border: 1px solid #ebebeb;
+	border-radius: 0.125rem;
+	box-shadow: 0 2px 2px 0 rgba(0,0,0,.14),0 3px 1px -2px rgba(0,0,0,.2),0 1px 5px 0 rgba(0,0,0,.12);
+	margin: 1%;
+	overflow: hidden;
+}
+menu[open] {
+	display: block;
+}
+menu > menuitem {
+	position: relative;
+	display: block;
+	font-size: 13px;
+	letter-spacing: 0.5px;
+	height: 30px;
+	width: 370px;
+}
+menu menuitem:hover{
+	background-color: #ebebeb;
+}
+menuitem[label]:before{
+	content: attr(label);
+	padding: 7px 30px;
+	position: absolute;
+}
+body[data-menu] section {
+	pointer-events: none;
 }
 body[data-menu] header:after {
 	z-index: 2;
