@@ -498,13 +498,16 @@ var Qad={
 		return -1;
 	},
 	for: function (i,o) {
+		var j = 0;
 		if (typeof(i) == 'object' && i.length)
 			i.forEach(function(e1) {
-				o(e1);
+				o(e1, j);
+				++j;
 			});
 		else if (typeof(i) == 'string' && document.querySelector(i))
 			[].forEach.call(Qad.$$(i), function(e1) {
-				o(Qad.$(e1));
+				o(Qad.$(e1), j);
+				++j;
 			});
 		else
 			return false;
