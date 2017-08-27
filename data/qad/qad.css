@@ -742,14 +742,16 @@ ul.emoji li {
 	width: 100%;
 }
 div.float {
-	width: 32%;
+	width: 31%;
+	/* width: 32%; */
 	height: 100%;
 }
 div.middle, dialog.middle {
 	width: 50%;
 }
 div.min {
-	width: 25%;
+	width: 23%;
+	/* width: 25%; */
 }
 article {
 	padding: 8px;
@@ -1383,7 +1385,8 @@ footer [data-right] {
 		width: 85%;
 	}
 	div.min {
-		width: 45%;
+		width: 48%;
+		/* width: 45%; */
 	}
 	.card.left {
 		width: 100%;

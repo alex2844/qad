@@ -249,10 +249,14 @@ var Qad={
 			return obj;
 		}
 		obj.clone = function() {
-			return obj.cloneNode(true);
+			return Qad.$(obj.cloneNode(true));
 		}
 		obj.remove = function() {
 			return obj.parentNode.removeChild(obj);
+		}
+		obj.css = function(style) {
+			Object.assign(obj.style, style);
+			return obj;
 		}
 		obj.template = function(d,t) {
 			var key = function(d,key) {
