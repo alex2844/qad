@@ -313,8 +313,16 @@ var Qad={
 				obj.style['display'] = 'table-row-group';
 			return true;
 		}
-		obj.find = function(e) {
-			return Qad.$(obj.querySelector(e));
+		obj.find = function(e, all) {
+			if (all) {
+				all = [];
+				obj.querySelectorAll(e).forEach(el => {
+					all.push(Qad.$(el));
+				});
+				return all;
+			}else
+				return Qad.$(obj.querySelector(e));
+			return (all ? obj.querySelectorAll(e) : Qad.$(obj.querySelector(e)));
 		}
 		obj.parent = Qad.$(obj.parentNode);
 		if (typeof HTMLDialogElement != 'function' && obj.tagName == 'DIALOG' && !obj.hasAttribute('role'))
