@@ -322,7 +322,6 @@ var Qad={
 				return all;
 			}else
 				return Qad.$(obj.querySelector(e));
-			return (all ? obj.querySelectorAll(e) : Qad.$(obj.querySelector(e)));
 		}
 		obj.parent = Qad.$(obj.parentNode);
 		if (typeof HTMLDialogElement != 'function' && obj.tagName == 'DIALOG' && !obj.hasAttribute('role'))
