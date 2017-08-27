@@ -314,7 +314,7 @@ var Qad={
 			return true;
 		}
 		obj.find = function(e, all) {
-			return (all ? Array.prototype.slice.call(obj.querySelectorAll(e)).map(el => {
+			return (all ? [].map.call(obj.querySelectorAll(e), el => {
 				return Qad.$(el);
 			}) : Qad.$(obj.querySelector(e)));
 		}
