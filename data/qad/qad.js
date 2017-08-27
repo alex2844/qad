@@ -314,14 +314,9 @@ var Qad={
 			return true;
 		}
 		obj.find = function(e, all) {
-			if (all) {
-				all = [];
-				obj.querySelectorAll(e).forEach(el => {
-					all.push(Qad.$(el));
-				});
-				return all;
-			}else
-				return Qad.$(obj.querySelector(e));
+			return (all ? Array.prototype.slice.call(obj.querySelectorAll(e)).map(el => {
+				return Qad.$(el);
+			}) : Qad.$(obj.querySelector(e)));
 		}
 		obj.parent = Qad.$(obj.parentNode);
 		if (typeof HTMLDialogElement != 'function' && obj.tagName == 'DIALOG' && !obj.hasAttribute('role'))
