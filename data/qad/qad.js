@@ -318,7 +318,21 @@ var Qad={
 				return Qad.$(el);
 			}) : Qad.$(obj.querySelector(e)));
 		}
-		obj.parent = Qad.$(obj.parentNode);
+		//obj.parent = Qad.$(obj.parentNode);
+		obj.parent = function(e) {
+			if (el = (e ? (
+				typeof(e) == 'string'
+				? obj.closest(e)
+				: e.reduce((r, e) => {
+					if (!obj.closest(e))
+						return r;
+					return obj.closest(e);
+				}, null)
+			) : obj.parentNode))
+				return Qad.$(el);
+			else
+				return false;
+		}
 		if (typeof HTMLDialogElement != 'function' && obj.tagName == 'DIALOG' && !obj.hasAttribute('role'))
 			dialogPolyfill.registerDialog(obj);
 		return obj;
@@ -853,7 +867,7 @@ var Qad={
 			Qad.rec.lang = navigator.language;
 			Qad.rec.start();
 			Qad.rec.onresult = function(event) {
-				Qad.$(e).parent.find('input').value = event['results'][0][0]['transcript'];
+				Qad.$(e).parent().find('input').value = event['results'][0][0]['transcript'];
 			}
 			Qad.rec.onstart = function() {
 				Qad.$(e).style['color'] = '#F44336';
@@ -1517,9 +1531,9 @@ var Qad={
 					Qad.$('html').on('swipe', function(e) {
 						if (
 							($(event.target) && $(event.target) === $('button#menu + nav')) ||
-							($(event.target).parent && $(event.target).parent === $('button#menu + nav')) ||
-							($(event.target).parent.parent && $(event.target).parent.parent === $('button#menu + nav')) ||
-							($(event.target).parent.parent.parent && $(event.target).parent.parent.parent === $('button#menu + nav')) ||
+							($(event.target).parent() && $(event.target).parent() === $('button#menu + nav')) ||
+							($(event.target).parent().parent() && $(event.target).parent().parent() === $('button#menu + nav')) ||
+							($(event.target).parent().parent().parent() && $(event.target).parent().parent().parent() === $('button#menu + nav')) ||
 							Qad.$('button#menu').disabled ||
 							!Qad.$('button#menu + nav')
 						)
@@ -1685,7 +1699,7 @@ var Qad={
 			}
 			case '.parallax img': {
 				Qad.for(type, el => {
-					var parent = el.parent.pos(),
+					var parent = el.parent().pos(),
 						top = document.body.scrollTop,
 						height = window.innerHeight;
 					if (!(((top + height) >= parent.top) && ((parent.top  + parent.height >= top))))
@@ -1710,7 +1724,7 @@ var Qad={
 			case 'dialog [data-close]': {
 				Qad.for(type, e => {
 					e.on('click', () => {
-						e.closest('dialog').close();
+						e.parent('dialog').close();
 					});
 				});
 				break;
