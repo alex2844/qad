@@ -30,6 +30,7 @@ elif [ "$1" == "update" ]; then
 elif [ "$1" == "dev" ]; then
 	cd ../../;
 	dir=$(pwd);
+	mkdir -p upload/{cache,color,sql};
 	cd ~;
 	git clone git@github.com:alex2844/qad.git;
 	mkdir ~/qad/data/ -p; wget -O ~/qad/index.html https://github.com/alex2844/qad/raw/master/index.html; cp -r $dir/data/qad ~/qad/data/; cp -r $dir/data/fonts ~/qad/data/; cp $dir/service-worker.js ~/qad/; cp $dir/sitemap.php ~/qad/; cd ~/qad/; git status
