@@ -535,11 +535,19 @@ var Qad={
 	geo: {
 		id: {},
 		key: null,
+		init: id => {
+			if (typeof(google) == 'undefined' || typeof(google.maps) == 'undefined') {
+				s = Qad.$('/script');
+				s.src = 'https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=places&callback=document.'+id+(Qad.geo.key ? '&key='+Qad.geo.key : '');
+				Qad.$('body').add(s);
+			}else
+				document[id]();
+		},
 		me: function(id) {
-			document.me = function() {
+			document.me = () => {
 				if (id) {
 					ac = new google.maps.places.Autocomplete(Qad.$('#'+id),{types: ['geocode']});
-					ac.addListener('place_changed', function() {
+					ac.addListener('place_changed', () => {
 						var p = ac.getPlace();
 						document.dispatchEvent(new CustomEvent('geo.me',{'detail':{
 							'status': true,
@@ -551,10 +559,10 @@ var Qad={
 					});
 				}
 				if ((!id || !Qad.$('#'+id).value) && navigator.geolocation)
-					navigator.geolocation.getCurrentPosition(function(position) {
+					navigator.geolocation.getCurrentPosition(position => {
 						var latlng = new google.maps.LatLng(position.coords.latitude,position.coords.longitude);
 						var geocoder = new google.maps.Geocoder();
-						geocoder.geocode({'latLng': latlng}, function(results, status) {
+						geocoder.geocode({'latLng': latlng}, (results, status) => {
 							if (status == google.maps.GeocoderStatus.OK) {
 								if (results[1]) {
 									document.dispatchEvent(new CustomEvent('geo.me',{'detail':{
@@ -573,7 +581,7 @@ var Qad={
 									'error': status
 								}}));
 						});
-					}, function(e) {
+					}, e => {
 						if (e.code == 1)
 							e.title = 'PERMISSION_DENIED';
 						else if (e.code == 2)
@@ -592,12 +600,20 @@ var Qad={
 						'type': 'location'
 					}}));
 			}
-			if (typeof(google) == 'undefined' || typeof(google.maps) == 'undefined') {
-				s = Qad.$('/script');
-				s.src = 'https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=places&callback=document.me'+(this.key ? '&key='+this.key : '');
-				Qad.$('body').add(s);
-			}else
-				document.me();
+			Qad.geo.init('me');
+		},
+		distance: (a, b) => {
+			var lat1 = a.lat * Math.PI / 180,
+				lat2 = b.lat * Math.PI / 180,
+				cl1 = Math.cos(lat1),
+				cl2 = Math.cos(lat2),
+				sl1 = Math.sin(lat1),
+				sl2 = Math.sin(lat2),
+				delta = b.lng * Math.PI / 180 - a.lng * Math.PI / 180,
+				cdelta = Math.cos(delta),
+				y = Math.sqrt(Math.pow(cl2 * Math.sin(delta), 2) + Math.pow(cl1 * sl2 - sl1 * cl2 * cdelta, 2)),
+				x = sl1 * sl2 + cl1 * cl2 * cdelta;
+			return Qad.format(Math.round(Math.atan2(y, x) * 6372795)*1000000, 'metric');
 		},
 		center: function(d) {
 			var bounds = new google.maps.LatLngBounds();
@@ -649,10 +665,34 @@ var Qad={
 			};
 			return new label(d);
 		},
-		maps: function(address,zoom,id,callback) {
-			document.maps = function() {
+		coords: (address, callback) => {
+			document.coords = () => {
 				var geocoder = new google.maps.Geocoder();
-				var map = new google.maps.Map((id?Qad.$('#'+id):Qad.$('#map')), {
+				geocoder.geocode({'address': address}, (res, status) => {
+					if (status == google.maps.GeocoderStatus.OK) {
+						if (status != google.maps.GeocoderStatus.ZERO_RESULTS) {
+							res.lat = res[0].geometry.location.lat().toString();
+							res.lng = res[0].geometry.location.lng().toString();
+							callback(res);
+						}else
+							console.log('No results found');
+					}else
+						console.log('Geocode was not successful for the following reason: '+status);
+				});
+			}
+			Qad.geo.init('coords');
+		},
+		maps: (address, zoom, id, callback) => {
+			document.maps = () => {
+				var map = new google.maps.Map((
+						id
+						? (
+							typeof(id) == 'string'
+							? Qad.$('#'+id)
+							: Qad.$(id)
+						)
+						: Qad.$('#map')
+					), {
 					center: (typeof(address)=='object'?address:null),
 					scrollwheel: false,
 					zoom: zoom,
@@ -671,48 +711,33 @@ var Qad={
 						title: address.title
 					});
 				else
-					geocoder.geocode({'address': address}, function(results, status) {
-						if (status == google.maps.GeocoderStatus.OK) {
-							if (status != google.maps.GeocoderStatus.ZERO_RESULTS) {
-								map.setCenter(results[0].geometry.location);
-								lat = results[0].geometry.location.lat().toString();
-								lng = results[0].geometry.location.lng().toString();
-								var marker = new google.maps.Marker({
-									position: results[0].geometry.location,
-									map: map,
-									title: address
-								});
-								google.maps.event.addListener(marker, 'click', function() {
-									window.open('https://www.google.ru/maps/place/'+lat+','+lng+'/@'+lat+','+lng+','+zoom+'z/');
-								});
-							}else{
-								console.log('No results found');
-							}
-						}else{
-							console.log('Geocode was not successful for the following reason: '+status);
-						}
+					Qad.geo.coords(address, res => {
+						map.setCenter(res[0].geometry.location);
+						var marker = new google.maps.Marker({
+							position: res[0].geometry.location,
+							map: map,
+							title: address
+						});
+						google.maps.event.addListener(marker, 'click', () => {
+							window.open('https://www.google.ru/maps/place/'+res.lat+','+res.lng+'/@'+res.lat+','+res.lng+','+zoom+'z/');
+						});
 					});
 				if (typeof(callback) == 'function')
 					callback();
 			}
-			if (typeof(google) == 'undefined' || typeof(google.maps) == 'undefined') {
-				s = Qad.$('/script');
-				s.src = 'https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=places&callback=document.maps'+(this.key ? '&key='+this.key : '');
-				Qad.$('body').add(s);
-			}else
-				document.maps();
+			Qad.geo.init('maps');
 		}
 	},
 	rand: (min, max) => {
 		return Math.floor(Math.random() * ((max ? max : 9) - (min ? min : 0) + 1)) + (min ? min : 0);
 	},
-	format: function(data,type,add) {
+	format: (data,type,add) => {
 		if (type == 'date' && !isNaN(data)) {
 			if (!data)
 				data = new Date(Date.now());
 			else if (typeof(date) != 'object')
 				data = new Date(1000*data);
-			d = function() {
+			d = () => {
 				var d = f(data.getDate()),
 					m = f(data.getMonth()+1),
 					y = f(data.getFullYear()%100),
@@ -720,28 +745,32 @@ var Qad={
 					i = f(data.getMinutes());
 				return d+'.'+m+'.'+y+' '+h+':'+i;
 			}
-			f = function(n) {
+			f = n => {
 				return (n < 10) ? '0'+n : n;
 			}
 			var e = (Date.now()-data)/1000;
 			return (e < 10 && e > 0) ? 'now':(e < 60 && e > 0) ? Math.floor(e)+' sec':(e < 3600 && e > 0) ? Math.floor(e/60)+' min':d();
 		}else if (type == 'price' && !isNaN(data)) {
 			//data=Math.round(parseFloat(data)*Math.pow(10,0))/Math.pow(10,0);
-			rr=Number(data)./*toFixed(0).*/toString().split('.');
-			b=rr[0].replace(/(\d{1,3}(?=(\d{3})+(?:\.\d|\b)))/g,'\$1 ');
-			data=(rr[1]?b+'.'+rr[1]:b);
-		}else if (type == 'byte' && !isNaN(data)) {
-			if(data == 0)
-				return '0 Byte';
+			rr = Number(data)./*toFixed(0).*/toString().split('.');
+			b = rr[0].replace(/(\d{1,3}(?=(\d{3})+(?:\.\d|\b)))/g,'\$1 ');
+			data = (rr[1]?b+'.'+rr[1]:b);
+		}else if ((type == 'metric' || type == 'byte') && !isNaN(data)) {
 			if (!add)
-				add = ['B','KB','MB','GB','TB','PB','EB','ZB','YB'];
+				add = (
+					type == 'metric'
+					? ['mm', 'cm', 'm', 'km']
+					: ['B','KB','MB','GB','TB','PB','EB','ZB','YB']
+				);
+			if (data == 0)
+				return '0 '+add[0];
 			var i = Math.floor(Math.log(data) / Math.log(1000));
-			return (data/Math.pow(1000,i)).toPrecision(3)+' '+add[i];
+			if (i >= add.length)
+				i = add.length-1;
+			return (data/Math.pow(1000,i)).toFixed(3).replace('.000', '')+' '+add[i];
 		}else
 			return data;
-		if (add)
-			data += ' '+add;
-		return data;
+		return (add ? data+' '+add : data);
 	},
 	screen: function(o) {
 		if (o['lock']) {
