@@ -2049,6 +2049,7 @@ window.addEventListener('load',function() {
 	}
 	if (Qad.$('header + .clear:not(.onload)'))
 		Qad.$('header + .clear:not(.onload)').classList.add('onload');
+	window.ononline();
 });
 window.addEventListener('message',function(e) {
 	var d;
@@ -2091,6 +2092,14 @@ window.onscroll = function() {
 	});
 	if (Qad.$('.parallax img'))
 		Qad.init('.parallax img');
+}
+window.ononline = window.onoffline = () => {
+	Qad.for('[data-online]', el => {
+		el.hidden = !navigator.onLine;
+	});
+	Qad.for('[data-offline]', el => {
+		el.hidden = navigator.onLine;
+	});
 }
 if (!Qad.$('html[qad-noglobal]')) {
 	var $$ = Qad;
