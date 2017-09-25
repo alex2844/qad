@@ -2047,9 +2047,12 @@ window.addEventListener('load',function() {
 				Qad.$('header + .clear:not(.onload)').classList.add('onload');
 		}
 	}
+	Qad.for('a[target="_blank"]', el => {
+		el.rel = 'noopener';
+	});
+	window.ononline();
 	if (Qad.$('header + .clear:not(.onload)'))
 		Qad.$('header + .clear:not(.onload)').classList.add('onload');
-	window.ononline();
 });
 window.addEventListener('message',function(e) {
 	var d;
