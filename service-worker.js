@@ -16,7 +16,7 @@ var BLACKLIST = [
 self.addEventListener('install', event => {
 	event.waitUntil(
 		caches.open(UPDATE).then(cache => {
-			console.log('Opened cache');
+			console.log('Install app');
 			return cache.addAll(FILES);
 		})
 	);
@@ -35,7 +35,7 @@ self.addEventListener('fetch', event => {
 	event.respondWith(
 		caches.match(event.request).then(response => {
 			return response || fetch(event.request).then(response => caches.open(UPDATE).then(cache => {
-				if (response.status == 200 && event.request.method == 'GET')
+				if (response.status == 200 && event.request.method == 'GET' && !(event.request.mode == 'cors' && !event.request.url.match('/data/')))
 					cache.put(event.request, response.clone());
 				return response;
 			}));

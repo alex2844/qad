@@ -1235,8 +1235,8 @@ var Qad={
 						dir: 'auto',
 						actions: (typeof(title)!='string'?title.actions:[])
 					}
-					if (document.sw)
-						document.sw.showNotification((typeof(title)=='string'?title:title.title),notification);
+					if (Qad.sw)
+						Qad.sw.showNotification((typeof(title)=='string'?title:title.title),notification);
 					else
 						new Notification((typeof(title)=='string'?title:title.title),notification);
 				}
@@ -2023,10 +2023,16 @@ window.addEventListener('load',function() {
 		Qad.$('head').add(script);
 	}
 	if (navigator.serviceWorker && !Qad.$('html[dev]')) {
-		navigator.serviceWorker.register('/service-worker.js?'+location.pathname,{scope: location.pathname}).then(function(sw) {
+		navigator.serviceWorker.register('/service-worker.js?'+location.pathname, {scope: location.pathname}).then(sw => {
 			console.log('◕‿◕');
-			document.sw = sw;
-		},function(){
+			Qad.sw = sw;
+			Qad.$('html').on('key', (e) => {
+				if (!(e.ctrlKey && e.shiftKey && e.keyCode == 82))
+					return;
+				console.log('Uninstall app');
+				Qad.sw.unregister();
+			}, 'sw');
+		}, () => {
 			console.log('ಠ_ಠ');
 		});
 	}else if (Qad.$('html[dev]') && Qad.$()['dev'])
