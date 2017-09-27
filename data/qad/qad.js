@@ -890,23 +890,50 @@ var Qad={
 		script.src = method+'?'+Qad.json(params, true);
 		Qad.$('head').add(script);
 	},
-	speech: function(e) {
-		if (typeof(Qad.rec) == 'undefined') {
-			Qad.rec = new webkitSpeechRecognition();
-			Qad.rec.lang = navigator.language;
-			Qad.rec.start();
-			Qad.rec.onresult = function(event) {
-				Qad.$(e).parent().find('input').value = event['results'][0][0]['transcript'];
-			}
-			Qad.rec.onstart = function() {
-				Qad.$(e).style['color'] = '#F44336';
-			}
-			Qad.rec.onend = function() {
-				Qad.$(e).style['color'] = '#757575';
-				delete Qad.rec;
-			}
-		}else
-			Qad.rec.stop();
+	speech: {
+		rec: e => {
+			if (typeof(Qad.rec) == 'undefined') {
+				Qad.rec = new webkitSpeechRecognition();
+				Qad.rec.lang = navigator.language;
+				Qad.rec.start();
+				Qad.rec.onresult = event => {
+					var res = event['results'][0][0]['transcript'];
+					if (typeof(e) == 'function')
+						e(res);
+					else
+						Qad.$(e).parent().find('input').value = res;
+				}
+				Qad.rec.onstart = () => {
+					if (typeof(e) != 'function')
+						Qad.$(e).style['color'] = '#F44336';
+				}
+				Qad.rec.onend = () => {
+					if (typeof(e) != 'function')
+						Qad.$(e).style['color'] = '#757575';
+					delete Qad.rec;
+				}
+			}else
+				Qad.rec.stop();
+		},
+		tts: q => {
+			if (!q)
+				return;
+			var tts = speechSynthesis;
+			setTimeout(() => {
+				var utterance = new SpeechSynthesisUtterance(q);
+				tts.getVoices().map(voice => {
+					if (voice.lang.match(navigator.language))
+						utterance.voice = voice;
+				});
+				if (utterance.voice)
+					speechSynthesis.speak(utterance);
+				else
+					new Audio('/index.php?tts='+Qad.json({
+						q: encodeURIComponent(q),
+						tl: navigator.language
+					})).play();
+			});
+		}
 	},
 	fs: {
 		open: function(name,callback) {
@@ -1765,7 +1792,7 @@ var Qad={
 					e.speech = true;
 					console.log(e);
 					var speech = Qad.$('/i');
-					speech.onclick = Qad.speech;
+					speech.onclick = Qad.speech.rec;
 					e.add(speech);
 				});
 				break;
