@@ -551,7 +551,15 @@ class Qad {
 	public static function fetch($url, $options=[], $then='text', $prefix=null) {
 		if (self::$debug['status'])
 			$debug = self::_microtime();
-		$query = (empty($options['body']) ? '' : http_build_query($options['body']));
+		$query = (
+			empty($options['body'])
+			? ''
+			: (
+				gettype($options['body']) == 'string'
+				? $options['body']
+				: http_build_query($options['body'])
+			)
+		);
 		if ((!empty($options['cache']) && $options['cache'] == 'no-cache') || !$res = self::cache('json', $url.$query, $prefix)) {
 			$opts = ['http' => [
 				'method' => (empty($options['method']) ? 'GET' : strtoupper($options['method'])),
