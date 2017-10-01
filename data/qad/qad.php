@@ -595,6 +595,24 @@ class Qad {
 		));
 	}
 	public static function db($sql='', $param=null, $exec=true) {
+		if ($sql == 'create') {
+			$arr = [];
+			foreach ($param['columns'] as $k=>$v) {
+				$arr[] = $k.' '.$v;
+			}
+			return self::db('create table if not exists '.$param['table'].' ('.implode(', ', $arr).')');
+		}else if ($sql == 'insert') {
+			$data = (array) $param['data'];
+			$arr = [];
+			$values = [];
+			foreach ($param['columns'] as $k=>$v) {
+				if (empty($data[$k]))
+					continue;
+				$arr[$k] = $data[$k];
+				$values[] = ':'.$k;
+			}
+			return self::db('insert into '.$param['table'].' ('.implode(', ', array_flip($arr)).') values ('.implode(', ', $values).')', $arr);
+		}
 		try {
 			if (empty(self::$sql)) {
 				if (self::$config['db_driver'] == 'mysql')
