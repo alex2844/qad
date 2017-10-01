@@ -57,7 +57,7 @@ var Qad={
 			obj.classList.remove('template');
 			obj.value = null;
 			obj.innerHTML = null;
-			return;
+			return obj;
 		}
 		obj.attr = function(key, value) {
 			if (typeof(value) == 'boolean' && value == false)
@@ -531,6 +531,60 @@ var Qad={
 			});
 		else
 			return false;
+	},
+	gcm: {
+		add: topic => {
+			return new Promise((resolve, reject) => {
+				Qad.sw.pushManager.subscribe({
+					userVisibleOnly: true
+				}).then(sub => {
+					Qad.gcm._token = sub.endpoint.split('gcm/send/')[1];
+					if (topic)
+						fetch('/service-worker.php?'+Qad.json({
+							gcm: 'add',
+							topics: topic,
+							token: Qad.gcm._token
+						}, true)).then(() => {
+							resolve({
+								token: Qad.gcm._token,
+								msg: 'Subscribed to "'+topic+'"'
+							});
+						}).catch(reject);
+					else
+						resolve({token: Qad.gcm._token});
+				}).catch(reject);
+			});
+		},
+		list: () => {
+			return new Promise((resolve, reject) => {
+				Qad.sw.pushManager.getSubscription().then(sub => {
+					if (sub && sub.endpoint) {
+						Qad.gcm._token = sub.endpoint.split('gcm/send/')[1];
+						fetch('/service-worker.php?'+Qad.json({
+							gcm: 'list',
+							token: Qad.gcm._token
+						}, true)).then(res => res.text()).then(resolve).catch(reject);
+					}else
+						reject('no subscription');
+				});
+			});
+		},
+		remove: topic => {
+			return new Promise((resolve, reject) => {
+				Qad.gcm.list().then(topics => {
+					Qad.sw.pushManager.getSubscription().then(sub => {
+						sub.unsubscribe().then(() => {
+							if (topic && topics)
+								topics.split(',').map(id => {
+									if (id != topic)
+										Qad.gcm.add(id);
+								});
+							resolve();
+						});
+					});
+				});
+			});
+		}
 	},
 	geo: {
 		id: {},
@@ -2050,15 +2104,11 @@ window.addEventListener('load',function() {
 		Qad.$('head').add(script);
 	}
 	if (navigator.serviceWorker && !Qad.$('html[dev]')) {
-		navigator.serviceWorker.register('/service-worker.js?'+location.pathname, {scope: location.pathname}).then(sw => {
-			console.log('◕‿◕');
-			Qad.sw = sw;
-			Qad.$('html').on('key', (e) => {
-				if (!(e.ctrlKey && e.shiftKey && e.keyCode == 82))
-					return;
-				console.log('Uninstall app');
-				Qad.sw.unregister();
-			}, 'sw');
+		navigator.serviceWorker.register('/service-worker.js?'+location.pathname, {scope: location.pathname}).then(_sw => {
+			console.log('◕‿◕', _sw.status = (_sw.installing ? 'installing' : (_sw.waiting ? 'installed' : (_sw.active ? 'active' : 'hmmm'))));
+			Qad.sw = _sw;
+			if (typeof(sw) == 'function')
+				sw(_sw);
 		}, () => {
 			console.log('ಠ_ಠ');
 		});

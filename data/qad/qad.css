@@ -1046,7 +1046,7 @@ input.label {
 		top: 0;
 		color: @color;
 }
-.input input:invalid + span,
+.input input:not([required="required"]):invalid + span,
 	.input select:invalid + span,
 	.input textarea:invalid + span {
 		left: 0;

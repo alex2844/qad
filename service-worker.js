@@ -14,8 +14,8 @@ var BLACKLIST = [
 	CACHENAME = location.search.split('?')[1],
 	UPDATE = _upday();
 self.addEventListener('install', e => {
+	self.skipWaiting();
 	e.waitUntil(caches.open(UPDATE).then(cache => {
-		console.log('Install app');
 		return cache.addAll(FILES);
 	}));
 });
@@ -33,24 +33,49 @@ self.addEventListener('fetch', e => {
 		}));
 	}));
 });
-self.addEventListener('notificationclick', e => {
-	console.log('Notification click: tag ', e.notification.tag);
-	e.notification.close();
-	if (!e.action)
-		return;
-	e.waitUntil(
-		clients.matchAll({
-			type: 'window'
-		}).then(windowClients => {
-			for (var i = 0; i < windowClients.length; i++) {
-				var client = windowClients[i];
-				if (client.url === location.origin+CACHENAME+'?actions='+e.action && 'focus' in client)
-					return client.focus();
-			}
-			if (clients.openWindow)
-				return clients.openWindow(location.origin+CACHENAME+'?actions='+e.action);
+self.addEventListener('push', e => {
+	e.waitUntil((
+		(e.data && (typeof(e.data.text) == 'function'))
+		? self.registration.showNotification(e.data.text())
+		: self.registration.pushManager.getSubscription().then(sub => {
+			if (sub && sub.endpoint)
+				fetch('/service-worker.php?gcm=list&token='+sub.endpoint.split('gcm/send/')[1]).then(res => res.text()).then(topics => {
+					fetch('/service-worker.php?gcm=get&topics='+topics).then(res => res.json()).then(res => {
+						self.registration.showNotification(res.notification.title, {
+							body: res.notification.body,
+							sound: res.notification.sound,
+							icon: res.data.icon,
+							data: {
+								action: res.data.action
+							},
+							actions: res.data.actions
+						})
+					});
+				});
 		})
-	);
+	));
+});
+self.addEventListener('notificationclick', e => {
+	var action = null;
+	e.notification.close();
+	if (e.action)
+		action = e.action;
+	else if (e.notification && e.notification.data && e.notification.data.action)
+		action = e.notification.data.action;
+	if (action && action != 'close')
+		e.waitUntil(
+			clients.matchAll({
+				type: 'window'
+			}).then(windowClients => {
+				for (var i = 0; i < windowClients.length; i++) {
+					var client = windowClients[i];
+					if (client.url === location.origin+CACHENAME+'?actions='+action && 'focus' in client)
+						return client.focus();
+				}
+				if (clients.openWindow)
+					return clients.openWindow(location.origin+CACHENAME+'?actions='+action);
+			})
+		);
 });
 function _clear(e) {
 	return caches.keys().then(keys => {

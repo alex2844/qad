@@ -33,8 +33,8 @@ elif [ "$1" == "dev" ]; then
 	mkdir -p upload/{cache,color,sql};
 	cd ~;
 	git clone git@github.com:alex2844/qad.git;
-	mkdir ~/qad/data/ -p; wget -O ~/qad/index.php https://github.com/alex2844/qad/raw/master/index.php; wget -O ~/qad/index.html https://github.com/alex2844/qad/raw/master/index.html; cp -r $dir/data/qad ~/qad/data/; cp -r $dir/data/fonts ~/qad/data/; cp $dir/service-worker.js ~/qad/; cp $dir/sitemap.php ~/qad/; cd ~/qad/; git status
-	echo "alias qad='mkdir ~/qad/data/ -p; wget -O ~/qad/index.php https://github.com/alex2844/qad/raw/master/index.php; wget -O ~/qad/index.html https://github.com/alex2844/qad/raw/master/index.html; cp -r $dir/data/qad ~/qad/data/; cp -r $dir/data/fonts ~/qad/data/; cp $dir/service-worker.js ~/qad/; cp $dir/sitemap.php ~/qad/; cd ~/qad/; git status'" >> ~/.bashrc;
+	mkdir ~/qad/data/ -p; wget -O ~/qad/index.php https://github.com/alex2844/qad/raw/master/index.php; wget -O ~/qad/index.html https://github.com/alex2844/qad/raw/master/index.html; cp -r $dir/data/qad ~/qad/data/; cp -r $dir/data/fonts ~/qad/data/; cp $dir/service-worker.js ~/qad/; cp $dir/service-worker.php ~/qad/; cp $dir/sitemap.php ~/qad/; cd ~/qad/; git status
+	echo "alias qad='mkdir ~/qad/data/ -p; wget -O ~/qad/index.php https://github.com/alex2844/qad/raw/master/index.php; wget -O ~/qad/index.html https://github.com/alex2844/qad/raw/master/index.html; cp -r $dir/data/qad ~/qad/data/; cp -r $dir/data/fonts ~/qad/data/; cp $dir/service-worker.js ~/qad/; cp $dir/service-worker.php ~/qad/; cp $dir/sitemap.php ~/qad/; cd ~/qad/; git status'" >> ~/.bashrc;
 elif [ "$1" == "min" ]; then
 	pwd=$(pwd);
 	mkdir -p '../../upload/color/';
