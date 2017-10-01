@@ -14,7 +14,10 @@ if (empty($_SERVER['HTTP_REFERER']) || explode('/', $_SERVER['HTTP_REFERER'])[2]
 	exit;
 }
 include_once 'data/qad/qad.php';
-if (!empty($_GET['gcm']) && !empty(Qad::$config['gcm'])) {
+if (isset($_GET['tts'])) {
+	$tts = json_decode($_GET['tts']);
+	echo file_get_contents('https://translate.google.com/translate_tts?ie=UTF-8&tl='.$tts->tl.'&q='.urlencode($tts->q).'&total=1&idx=0&client=tw-ob');
+}else if (!empty($_GET['gcm']) && !empty(Qad::$config['gcm'])) {
 	Qad::$config = [
 		'db_driver' => 'sqlite',
 		'db_name' => 'upload/sql/gcm',
@@ -31,11 +34,13 @@ if (!empty($_GET['gcm']) && !empty(Qad::$config['gcm'])) {
 	];
 	if ($_GET['gcm'] == 'get' && !empty($_GET['topics'])) {
 		$qad->db('create', $db);
+		$qad->db('delete from gcm where "date" <= datetime("now", "-1 hour")');
 		$filter = explode(',', $_GET['topics']);
 		if ($row = $qad->db('select * from gcm where topic in ('.str_repeat('?,', count($filter)-1).'?'.') order by date desc', $filter)->fetch())
 			echo $row->notification;
 	}else if ($_GET['gcm'] == 'push' && !empty($_GET['push']) && isset($_GET['key']) && $_GET['key'] == Qad::$config['gcm']) {
 		$qad->db('create', $db);
+		$qad->db('delete from gcm where "date" <= datetime("now", "-1 hour")');
 		$to = $_GET['push']['to'];
 		$_GET['push']['to'] = '/topics/'.$to;
 		$json = json_encode($_GET['push']);

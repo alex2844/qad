@@ -982,7 +982,7 @@ var Qad={
 				if (utterance.voice)
 					speechSynthesis.speak(utterance);
 				else
-					new Audio('/index.php?tts='+Qad.json({
+					new Audio('/service-worker.php?tts='+Qad.json({
 						q: encodeURIComponent(q),
 						tl: navigator.language
 					})).play();

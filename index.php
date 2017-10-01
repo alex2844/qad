@@ -1,9 +1,4 @@
 <?php
-if (isset($_GET['tts']) && !empty($_SERVER['HTTP_REFERER']) && explode('/', $_SERVER['HTTP_REFERER'])[2] == $_SERVER['HTTP_HOST']) {
-	$tts = json_decode($_GET['tts']);
-	echo file_get_contents('https://translate.google.com/translate_tts?ie=UTF-8&tl='.$tts->tl.'&q='.urlencode($tts->q).'&total=1&idx=0&client=tw-ob');
-	exit;
-}
 $config = [
 	'url' => '',
 	'analytics' => 'UA-77400806-1',
