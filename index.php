@@ -51,8 +51,14 @@ if (!empty($_GET['code'])) {
 	$button = 'Перейти';
 }else if (isset($_GET['browser']))
 	$msg = $browser;
-else if (isset($config['home']))
+else if (isset($config['home'])) {
 	header('Location: '.$config['home'], true, 302);
+	exit;
+}else{
+	include_once 'data/qad/qad.php';
+	$qad->routing($qad->params('argo', 'site/index', 'site'));
+	exit;
+}
 ?>
 <!DOCTYPE html>
 <html lang="ru">
