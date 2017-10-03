@@ -600,7 +600,10 @@ class Qad {
 			foreach ($param['columns'] as $k=>$v) {
 				$arr[] = $k.' '.$v;
 			}
-			return self::db('create table if not exists '.$param['table'].' ('.implode(', ', $arr).')');
+			self::db('create table if not exists '.$param['table'].' ('.implode(', ', $arr).')');
+			if (isset($param['autoclean']))
+				self::db('delete from '.$param['table'].' where "date" <= datetime("now", "-'.$param['autoclean'].'")');
+			return;
 		}else if ($sql == 'insert') {
 			$data = (array) $param['data'];
 			$arr = [];
