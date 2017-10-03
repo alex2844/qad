@@ -945,38 +945,39 @@ var Qad={
 		Qad.$('head').add(script);
 	},
 	speech: {
-		rec: e => {
-			if (typeof(Qad.rec) == 'undefined') {
-				Qad.rec = new webkitSpeechRecognition();
-				Qad.rec.lang = navigator.language;
-				Qad.rec.start();
-				Qad.rec.onresult = event => {
-					var res = event['results'][0][0]['transcript'];
-					if (typeof(e) == 'function')
-						e(res);
-					else
-						Qad.$(e).parent().find('input').value = res;
-				}
-				Qad.rec.onstart = () => {
-					if (typeof(e) != 'function')
-						Qad.$(e).style['color'] = '#F44336';
-				}
-				Qad.rec.onend = () => {
-					if (typeof(e) != 'function')
-						Qad.$(e).style['color'] = '#757575';
-					delete Qad.rec;
-				}
+		rec: (e, options) => {
+			if (typeof(Qad._rec) == 'undefined') {
+				Qad._rec = Object.assign(new webkitSpeechRecognition(), {
+					lang: navigator.language,
+					onresult: event => {
+						var res = event['results'][0][0]['transcript'];
+						if (typeof(e) == 'function')
+							e(res, event['results']);
+						else
+							Qad.$(e).parent().find('input').value = res;
+					},
+					onstart: () => {
+						if (typeof(e) != 'function')
+							Qad.$(e).style['color'] = '#F44336';
+					},
+					onend: () => {
+						if (typeof(e) != 'function')
+							Qad.$(e).style['color'] = '#757575';
+						delete Qad._rec;
+					}
+				}, options);
+				Qad._rec.start();
 			}else
-				Qad.rec.stop();
+				Qad._rec.stop();
 		},
-		tts: q => {
+		tts: (q, lang) => {
 			if (!q)
 				return;
 			var tts = speechSynthesis;
 			setTimeout(() => {
 				var utterance = new SpeechSynthesisUtterance(q);
 				tts.getVoices().map(voice => {
-					if (voice.lang.match(navigator.language))
+					if (voice.lang.match(lang || navigator.language))
 						utterance.voice = voice;
 				});
 				if (utterance.voice)
@@ -984,7 +985,7 @@ var Qad={
 				else
 					new Audio('/service-worker.php?tts='+Qad.json({
 						q: encodeURIComponent(q),
-						tl: navigator.language
+						tl: lang || navigator.language
 					})).play();
 			});
 		}
