@@ -495,7 +495,7 @@ var Qad={
 		}
 		return debug;
 	},
-	json: function(data, url) {
+	json: (data, url) => {
 		if (typeof(data) == 'string')
 			data = JSON.parse(data);
 		else if (typeof(data) == 'object')
@@ -508,6 +508,14 @@ var Qad={
 					JSON.stringify(data)
 			);
 		return data;
+	},
+	form: (object, form, prefix) => {
+		if (!form)
+			form = new FormData();
+		for (var i in object) {
+			form.append((prefix ? prefix+'['+i+']' : i), object[i]);
+		}
+		return form;
 	},
 	find: function(a,v) {
 		if (a.indexOf)
