@@ -615,6 +615,18 @@ class Qad {
 				$values[] = ':'.$k;
 			}
 			return self::db('insert into '.$param['table'].' ('.implode(', ', array_flip($arr)).') values ('.implode(', ', $values).')', $arr);
+		}else if ($sql == 'update') {
+			$data = (array) $param['data'];
+			$arr = [];
+			$values = [];
+			foreach ($param['columns'] as $k=>$v) {
+				if (empty($data[$k]))
+					continue;
+				$arr[$k] = $data[$k];
+				if ($k != 'id')
+					$values[] = $k.' = :'.$k;
+			}
+			return self::db('update '.$param['table'].' set '.implode(', ', $values).' where id = :id', $arr);
 		}
 		try {
 			if (empty(self::$sql)) {
