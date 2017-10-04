@@ -14,7 +14,7 @@ if (empty($_SERVER['HTTP_REFERER']) || explode('/', $_SERVER['HTTP_REFERER'])[2]
 	exit;
 }
 include_once 'data/qad/qad.php';
-if (isset($_GET['tts'])) {
+if (!empty($_GET['tts'])) {
 	$tts = json_decode($_GET['tts']);
 	echo file_get_contents('https://translate.google.com/translate_tts?ie=UTF-8&tl='.$tts->tl.'&q='.urlencode($tts->q).'&total=1&idx=0&client=tw-ob');
 }else if (!empty($_GET['gcm']) && !empty(Qad::$config['gcm'])) {
@@ -30,17 +30,16 @@ if (isset($_GET['tts'])) {
 			'topic' => 'CHAR(50) NOT NULL', // Канал подписки
 			'notification' => 'TEXT NOT NULL', // Уведомление
 			'date' => 'DATETIME DEFAULT CURRENT_TIMESTAMP' // Дата
-		]
+		],
+		'autoclean' => '1 hour'
 	];
 	if ($_GET['gcm'] == 'get' && !empty($_GET['topics'])) {
 		$qad->db('create', $db);
-		$qad->db('delete from gcm where "date" <= datetime("now", "-1 hour")');
 		$filter = explode(',', $_GET['topics']);
-		if ($row = $qad->db('select * from gcm where topic in ('.str_repeat('?,', count($filter)-1).'?'.') order by date desc', $filter)->fetch())
+		if ($row = $qad->db('select notification from gcm where topic in ('.str_repeat('?,', count($filter)-1).'?'.') order by date desc', $filter)->fetch())
 			echo $row->notification;
 	}else if ($_GET['gcm'] == 'push' && !empty($_GET['push']) && isset($_GET['key']) && $_GET['key'] == Qad::$config['gcm']) {
 		$qad->db('create', $db);
-		$qad->db('delete from gcm where "date" <= datetime("now", "-1 hour")');
 		$to = $_GET['push']['to'];
 		$_GET['push']['to'] = '/topics/'.$to;
 		$json = json_encode($_GET['push']);
@@ -87,4 +86,51 @@ if (isset($_GET['tts'])) {
 			}
 		echo implode(',', $topics);
 	}
+}else if (!empty($_POST['p2p'])) {
+	Qad::$config = [
+		'db_driver' => 'sqlite',
+		'db_name' => 'upload/sql/p2p'
+	];
+	$db = [
+		'table' => 'p2p',
+		'columns' => [
+			'id' => 'CHAR(50) NOT NULL', // Канал подписки
+			'offer' => 'TEXT NOT NULL', // Владелец канала
+			'answer' => 'TEXT DELAULT NULL', // Пользователь канала
+			'date' => 'DATETIME DEFAULT CURRENT_TIMESTAMP' // Дата
+		],
+		'autoclean' => '5 minute'
+	];
+	$qad->db('create', $db);
+	$json = (object) $_POST['p2p'];
+	if (isset($json->token)) {
+		if ($json->type == 'offer') {
+			$db['data']['id'] = md5($json->token);
+			$db['data']['offer'] = $json->token;
+			if ($qad->db('insert', $db))
+				echo $db['data']['id'];
+		}else if ($json->type == 'answer')
+			$qad->db('update', array_merge($db, [
+				'data' => [
+					'id' => $json->id,
+					'answer' => $json->token
+				]
+			]));
+	}else if (isset($json->id)) {
+		if ($row = $qad->db('select id, answer, offer from p2p where id = :id', [
+			'id' => $json->id
+		])->fetch()) {
+			if ($row->answer && $row->offer && $json->type == 'answer') {
+				error_log(sprintf("\033[31m%s\033[0m", print_r('УДАЛЯЕМ', true)));
+				$qad->db('delete from p2p where id = :id', [
+					'id' => $json->id
+				]);
+			}
+			$res = [];
+			$res[$json->type] = $row->{$json->type};
+		}else
+			$res = ['error' => 'no find'];
+		echo json_encode($res);
+	}else
+		print_r($json);
 }
