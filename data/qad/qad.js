@@ -517,6 +517,15 @@ var Qad={
 		}
 		return form;
 	},
+	replace: (search, replace, subject) => {
+		if (search.constructor.name == 'Array')
+			search.map((s, i) => {
+				subject = subject.replace(s, (replace.constructor.name == 'Array' ? replace[i] : replace));
+			});
+		else
+			subject = subject.replace(search, replace);
+		return subject;
+	},
 	find: function(a,v) {
 		if (a.indexOf)
 			return a.indexOf(v);
