@@ -39,8 +39,20 @@ self.addEventListener('push', e => {
 		? self.registration.showNotification(e.data.text())
 		: self.registration.pushManager.getSubscription().then(sub => {
 			if (sub && sub.endpoint)
-				fetch('/service-worker.php?gcm=list&token='+sub.endpoint.split('gcm/send/')[1]).then(res => res.text()).then(topics => {
-					fetch('/service-worker.php?gcm=get&topics='+topics).then(res => res.json()).then(res => {
+				fetch('/service-worker.php', {
+					method: 'POST',
+					body: _form({
+						gcm: 'list',
+						token: sub.endpoint.split('gcm/send/')[1]
+					})
+				}).then(res => res.text()).then(topics => {
+					fetch('/service-worker.php', {
+						method: 'POST',
+						body: _form({
+							gcm: 'get',
+							topics: topics
+						})
+					}).then(res => res.json()).then(res => {
 						self.registration.showNotification(res.notification.title, {
 							body: res.notification.body,
 							sound: res.notification.sound,
@@ -77,6 +89,13 @@ self.addEventListener('notificationclick', e => {
 			})
 		);
 });
+function _form(object) {
+	var form = new FormData();
+	for (var i in object) {
+		form.append(i, object[i]);
+	}
+	return form;
+}
 function _clear(e) {
 	return caches.keys().then(keys => {
 		return Promise.all(keys.map((key, i) => {

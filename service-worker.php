@@ -15,9 +15,9 @@ if (empty($_SERVER['HTTP_REFERER']) || explode('/', $_SERVER['HTTP_REFERER'])[2]
 }
 include_once 'data/qad/qad.php';
 if (!empty($_GET['tts'])) {
-	$tts = json_decode($_GET['tts']);
-	echo file_get_contents('https://translate.google.com/translate_tts?ie=UTF-8&tl='.$tts->tl.'&q='.urlencode($tts->q).'&total=1&idx=0&client=tw-ob');
-}else if (!empty($_GET['gcm']) && !empty(Qad::$config['gcm'])) {
+	$json = json_decode($_GET['tts']);
+	echo file_get_contents('https://translate.google.com/translate_tts?ie=UTF-8&tl='.$json->tl.'&q='.urlencode($json->q).'&total=1&idx=0&client=tw-ob');
+}else if (!empty($_POST['gcm']) && !empty(Qad::$config['gcm'])) {
 	Qad::$config = [
 		'db_driver' => 'sqlite',
 		'db_name' => 'upload/sql/gcm',
@@ -33,16 +33,16 @@ if (!empty($_GET['tts'])) {
 		],
 		'autoclean' => '1 hour'
 	];
-	if ($_GET['gcm'] == 'get' && !empty($_GET['topics'])) {
+	if ($_POST['gcm'] == 'get' && !empty($_POST['topics'])) {
 		$qad->db('create', $db);
-		$filter = explode(',', $_GET['topics']);
+		$filter = explode(',', $_POST['topics']);
 		if ($row = $qad->db('select notification from gcm where topic in ('.str_repeat('?,', count($filter)-1).'?'.') order by date desc', $filter)->fetch())
 			echo $row->notification;
-	}else if ($_GET['gcm'] == 'push' && !empty($_GET['push']) && isset($_GET['key']) && $_GET['key'] == Qad::$config['gcm']) {
+	}else if ($_POST['gcm'] == 'push' && !empty($_POST['push']) && isset($_POST['key']) && $_POST['key'] == Qad::$config['gcm']) {
 		$qad->db('create', $db);
-		$to = $_GET['push']['to'];
-		$_GET['push']['to'] = '/topics/'.$to;
-		$json = json_encode($_GET['push']);
+		$to = $_POST['push']['to'];
+		$_POST['push']['to'] = '/topics/'.$to;
+		$json = json_encode($_POST['push']);
 		if ($qad->db('insert', array_merge($db, [
 				'data' => [
 					'topic' => $to,
@@ -59,8 +59,8 @@ if (!empty($_GET['tts'])) {
 				'cache' => 'no-cache',
 				'method' => 'post'
 			]);
-	}else if ($_GET['gcm'] == 'add' && !empty($_GET['topics']) && !empty($_GET['token'])) {
-		$qad->fetch('https://iid.googleapis.com/iid/v1/'.$_GET['token'].'/rel/topics/'.$_GET['topics'], [
+	}else if ($_POST['gcm'] == 'add' && !empty($_POST['topics']) && !empty($_POST['token'])) {
+		$qad->fetch('https://iid.googleapis.com/iid/v1/'.$_POST['token'].'/rel/topics/'.$_POST['topics'], [
 			'header' => [
 				'Authorization: key='.Qad::$config['gcm'],
 				'Content-Length: 0',
@@ -69,8 +69,8 @@ if (!empty($_GET['tts'])) {
 			'cache' => 'no-cache',
 			'method' => 'post'
 		]);
-	}else if ($_GET['gcm'] == 'list' && !empty($_GET['token'])) {
-		$res = $qad->fetch('https://iid.googleapis.com/iid/info/'.$_GET['token'].'/?details=true', [
+	}else if ($_POST['gcm'] == 'list' && !empty($_POST['token'])) {
+		$res = $qad->fetch('https://iid.googleapis.com/iid/info/'.$_POST['token'].'/?details=true', [
 			'header' => [
 				'Authorization: key='.Qad::$config['gcm'],
 				'Content-Length: 0',
@@ -120,12 +120,10 @@ if (!empty($_GET['tts'])) {
 		if ($row = $qad->db('select id, answer, offer from p2p where id = :id', [
 			'id' => $json->id
 		])->fetch()) {
-			if ($row->answer && $row->offer && $json->type == 'answer') {
-				error_log(sprintf("\033[31m%s\033[0m", print_r('УДАЛЯЕМ', true)));
+			if ($row->answer && $row->offer && $json->type == 'answer')
 				$qad->db('delete from p2p where id = :id', [
 					'id' => $json->id
 				]);
-			}
 			$res = [];
 			$res[$json->type] = $row->{$json->type};
 		}else

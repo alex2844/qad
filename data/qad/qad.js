@@ -557,11 +557,14 @@ var Qad={
 				}).then(sub => {
 					Qad.gcm._token = sub.endpoint.split('gcm/send/')[1];
 					if (topic)
-						fetch('/service-worker.php?'+Qad.json({
-							gcm: 'add',
-							topics: topic,
-							token: Qad.gcm._token
-						}, true)).then(() => {
+						fetch('/service-worker.php', {
+							method: 'POST',
+							body: Qad.form({
+								gcm: 'add',
+								topics: topic,
+								token: Qad.gcm._token
+							})
+						}).then(() => {
 							resolve({
 								token: Qad.gcm._token,
 								msg: 'Subscribed to "'+topic+'"'
@@ -577,10 +580,13 @@ var Qad={
 				Qad.sw.pushManager.getSubscription().then(sub => {
 					if (sub && sub.endpoint) {
 						Qad.gcm._token = sub.endpoint.split('gcm/send/')[1];
-						fetch('/service-worker.php?'+Qad.json({
-							gcm: 'list',
-							token: Qad.gcm._token
-						}, true)).then(res => res.text()).then(resolve).catch(reject);
+						fetch('/service-worker.php', {
+							method: 'POST',
+							body: Qad.form({
+								gcm: 'list',
+								token: Qad.gcm._token
+							})
+						}).then(res => res.text()).then(resolve).catch(reject);
 					}else
 						reject('no subscription');
 				});
