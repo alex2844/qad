@@ -14,7 +14,12 @@ if (empty($_SERVER['HTTP_REFERER']) || explode('/', $_SERVER['HTTP_REFERER'])[2]
 	exit;
 }
 include_once 'data/qad/qad.php';
-if (!empty($_GET['tts'])) {
+if (!empty($_GET['hash'])) {
+	if ($_GET['text'] == '[object ArrayBuffer]')
+		$_GET['text'] = file_get_contents('php://input');
+	if ($_GET['hash'] == 'sha1')
+		echo sha1($_GET['text']);
+}else if (!empty($_GET['tts'])) {
 	$json = json_decode($_GET['tts']);
 	echo file_get_contents('https://translate.google.com/translate_tts?ie=UTF-8&tl='.$json->tl.'&q='.urlencode($json->q).'&total=1&idx=0&client=tw-ob');
 }else if (!empty($_POST['gcm']) && !empty(Qad::$config['gcm'])) {

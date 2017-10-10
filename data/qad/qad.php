@@ -595,6 +595,12 @@ class Qad {
 		));
 	}
 	public static function db($sql='', $param=null, $exec=true) {
+		if ($param) {
+			if ($param['driver'])
+				self::$config['db_driver'] = $param['driver'];
+			if ($param['path'])
+				self::$config['db_name'] = $param['path'].'/'.$param['table'];
+		}
 		if ($sql == 'create') {
 			$arr = [];
 			foreach ($param['columns'] as $k=>$v) {
