@@ -633,7 +633,8 @@ class Qad {
 					$values[] = $k.' = :'.$k;
 			}
 			return self::db('update '.$param['table'].' set '.implode(', ', $values).' where id = :id', $arr);
-		}
+		}else if ($param)
+			unset($param['driver'], $param['path'], $param['table'], $param['columns'], $param['autoclean']);
 		try {
 			if (empty(self::$sql)) {
 				if (self::$config['db_driver'] == 'mysql')
