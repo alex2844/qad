@@ -192,7 +192,7 @@ class Qad {
 			error_log(sprintf(self::$color['cyan'], print_r($i, true)));
 		}
 	}
-	public function furl($s) {
+	public static function furl($s) {
 		$s = (string) $s;
 		$s = strip_tags($s);
 		$s = str_replace(array("\n", "\r"), " ", $s);
@@ -1193,6 +1193,7 @@ class Qad {
 		if (self::params('method') || !empty($serviceClass::$method)) {
 			$rArray = (array) self::params();
 			$method = self::params('method', (!empty($serviceClass::$method) ? $serviceClass::$method : null));
+			$callback = self::params('callback', (!empty($serviceClass::$callback) ? $serviceClass::$callback : null));
 			if (method_exists($serviceClass, $method)) {
 				$ref = new ReflectionMethod($serviceClass, $method);
 				$params = $ref->getParameters();
@@ -1212,41 +1213,41 @@ class Qad {
 				if (count($pArray) == $pCount && !in_array(null, $pArray)) {
 					$response = call_user_func_array(array($serviceClass, $method), $pArray);
 					if (gettype($response) == 'array' || gettype($response) == 'object') {
-						if (isset($rArray['callback'])) {
+						if (isset($callback)) {
 							header('Content-Type: application/x-javascript');
-							echo $rArray['callback'].'('.json_encode($response).');';
+							echo $callback.'('.json_encode($response).');';
 						}else{
 							header('Content-Type: application/json');
 							echo json_encode($response);
 						}
 					}else{
-						if (isset($rArray['callback'])) {
+						if (isset($callback)) {
 							header('Content-Type: application/x-javascript');
-							echo $rArray['callback'].'("'.addslashes($response).'");';
+							echo $callback.'("'.addslashes($response).'");';
 						}else
 							echo $response;
 					}
 				}else{
-					if (isset($rArray['callback'])) {
+					if (isset($callback)) {
 						header('Content-Type: application/x-javascript');
-						echo $rArray['callback'].'('.json_encode(array('error' => 'Required parameter(s) for '.$method.': '. $paramStr)).');';
+						echo $callback.'('.json_encode(['error' => 'Required parameter(s) for '.$method.': '.$paramStr]).');';
 					}else{
 						header('Content-Type: application/json');
-						echo json_encode(array('error' => 'Required parameter(s) for '.$method.': '. $paramStr));
+						echo json_encode(['error' => 'Required parameter(s) for '.$method.': '.$paramStr]);
 					}
 				}
 			}else{
-				if (isset($rArray['callback'])) {
+				if (isset($callback)) {
 					header('Content-Type: application/x-javascript');
-					echo $rArray['callback'].'('.json_encode(array('error' => 'The method '.$method.' does not exist.')).');';
+					echo $callback.'('.json_encode(['error' => 'The method '.$method.' does not exist.']).');';
 				}else{
 					header('Content-Type: application/json');
-					echo json_encode(array('error' => 'The method '.$method.' does not exist.'));
+					echo json_encode(['error' => 'The method '.$method.' does not exist.']);
 				}
 			}
 		}else{
 			header('Content-Type: application/json');
-			echo json_encode(array('error' => 'No method was requested.'));
+			echo json_encode(['error' => 'No method was requested.']);
 		}
 	}
 }
