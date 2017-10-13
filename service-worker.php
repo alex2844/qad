@@ -26,11 +26,11 @@ if (!empty($_GET['hash'])) {
 	echo file_get_contents('https://translate.google.com/translate_tts?ie=UTF-8&tl='.$json->tl.'&q='.urlencode($json->q).'&total=1&idx=0&client=tw-ob');
 }else if (!empty($_POST['gcm']) && !empty(Qad::$config['gcm'])) {
 	Qad::$config = [
-		'db_driver' => 'sqlite',
-		'db_name' => 'upload/sql/gcm',
 		'gcm' => Qad::$config['gcm']
 	];
 	$db = [
+		'driver' => 'sqlite',
+		'path' => 'upload/sql',
 		'table' => 'gcm',
 		'columns' => [
 			'id' => 'INTEGER PRIMARY KEY AUTOINCREMENT', // ID
@@ -94,11 +94,9 @@ if (!empty($_GET['hash'])) {
 		echo implode(',', $topics);
 	}
 }else if (!empty($_POST['p2p'])) {
-	Qad::$config = [
-		'db_driver' => 'sqlite',
-		'db_name' => 'upload/sql/p2p'
-	];
 	$db = [
+		'driver' => 'sqlite',
+		'path' => 'upload/sql',
 		'table' => 'p2p',
 		'columns' => [
 			'id' => 'CHAR(50) NOT NULL', // Канал подписки

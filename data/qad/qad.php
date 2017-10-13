@@ -602,12 +602,16 @@ class Qad {
 				self::$config['db_name'] = $param['path'].'/'.$param['table'];
 		}
 		if ($sql == 'create') {
-			$arr = [];
-			foreach ($param['columns'] as $k=>$v) {
-				$arr[] = $k.' '.$v;
-			}
-			self::db('create table if not exists '.$param['table'].' ('.implode(', ', $arr).')');
-			if (isset($param['autoclean']))
+			if (!file_exists(self::$config['db_name'].'.sqlite') || self::$config['db_driver'] != 'sqlite') {
+				echo 'create';
+				$arr = [];
+				foreach ($param['columns'] as $k=>$v) {
+					$arr[] = $k.' '.$v;
+				}
+				if (isset($param['autoclean']) && self::$config['db_driver'] == 'sqlite')
+					self::db('PRAGMA auto_vacuum = 1');
+				self::db('create table if not exists '.$param['table'].' ('.implode(', ', $arr).')');
+			}else if (isset($param['autoclean']))
 				self::db('delete from '.$param['table'].' where "date" <= datetime("now", "-'.$param['autoclean'].'")');
 			return;
 		}else if ($sql == 'insert') {
@@ -655,6 +659,8 @@ class Qad {
 			}
 			if (self::$debug['status'])
 				self::$debug['db'][] = ($param ? [$sql, $param] : $sql);
+			if (!(stripos($sql, 'PRAGMA') === false))
+				return self::$sql->query($sql);
 			$q = self::$sql->prepare($sql);
 			if ($exec) {
 				$q->execute($param);
