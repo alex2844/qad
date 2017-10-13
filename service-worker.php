@@ -19,6 +19,8 @@ if (!empty($_GET['hash'])) {
 		$_GET['text'] = file_get_contents('php://input');
 	if ($_GET['hash'] == 'sha1')
 		echo sha1($_GET['text']);
+	else if ($_GET['hash'] == 'md5')
+		echo md5($_GET['text']);
 }else if (!empty($_GET['tts'])) {
 	$json = json_decode($_GET['tts']);
 	echo file_get_contents('https://translate.google.com/translate_tts?ie=UTF-8&tl='.$json->tl.'&q='.urlencode($json->q).'&total=1&idx=0&client=tw-ob');
