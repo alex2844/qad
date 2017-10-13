@@ -603,7 +603,6 @@ class Qad {
 		}
 		if ($sql == 'create') {
 			if (!file_exists(self::$config['db_name'].'.sqlite') || self::$config['db_driver'] != 'sqlite') {
-				echo 'create';
 				$arr = [];
 				foreach ($param['columns'] as $k=>$v) {
 					$arr[] = $k.' '.$v;
