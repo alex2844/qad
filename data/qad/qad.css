@@ -1083,6 +1083,7 @@ label.speech i {
 	font-size: 26px;
 	font-style: normal;
 	color: #757575;
+	cursor: pointer;
 }
 label.speech i:before {
 	position: absolute;

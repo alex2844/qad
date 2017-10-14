@@ -1710,7 +1710,6 @@ var Qad={
 					if (e.speech)
 						return;
 					e.speech = true;
-					console.log(e);
 					var speech = Qad.$('/i');
 					speech.onclick = Qad.speech.rec;
 					e.add(speech);
