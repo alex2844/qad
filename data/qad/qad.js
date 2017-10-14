@@ -989,8 +989,12 @@ var Qad={
 						var res = event['results'][0][0]['transcript'];
 						if (typeof(e) == 'function')
 							e(res, event['results']);
-						else
-							Qad.$(e).parent().find('input').value = res;
+						else{
+							var input = Qad.$(e).parent().find('input');
+							input.value = res;
+							if (typeof(input.ondata) == 'function')
+								input.ondata(res, input);
+						}
 					},
 					onstart: () => {
 						if (typeof(e) != 'function')
