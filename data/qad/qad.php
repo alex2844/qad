@@ -594,6 +594,28 @@ class Qad {
 			)
 		));
 	}
+	public static function is_arr($arr, $children=null) {
+		if (gettype($arr) != 'array')
+			return false;
+		if ($children) {
+			foreach ($children as $v) {
+				if (!(strripos($v, '*') === false)) {
+					$v = str_replace('*', '', $v);
+					foreach ($arr as $k=>$vv) {
+						if (!(strripos($k, $v) === false))
+							$arr = $vv;
+					}
+				}else if (isset($arr[$v]))
+					$arr = $arr[$v];
+				else{
+					return null;
+					break;
+				}
+			}
+			return $arr;
+		}else
+			return true;
+	}
 	public static function db($sql='', $param=null, $exec=true) {
 		if ($param) {
 			if ($param['driver'])
