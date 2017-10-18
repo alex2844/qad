@@ -551,6 +551,22 @@ class Qad {
 	public static function fetch($url, $options=[], $then='text', $prefix=null) {
 		if (self::$debug['status'])
 			$debug = self::_microtime();
+		if (!empty($options['file'])) {
+			$boundary = '--------------------------'.microtime(true);
+			$options = [
+				'body' => implode("\r\n", [
+					'--'.$boundary,
+					'Content-Disposition: form-data; name="file"; filename="'.pathinfo($options['file'])['basename'].'"',
+					'Content-Type: image/jpeg',
+					'',
+					file_get_contents($options['file']),
+					'--'.$boundary.'--'
+				]),
+				'cache' => 'no-cache',
+				'header' => 'Content-Type: multipart/form-data; boundary='.$boundary,
+				'method' => 'post'
+			];
+		}
 		$query = (
 			empty($options['body'])
 			? ''
