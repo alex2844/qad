@@ -582,6 +582,19 @@ class Qad {
 				'header' => (empty($options['header']) ? 'Content-type: application/x-www-form-urlencoded' : $options['header']),
 				'user_agent' => (empty($options['user_agent']) ? '' : $options['user_agent'])
 			]];
+			if (!empty($options['cache']) && $options['cache'] == 'no-cache' && !empty($options['cookie'])) {
+				$cook = '';
+				if (($options['cookie'] === true) && ($cook = self::params('cook_'.md5($_SERVER['PHP_SELF']))))
+					$opts['http']['header'] .= "\r\n".'Cookie: '.implode(';', json_decode($cook, true));
+				else if (($n = count(($aCookies = glob($_SERVER['DOCUMENT_ROOT'].'/'.$options['cookie'].'/*.txt')))) !== 0) {
+					$i = 0;
+					while ($i < $n) {
+						$cook .= file_get_contents($aCookies[$i]).';';
+						++$i;
+					}
+					$opts['http']['header'] .= "\r\n".'Cookie: '.$cook;
+				}
+			}
 			if ($opts['http']['method'] == 'GET' && !empty($query))
 				$url .= '?'.$query;
 			else
@@ -590,6 +603,27 @@ class Qad {
 			if ($res = file_get_contents($url, 0, $context)) {
 				if (empty($options['cache']) || $options['cache'] != 'no-cache')
 					self::cache('json', $res, $prefix);
+				else if (!empty($options['cookie'])) {
+					$n = count($http_response_header);
+					$i = 0;
+					$c = [];
+					while ($i < $n) {
+						if (preg_match('@Set-Cookie: (([^=]+)=[^;]+)@i', $http_response_header[$i], $cook)) {
+							if ($options['cookie'] === true)
+								$c[$cook[2]] = $cook[1];
+							else{
+								$fp = fopen($_SERVER['DOCUMENT_ROOT'].'/'.$options['cookie'].'/'.$cook['2'].'.txt', 'w');
+								fwrite($fp, $cook['1']);
+								fclose($fp);
+							}
+						}
+						++$i;
+					}
+					if ($c) {
+						$fp = json_decode(self::params(($f = 'cook_'.md5($_SERVER['PHP_SELF'])), '[]'), true);
+						setcookie($f, json_encode(array_merge($fp, $c)), time()+60*60*24*30, '/');
+					}
+				}
 			}else{
 				if (file_exists(self::$cache))
 					$res = file_get_contents(self::$cache);
