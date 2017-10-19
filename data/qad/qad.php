@@ -579,7 +579,8 @@ class Qad {
 		if ((!empty($options['cache']) && $options['cache'] == 'no-cache') || !$res = self::cache('json', $url.$query, $prefix)) {
 			$opts = ['http' => [
 				'method' => (empty($options['method']) ? 'GET' : strtoupper($options['method'])),
-				'header' => (empty($options['header']) ? 'Content-type: application/x-www-form-urlencoded' : $options['header'])
+				'header' => (empty($options['header']) ? 'Content-type: application/x-www-form-urlencoded' : $options['header']),
+				'user_agent' => (empty($options['user_agent']) ? '' : $options['user_agent'])
 			]];
 			if ($opts['http']['method'] == 'GET' && !empty($query))
 				$url .= '?'.$query;
