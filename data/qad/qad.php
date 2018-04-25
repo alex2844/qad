@@ -26,6 +26,7 @@ class Qad {
 	];
 
 	public function __construct() {
+		$_SERVER['DOCUMENT_ROOT'] = str_replace('/api', '', explode('/page', ($_SERVER['DOCUMENT_ROOT'] ?: $_SERVER['PWD']))[0]);
 		$conf = (file_exists('data/config.php') ? 'data/config.php' : dirname(__DIR__).'/config.php');
 		if (file_exists($conf))
 			self::$config = include($conf);
@@ -327,7 +328,7 @@ class Qad {
 		if ($method == 'get')
 			return 'https://chart.googleapis.com/chart?chs=200x200&chld=M|0&cht=qr&chl='.urlencode($code);
 	}
-	public function recaptcha($recaptcha) {
+	public static function recaptcha($recaptcha) {
 		if(empty($recaptcha) || empty(self::$config['recaptcha']))
 			return false;
 		$url = 'https://www.google.com/recaptcha/api/siteverify?secret='.self::$config['recaptcha'].'&response='.$recaptcha.'&remoteip='.$_SERVER['REMOTE_ADDR'];
@@ -419,7 +420,7 @@ class Qad {
 			fputs($socket, "QUIT\r\n");
 			fclose($socket);
 		} catch (Exception $e) {
-			return  $e->getMessage();
+			return $e->getMessage();
 		}
 		return true;
 	}
@@ -446,12 +447,13 @@ class Qad {
 	public static function cache($exec, $name='', $prefix='') {
 		if (!empty($prefix))
 			$prefix .= '_';
+		$clear = (empty(self::$config['cache_clear']) ? 86400 : self::$config['cache_clear']);
 		switch($exec) {
 			case 'json': {
 				if (file_exists(dirname(__DIR__).'/../upload/cache/') && !empty($name)) {
 					if (empty(self::$cache)) {
 						self::$cache = dirname(__DIR__).'/../upload/cache/'.$prefix.md5(getcwd().(!empty($name) ? $name : '')).'_json.cache';
-						if (file_exists(self::$cache) && (time()-86400)<filemtime(self::$cache)) {
+						if (file_exists(self::$cache) && (time()-$clear)<filemtime(self::$cache)) {
 							$name = self::$cache;
 							self::$cache = null;
 							return file_get_contents($name);
@@ -471,19 +473,19 @@ class Qad {
 				$file = explode('#', $name);
 				$file[] = '/upload/cache/'.$prefix.md5(getcwd().(!empty($name) ? $name : '')).'.css';
 				self::$cache = dirname(__DIR__).'/..'.$file[2];
-				if (!(file_exists(self::$cache) && (time()-86400)<filemtime(self::$cache)))
-					file_put_contents(self::$cache, preg_replace([
-						"'@color: meta.theme-color;'",
-						"'@color'",
-						"'@location'",
+				if (!(file_exists(self::$cache) && (time()-$clear)<filemtime(self::$cache)))
+					file_put_contents(self::$cache, str_replace([
+						'var(--color)',
+						'url(../'
+					], [
+						'#'.$file[1],
+						'url('.explode('/page', pathinfo(Qad::params('location'), PATHINFO_DIRNAME))[0].'/data/'
+					], preg_replace([
 						"'(\/\/(.*?)\n)|(\/\*(.*?)\*\/)'si",
 						"'\r'",
 						"'\n'",
 						"'	'"
-					], [
-						'',
-						'#'.$file[1]
-					], file_get_contents($file[0])));
+					], '', file_get_contents($file[0]))));
 				return $file[2];
 				break;
 			}
@@ -492,7 +494,7 @@ class Qad {
 					return $name;
 				$file = '/upload/cache/'.$prefix.md5(getcwd().(!empty($name) ? $name : '')).'.js';
 				self::$cache = dirname(__DIR__).'/..'.$file;
-				if (!(file_exists(self::$cache) && (time()-86400)<filemtime(self::$cache)))
+				if (!(file_exists(self::$cache) && (time()-$clear)<filemtime(self::$cache)))
 					file_put_contents(self::$cache, file_get_contents($name));
 				return $file;
 				break;
@@ -512,7 +514,7 @@ class Qad {
 					return $name;
 				$file[] = '/upload/cache/'.$prefix.md5(getcwd().$file[0]).'.'.$file[1];
 				self::$cache = dirname(__DIR__).'/..'.$file[2];
-				if (!(file_exists(self::$cache) && (time()-86400)<filemtime(self::$cache)))
+				if (!(file_exists(self::$cache) && (time()-$clear)<filemtime(self::$cache)))
 					copy($name, self::$cache);
 				return $file[2];
 				break;
@@ -520,7 +522,7 @@ class Qad {
 			case 'start': {
 				if (file_exists(dirname(__DIR__).'/../upload/cache/')) {
 					self::$cache = dirname(__DIR__).'/../upload/cache/'.$prefix.md5(getcwd().(!empty($name) ? $name : '')).'_'.md5($_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI']).'.cache';
-					if (file_exists(self::$cache) && (time()-86400)<filemtime(self::$cache))
+					if (file_exists(self::$cache) && (time()-$clear)<filemtime(self::$cache))
 						return file_get_contents(self::$cache);
 					ob_start();
 				}
@@ -579,9 +581,19 @@ class Qad {
 		if ((!empty($options['cache']) && $options['cache'] == 'no-cache') || !$res = self::cache('json', $url.$query, $prefix)) {
 			$opts = ['http' => [
 				'method' => (empty($options['method']) ? 'GET' : strtoupper($options['method'])),
-				'header' => (empty($options['header']) ? 'Content-type: application/x-www-form-urlencoded' : $options['header']),
+				'header' => (empty($options['header']) ? 'Content-type: application/x-www-form-urlencoded' : (
+					gettype($options['header']) == 'string'
+					? $options['header']
+					: implode(PHP_EOL, $options['header'])
+				)),
 				'user_agent' => (empty($options['user_agent']) ? '' : $options['user_agent'])
 			]];
+			if (isset($options['proxy'])) {
+				$opts['http']['proxy'] = 'tcp://'.$options['proxy'][0];
+				$opts['http']['request_fulluri'] = true;
+			}
+			if (isset($options['referer']))
+				$opts['http']['header'] .= "\r\n".'Referer: '.$options['referer'];
 			if (!empty($options['cache']) && $options['cache'] == 'no-cache' && !empty($options['cookie'])) {
 				$cook = '';
 				if (($options['cookie'] === true) && ($cook = self::params('cook_'.md5($_SERVER['PHP_SELF']))))
@@ -601,9 +613,10 @@ class Qad {
 				$opts['http']['content'] = $query;
 			$context = stream_context_create($opts);
 			if ($res = file_get_contents($url, 0, $context)) {
-				if (empty($options['cache']) || $options['cache'] != 'no-cache')
+				if (empty($options['cache']) || $options['cache'] != 'no-cache') {
+					$http_response_header = array_merge($http_response_header, ['Cache-name: '.self::$cache]);
 					self::cache('json', $res, $prefix);
-				else if (!empty($options['cookie'])) {
+				}else if (!empty($options['cookie'])) {
 					$n = count($http_response_header);
 					$i = 0;
 					$c = [];
@@ -641,7 +654,9 @@ class Qad {
 		}
 		return ($then == 'text' ? $res : (
 			$then == 'json' ? json_decode($res) : (
-				$then == 'array' ? json_decode($res, true) : null
+				$then == 'array' ? json_decode($res, true) : (
+					$then == 'header' ? [$url, (isset($http_response_header) ? $http_response_header : null), $res] : null
+				)
 			)
 		));
 	}
@@ -668,11 +683,11 @@ class Qad {
 			return true;
 	}
 	public static function db($sql='', $param=null, $exec=true) {
-		if ($param) {
+		if ($param && (isset($param['driver']) || isset($param['path']))) {
 			if ($param['driver'])
 				self::$config['db_driver'] = $param['driver'];
 			if ($param['path'])
-				self::$config['db_name'] = $param['path'].'/'.$param['table'];
+				self::$config['db_name'] = $param['path'].'/'.(isset($param['prefix']) ? $param['prefix'].'_' : '').(isset($param['file']) ? $param['file'] : $param['table']);
 		}
 		if ($sql == 'create') {
 			if (!file_exists(self::$config['db_name'].'.sqlite') || self::$config['db_driver'] != 'sqlite') {
@@ -709,8 +724,8 @@ class Qad {
 					$values[] = $k.' = :'.$k;
 			}
 			return self::db('update '.$param['table'].' set '.implode(', ', $values).' where id = :id', $arr);
-		}else if ($param)
-			unset($param['driver'], $param['path'], $param['table'], $param['columns'], $param['autoclean']);
+		}else if ($param && (isset($param['driver']) || isset($param['path'])))
+			unset($param['driver'], $param['path'], $param['table'], $param['columns'], $param['autoclean'], $param['prefix'], $param['file']);
 		try {
 			if (empty(self::$sql)) {
 				if (self::$config['db_driver'] == 'mysql')
@@ -741,412 +756,9 @@ class Qad {
 			}
 			return $q;
 		}catch (Exception $e) {
-			echo json_encode([$e, $sql, $param]);
+			/* if (!(stripos($_SERVER['PHP_SELF'], '/api/') === false))
+				echo json_encode([$e, $sql, $param]); */
 			throw $e;
-		}
-	}
-	public function sql($exec,$p1='',$p2='',$p3='',$p4='') {
-		switch($exec) {
-			case 'create': {
-				$q = 'create table if not exists '.$p1.' (`id` integer primary key autoincrement, `created` default null';
-				foreach ($p2 as $k)
-					$q .= ', `'.$k.'` text default null';
-				$q .= ')';
-				$stmt = self::$sql->prepare($q);
-				$stmt->execute();
-				break;
-			}
-			case 'search': {
-				if ($p3 == '')
-					$p3 = 0;
-				$find = explode(':',$p1);
-				if (preg_match('/\*/', $find[count($find)-1])) {
-					$q = 'select id from "'.$find[0].'" where "'.$find[1].'" like ? order by id desc '.(!empty($p2) ? 'limit '.$p3.','.$p2 : '');
-					$stmt = self::$sql->prepare($q);
-					$stmt->execute(array('%'.str_replace('*','',$find[count($find)-1]).'%'));
-				}else{
-					$q = 'select id from "'.$find[0].'" where "'.$find[1].'" = ? order by id desc '.(!empty($p2) ? 'limit '.$p3.','.$p2 : '');
-					$stmt = self::$sql->prepare($q);
-					$stmt->execute(array($find[count($find)-1]));
-				}
-				$res = array();
-				foreach ($stmt->fetchAll() as $n)
-					$res[] = $n['id'];
-				return json_encode($res);
-				break;
-			}
-			case 'delete': {
-				$stmt = self::$sql->prepare('delete from '.$p1.' WHERE id = ?');
-				$res = $stmt->execute(array($p2));
-				return json_encode(['status'=>$res]);
-				break;
-			}
-			case 'select': {
-				try {
-					if (gettype($p2) == 'integer' || empty($p2)) {
-						if ($p3 == '')
-							$p3 = 0;
-						$q = 'select '.(!empty($p4) ? 'id,'.implode(',',$p4) : '*').' from '.$p1.' order by id desc '.(!empty($p2) ? 'limit '.$p3.','.$p2 : '');
-						$stmt = self::$sql->prepare($q);
-						$stmt->execute();
-						$ret = array();
-						foreach ($stmt->fetchAll() as $n) {
-							$ret[] = array(
-								'id' => $n['id'],
-								'response' => array_diff_key($n,array_flip(array('id')))
-							);
-						}
-						return $ret;
-					}else if (gettype($p2) == 'string') {
-						$q = 'select '.(!empty($p4) ? 'id,'.implode(',',$p4) : '*').' from '.$p1.' where '.$p2.' = ?';
-						$stmt = self::$sql->prepare($q);
-						$stmt->execute(array($p3));
-						$ret = $stmt->fetch();
-						if ($ret)
-							return json_encode(array(
-								'id' => $ret['id'],
-								'response' => array_diff_key($ret,array_flip(array('id')))
-							));
-						else
-							return json_encode(['id'=>null]);
-					}
-				} catch(Exception $e) {
-					return false;
-				}
-				break;
-			}
-			case 'update': {
-				foreach ($p3 as $n=>$t) {
-					if (preg_match('/\/\//', $n)) {
-						$p3[explode('//', $n)[1]] = $t;
-						unset($p3[$n]);
-					}else if (preg_match('/\//', $n)) {
-						$p3[explode('/', $n)[1]] = $t;
-						unset($p3[$n]);
-					}
-				}
-				$q = 'update '.$p1.' set ';
-				$i == 0;
-				$count = count($p3);
-				foreach ($p3 as $n=>$t) {
-					++$i;
-					$q .= $n.' = :'.$n;
-					if ($i < $count)
-						$q .= ', ';
-				}
-				$q .= ' where id = :id';
-				$p3['id'] = $p2;
-				$stmt = self::$sql->prepare($q);
-				$res = $stmt->execute($p3);
-				return json_encode(['status'=>$res]);
-				break;
-			}
-			case 'insert': {
-				foreach ($p2 as $n=>$t) {
-					if (preg_match('/\/\//', $n)) {
-						$p2[explode('//', $n)[1]] = $t;
-						unset($p2[$n]);
-					}else if (preg_match('/\//', $n)) {
-						$p2[explode('/', $n)[1]] = $t;
-						unset($p2[$n]);
-					}
-				}
-				$q = 'insert into '.$p1.' (';
-				$count = count($p2);
-				for ($i = 1, $j = 0; $i <=2; ++$i)
-					foreach ($p2 as $n=>$t) {
-						++$j;
-						$q .= ($i == 1 ? '' : ':').$n;
-						if ($j < $count)
-							$q .= ', ';
-						else{
-							if ($i == 1)
-								$q .= ', created) values (';
-							$j = 0;
-						}
-					}
-				$q .= ', :created)';
-				$p2['created'] = time();
-				$stmt = self::$sql->prepare($q);
-				$stmt->execute($p2);
-				return json_encode(['id'=>(int) self::$sql->lastInsertId()]);
-				break;
-			}
-			default: {
-				try {
-					if (empty($p1)) {
-						if (isset(self::$config) && !empty(self::$config['db_host']))
-							$p1 = self::$config['db_host'];
-						else
-							$p1 = 'sql/';
-					}
-					if (empty($p2) && !empty(self::$config['db_login']))
-						$p2 = self::$config['db_login'];
-					if (empty($p3) && !empty(self::$config['db_password']))
-						$p3 = self::$config['db_password'];
-					if (!empty($p1) && !empty($p2) && !empty($p3)) {
-						self::$sql = new PDO('mysql:host='.$p1.';dbname='.$exec, $p2, $p3, array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8"));
-						self::$sql->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-						self::$sql->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_NAMED);
-						return self::$sql;
-					}else if (file_exists($p1)) {
-						self::$sql = new PDO('sqlite:'.$p1.$exec.'.sqlite');
-						self::$sql->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-						self::$sql->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_NAMED);
-						return self::$sql;
-					}else
-						exit('Connect error');
-				} catch(Exception $e) {
-					exit('Connect error');
-				}
-				break;
-			}
-		}
-	}
-	public static function nosql($exec,$p1='',$p2='',$p3='',$p4='') {
-		switch($exec) {
-			case 'search': {
-				$p1 = mb_strtolower($p1);
-				if (file_exists(dirname(__DIR__).'/../upload/cache/')) {
-					$cache = dirname(__DIR__).'/../upload/cache/search_'.str_replace([':*',':'],['','_'],$p1).md5(self::$nosql->getOption(Redis::OPT_PREFIX).$p2.$p3).'.cache';
-					if (file_exists($cache) && (time()-1800)<filemtime($cache)) {
-						$cached = file_get_contents($cache);
-						return $cached;
-						exit;
-					}
-				}
-				//$it = null;
-				//while($a = self::$nosql->scan($it,self::$nosql->getOption(Redis::OPT_PREFIX).mb_strtolower($p1),1000)) {
-				$a = self::$nosql->keys($p1);
-				if ($p3 == '')
-					$p3 = 0;
-				for (; $p3<count($a); ++$p3) {
-					if (substr_count($p1,'*') >= 2) {
-						$t = explode(':',$a[$p3]);
-						$arr[] = $t[array_search('id',$t)+1];
-					}else
-						$arr[] = str_replace([
-							str_replace('*','',$p1),
-							self::$nosql->getOption(Redis::OPT_PREFIX)
-						],'',$a[$p3]);
-					if ($p2 != '') {
-						--$p2;
-						if ($p2 == 0)
-							break;
-					}
-				}
-				//}
-				$json = json_encode($arr);
-				if (isset($cache)) {
-					$cached = fopen($cache, 'w');
-					fwrite($cached, $json);
-					fclose($cached);
-				}
-				return $json;
-				break;
-			}
-			case 'get': {
-				$value = self::$nosql->get($p1);
-				if (($result = @unserialize($value)) === false)
-					return $value;
-				return $result;
-				break;
-			}
-			case 'set': {
-				if (is_array($p2))
-					$p2 = serialize($p2);
-				self::$nosql->set($p1, $p2);
-				self::$nosql->save();
-				break;
-			}
-			case 'delete': {
-				if (self::$nosql->exists($p1) && self::$nosql->type($p1)!=2)
-					self::$nosql->del($p1);
-				if (!empty($p2)) {
-					$w = self::$nosql->hgetall($p1.':id:'.$p2);
-					foreach ($w as $k=>$v) {
-						if (self::$nosql->exists($p1.':'.$k.':'.mb_strtolower($v)))
-							self::$nosql->del($p1.':'.$k.':'.mb_strtolower($v));
-						else if ($p1.':'.$k.':id:'.$p2.':'.mb_strtolower($v))
-							self::$nosql->del($p1.':'.$k.':id:'.$p2.':'.mb_strtolower($v));
-					}
-					self::$nosql->sRem($p1,$p2);
-					$res = self::$nosql->del($p1.':id:'.$p2);
-				}
-				self::$nosql->save();
-				if (file_exists(dirname(__DIR__).'/../upload/cache/'))
-					array_map('unlink', glob(dirname(__DIR__).'/../upload/cache/search_'.str_replace([':*',':'],['','_'],$p1).'_*.cache'));
-				return json_encode(['status'=>$res]);
-				break;
-			}
-			case 'select': {
-                if (gettype($p2) == 'integer' || empty($p2)) {
-                    if ($p3 == '')
-                        $p3 = 0;
-                    $data = self::$nosql->sort($p1, array(
-                        'limit' => ($p2>='0' ? array($p3,$p2) : null),
-                        'sort' => 'desc'
-                    ));
-                    foreach ($data as $id)
-						if (self::$nosql->exists($p1.':id:'.$id)) {
-							if (empty($p4))
-								$ret[] = [
-									'id' => $id,
-									'response' => self::$nosql->hgetall($p1.':id:'.$id)
-								];
-							else
-								$ret[] = [
-									'id' => $id,
-									'response' => self::$nosql->hmget($p1.':id:'.$id,$p4)
-								];
-						}
-					//$ret['count'] = count($data);
-                    if ($ret)
-                        return $ret;
-                }else if (gettype($p2) == 'string') {
-                    if ($p2 != 'id')
-                        $p3 = self::$nosql->get($p1.':'.$p2.':'.$p3);
-					if (!self::$nosql->exists($p1.':id:'.$p3))
-						return json_encode(['id'=>null]);
-                    if (empty($p4))
-                        $ret = self::$nosql->hgetall($p1.':id:'.$p3);
-                    else
-                        $ret = self::$nosql->hmget($p1.':id:'.$p3,$p4);
-                    if ($ret)
-                        return json_encode(['id'=>$p3,'response'=>$ret]);
-                }
-				break;
-			}
-			case 'update': {
-				foreach ($p3 as $k=>$v) {
-					if (substr($k,0,1) == '/') {
-						$o = self::$nosql->hmget($p1.':id:'.$p2,[substr($k,1)])[substr($k,1)];
-						if ($o != $v) {
-							if (is_array($o))
-								$o = json_encode($o);
-							if (self::$nosql->exists($p1.':'.substr($k,1).':id:'.$p2.':'.mb_strtolower($o)))
-								self::$nosql->del($p1.':'.substr($k,1).':id:'.$p2.':'.mb_strtolower($o));
-							else if (self::$nosql->exists($p1.':'.substr($k,1).':id:'.$p2.':'))
-								self::$nosql->del($p1.':'.substr($k,1).':id:'.$p2.':');
-							if (!empty($v)) {
-								if (is_array($v))
-									$v = json_encode($v);
-								self::$nosql->set($p1.':'.substr($k,1).':id:'.$p2.':'.mb_strtolower($v),null);
-							}
-							$p3[substr($k,1)] = $v;
-						}
-						unset($p3[$k]);
-					}else{
-						$o = self::$nosql->hmget($p1.':id:'.$p2,[$k])[$k];
-						if (self::$nosql->exists($p1.':'.$k.':'.$o)) {
-							self::$nosql->del($p1.':'.$k.':'.$o);
-							self::$nosql->set($p1.':'.$k.':'.$v, $p2);
-						}
-					}
-				}
-				$res = self::$nosql->hmset($p1.':id:'.$p2, $p3);
-				self::$nosql->save();
-				return json_encode(['status'=>$res]);
-				break;
-			}
-			case 'insert': {
-				$id = (self::$nosql->sCard($p1))+1;
-				foreach ($p2 as $k=>$v)
-					if (substr($k,0,2) == '//') {
-						$p2[substr($k,2)] = $v;
-						unset($p2[$k]);
-						self::$nosql->set($p1.':'.substr($k,2).':'.mb_strtolower($v), $id);
-					}else if (substr($k,0,1) == '/') {
-						$p2[substr($k,1)] = $v;
-						unset($p2[$k]);
-						self::$nosql->set($p1.':'.substr($k,1).':id:'.$id.':'.mb_strtolower($v),null);
-					}
-				$p2['created'] = time();
-				self::$nosql->hmset($p1.':id:'.$id, $p2);
-				self::$nosql->sAdd($p1,$id);
-				self::$nosql->save();
-				if (file_exists(dirname(__DIR__).'/../upload/cache/'))
-					array_map('unlink', glob(dirname(__DIR__).'/../upload/cache/search_'.str_replace([':*',':'],['','_'],$p1).'*.cache'));
-				return json_encode(['id'=>$id]);
-				break;
-			}
-			default: {
-				try {
-					self::$nosql = new Redis();
-					if (empty($p1)) {
-						if (isset(self::$config) && !empty(self::$config['db_host'])) {
-							$p1 = self::$config['db_host'];
-							$p2 = self::$config['db_port'];
-							if (!empty(self::$config['db_password']))
-								$p3 = self::$config['db_password'];
-						}else{
-							$p1 = 'localhost';
-							$p2 = '6379';
-						}
-					}
-					self::$nosql->connect($p1,$p2);
-					if (!empty($p3))
-						self::$nosql->auth($p3);
-					self::$nosql->setOption(Redis::OPT_PREFIX,$exec.'.');
-					return self::$nosql;
-				} catch(RedisException $e) {
-					exit('Connect error');
-				}
-				break;
-			}
-		}
-	}
-	public function document($obj,$exec='',$html=null) {
-		if ($exec == 'attr') {
-			$xml = (array) simplexml_import_dom($obj);
-			return $xml['@attributes'];
-		}else if ($exec == 'innerHTML') {
-			if (gettype($html) == 'string') {
-				while ($obj->hasChildNodes())
-					$obj->removeChild($obj->firstChild);
-				if (!empty($html)) {
-					$tmpDoc = new DOMDocument('1.0', 'UTF-8');
-					$tmpDoc->loadHTML(mb_convert_encoding($html, 'HTML-ENTITIES', 'UTF-8'));
-					$tmpDoc->encoding = 'utf-8';
-					foreach ($tmpDoc->getElementsByTagName('body')->item(0)->childNodes as $node) {
-						$node = $obj->ownerDocument->importNode($node, true);
-						$obj->appendChild($node);
-					}
-				}
-			}else
-				return implode(array_map([$obj->ownerDocument,"saveHTML"],iterator_to_array($obj->childNodes)));
-		}else if (preg_match('/http:\/\//', $obj) || preg_match('/https:\/\//', $obj) || preg_match('/.php/', $obj) || preg_match('/.html/', $obj)) {
-			libxml_use_internal_errors(true);
-			self::$document = new DOMDocument('1.0', 'UTF-8');
-			self::$document->loadHTMLFile($obj);
-			self::$document->encoding = 'utf-8';
-			return self::$document;
-		}else{
-			$find = explode(' ', $obj);
-			$count = count($find);
-			$res = self::$document;
-			for ($i = 0; $i < $count; ++$i) {
-				$v = $find[$i];
-				if (preg_match('/\./', $v)) {
-					$arr = [];
-					$v = explode('.', $v);
-					$el = self::$document->getElementsByTagName(($v[0] != '' ? $v[0] : '*'));
-					for ($j = 0; $j < $el->length; ++$j)
-						if ($el->item($j)->attributes->getNamedItem('class')->nodeValue == $v[1])
-							$arr[] = $res = $el->item($j);
-					if ($exec == 'all' && ($i+1)==$count)
-						return $arr;
-				}else if (preg_match('/\#/', $v)) {
-					$v = explode('#', $v);
-					$res = $res->getElementById($v[1]);
-				}else{
-					if ($exec == 'all' && ($i+1)==$count)
-						$res = $res->getElementsByTagName($v);
-					else
-						$res = $res->getElementsByTagName($v)[0];
-				}
-			}
-			return $res;
 		}
 	}
 	public static function redirect($url=null, $params=[], $time=0) {
@@ -1155,38 +767,12 @@ class Qad {
 		else
 			return $_SERVER['REQUEST_URI'];
 	}
-	public static function pagination($count=10, $page=1, $list=null, $limits=null, $total=null) {
-		if ($page == 0)
-			$page = 1;
-		if ($list) {
-			$url = (stristr($_SERVER['REQUEST_URI'], 'page='.$page) === FALSE
-						? (stristr($_SERVER['REQUEST_URI'], '?') === FALSE
-							? $_SERVER['REQUEST_URI'].'?page=#page#'
-							: $_SERVER['REQUEST_URI'].'&page=#page#'
-						)
-						: str_replace('page='.$page, 'page=#page#', $_SERVER['REQUEST_URI'])
-					);
-			return [
-				'list' => array_slice($list, 0, -1),
-				'button' => [
-					'prev' => ($page > 1 ? ($page-1) : null),
-					'prev_url' => str_replace('#page#', $page-1, $url),
-					'next' => (count($list) > $count ? ($page+1) : null),
-					'next_url' => str_replace('#page#', $page+1, $url),
-					'url' => $url,
-					'count' => $count,
-					'total' => $total,
-					'limits' => $limits,
-					'pages' => ($limits ? ceil($total / $count) : null),
-					'page' => $page
-				]
-			];
-		}else
-			return ($page-1)*$count.', '.($count+1);
-	}
 	public static function params($param=null, $default=null, $prefix=null) {
 		$query = (isset($_SERVER['QUERY_STRING']) ? $_SERVER['QUERY_STRING'] : '');
-		$params = (object) array_change_key_case(array_merge(['argo' => explode('&', $query)[0]], $_FILES, $_GET, $_POST, $_COOKIE, $_SESSION), CASE_LOWER);
+		$params = (object) array_change_key_case(array_merge([
+			'argo' => explode('&', $query)[0],
+			'location' => (empty($_SERVER['HTTP_HOST']) ? ($_SERVER['HTTP_HOST'] = '') : ($_SERVER['SERVER_PORT'] == 443 ? 'https' : 'http').'://'.$_SERVER['HTTP_HOST']).$_SERVER['PHP_SELF']
+		], $_FILES, $_GET, $_POST, $_COOKIE, $_SESSION), CASE_LOWER);
 		if (!empty($_SERVER['argv'][1])) {
 			foreach (array_slice($_SERVER['argv'], 1) as $com) {
 				if (substr($com, 0, 2) != '--')
@@ -1280,14 +866,16 @@ class Qad {
 				$paramStr = "";
 				$i = 0;
 				foreach ($params as $param) {
-					$pArray[strtolower($param->getName())] = null;
+					$pArray[strtolower($param->getName())] = ($param->isOptional() ? $param->getDefaultValue() : null);
 					$paramStr .= $param->getName();
 					if ($i != $pCount-1)
 						$paramStr .= ", ";
 					$i++;
 				}
-				foreach ($pArray as $key => $val)
-					$pArray[strtolower($key)] = $rArray[strtolower($key)];
+				foreach ($pArray as $key => $val) {
+					if (isset($rArray[strtolower($key)]))
+						$pArray[strtolower($key)] = $rArray[strtolower($key)];
+				}
 				if (count($pArray) == $pCount && !in_array(null, $pArray)) {
 					$response = call_user_func_array(array($serviceClass, $method), $pArray);
 					if (gettype($response) == 'array' || gettype($response) == 'object') {

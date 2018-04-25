@@ -8,22 +8,30 @@ https://qwedl.com/
 Copyright (c) 2016-2017 Alex Smith
 =====================================================
  */
-if (empty($_SERVER['HTTP_REFERER']) || explode('/', $_SERVER['HTTP_REFERER'])[2] != $_SERVER['HTTP_HOST']) {
+/*
+if ((empty($_SERVER['HTTP_REFERER']) || explode('/', $_SERVER['HTTP_REFERER'])[2] != $_SERVER['HTTP_HOST']) && (empty($_POST['app']) || $_POST['app'] == 'false')) {
 	header('HTTP/1.1 404 Not Found');
 	header('Status: 404 Not Found');
 	exit;
 }
+ */
 include_once 'data/qad/qad.php';
-if (!empty($_GET['hash'])) {
+if (!empty($_GET['error']))
+	$qad->debug(json_decode($_GET['error']));
+else if (!empty($_GET['hash'])) {
 	if ($_GET['text'] == '[object ArrayBuffer]')
 		$_GET['text'] = file_get_contents('php://input');
 	if ($_GET['hash'] == 'sha1')
 		echo sha1($_GET['text']);
 	else if ($_GET['hash'] == 'md5')
 		echo md5($_GET['text']);
-}else if (!empty($_GET['tts'])) {
-	$json = json_decode($_GET['tts']);
-	echo file_get_contents('https://translate.google.com/translate_tts?ie=UTF-8&tl='.$json->tl.'&q='.urlencode($json->q).'&total=1&idx=0&client=tw-ob');
+}else if (!empty($_POST['tts'])) {
+	if ($res = file_get_contents('https://translate.google.com/translate_tts?ie=UTF-8&tl='.$_POST['tts']['tl'].'&q='.urlencode($_POST['tts']['q']).'&total=1&idx=0&client=tw-ob')) {
+		header('Content-type: audio/mpeg');
+		header('Content-length: '.strlen($res));
+		header('Cache-Control: no-cache');
+		echo $res;
+	}
 }else if (!empty($_POST['gcm']) && !empty(Qad::$config['gcm'])) {
 	Qad::$config = [
 		'gcm' => Qad::$config['gcm']
@@ -101,7 +109,7 @@ if (!empty($_GET['hash'])) {
 		'columns' => [
 			'id' => 'CHAR(50) NOT NULL', // Канал подписки
 			'offer' => 'TEXT NOT NULL', // Владелец канала
-			'answer' => 'TEXT DELAULT NULL', // Пользователь канала
+			'answer' => 'TEXT DEFAULT NULL', // Пользователь канала
 			'date' => 'DATETIME DEFAULT CURRENT_TIMESTAMP' // Дата
 		],
 		'autoclean' => '5 minute'
@@ -136,4 +144,49 @@ if (!empty($_GET['hash'])) {
 		echo json_encode($res);
 	}else
 		print_r($json);
+}else if (!empty($_POST['sync'])) {
+	$qad->db('create', $db = [
+		'driver' => 'sqlite',
+		'path' => 'upload/sql',
+		'table' => 'sync',
+		'columns' => [
+			'id' => 'CHAR(50) PRIMARY KEY', // ID
+			'type' => 'CHAR(10) DEFAULT NULL', // Тип аккаунта
+			'topic' => 'CHAR(50) NOT NULL', // Канал
+			'data' => 'TEXT NOT NULL' // Настройки
+		]
+	]);
+	$row = $qad->db('select data from sync where id = :id and type = :type and topic = :topic', array_merge($db, [
+		'id' => $_POST['id'],
+		'type' => (empty($_POST['type']) ? null : $_POST['type']),
+		'topic' => $_POST['sync']
+	]))->fetch();
+	switch ($_POST['action']) {
+		case 'load': {
+			echo ($row ? $row->data : '{}');
+			break;
+		}
+		case 'save': {
+			echo json_encode($_POST);
+			if ($row)
+				$qad->db('update', array_merge($db, [
+					'data' => [
+						'id' => $_POST['id'],
+						'type' => (empty($_POST['type']) ? null : $_POST['type']),
+						'topic' => $_POST['sync'],
+						'data' => $_POST['data']
+					]
+				]));
+			else
+				$qad->db('insert', array_merge($db, [
+					'data' => [
+						'id' => $_POST['id'],
+						'type' => (empty($_POST['type']) ? null : $_POST['type']),
+						'topic' => $_POST['sync'],
+						'data' => $_POST['data']
+					]
+				]));
+			break;
+		}
+	}
 }

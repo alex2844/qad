@@ -4,13 +4,111 @@ Qad Framework (qad.js)
 -----------------------------------------------------
 https://qwedl.com/
 -----------------------------------------------------
-Copyright (c) 2016-2017 Alex Smith
+Copyright (c) 2016-2018 Alex Smith
 =====================================================
 */
-var Qad={
+var Qad = {
 	dev: false,
+	touch: (function() {
+		var touch = ('ontouchstart' in window);
+		if (document.querySelector('body'))
+			document.querySelector('body').dataset.touch = touch;
+		else
+			document.querySelector('html').setAttribute('dev', true);
+		return touch;
+	})(),
+	libs: (function(e) {
+		var arr = [];
+		var c = function(e, p, pp) {
+			for (var i in e) {
+				if (e[i].constructor.name == 'Object')
+					c(e[i], i, p);
+				else{
+					if (typeof((pp ? window[pp][p][i] : (p ? window[p][i] : window[i]))) == 'function')
+						continue;
+					arr.push((p ? p+'.' : '')+i);
+					if (e[i].constructor.name == 'Function')
+						e[i]();
+					else if (e[i].constructor.name == 'Array') {
+						for (var j in e[i]) {
+							var add;
+							if ((e[i][j].indexOf('.js') > -1) && (e[i][j].indexOf('.css') == -1)) {
+								add = document.createElement('script');
+								add.src = e[i][j];
+							}else if ((e[i][j].indexOf('.css') > -1) && (e[i][j].indexOf('.js') == -1)) {
+								add = document.createElement('link');
+								add.type = 'text/css';
+								add.rel = 'stylesheet';
+								add.href = e[i][j];
+							}
+							document.querySelector('head').appendChild(add);
+						}
+					}
+				}
+			}
+		}
+		c(e);
+		return arr;
+	})({
+		fetch: ['https://cdnjs.cloudflare.com/ajax/libs/fetch/2.0.3/fetch.min.js'],
+		Promise: ['https://cdn.jsdelivr.net/npm/es6-promise@4/dist/es6-promise.auto.min.js'],
+		HTMLDialogElement: [
+			'https://cdnjs.cloudflare.com/ajax/libs/dialog-polyfill/0.4.9/dialog-polyfill.min.js',
+			'https://cdnjs.cloudflare.com/ajax/libs/dialog-polyfill/0.4.9/dialog-polyfill.min.css'
+		],
+		Object: {
+			assign: function() {
+				Object.defineProperty(Object, 'assign', {
+					enumerable: false,
+					configurable: true,
+					writable: true,
+					value: function(target) {
+						'use strict';
+						if (target === undefined || target === null)
+							throw new TypeError('Cannot convert first argument to object');
+						var to = Object(target);
+						for (var i = 1; i < arguments.length; i++) {
+							var nextSource = arguments[i];
+							if (nextSource === undefined || nextSource === null)
+								continue;
+							nextSource = Object(nextSource);
+							var keysArray = Object.keys(Object(nextSource));
+							for (var nextIndex = 0, len = keysArray.length; nextIndex < len; nextIndex++) {
+								var nextKey = keysArray[nextIndex];
+								var desc = Object.getOwnPropertyDescriptor(nextSource, nextKey);
+								if (desc !== undefined && desc.enumerable)
+									to[nextKey] = nextSource[nextKey];
+							}
+						}
+						return to;
+					}
+				});
+			}
+		},
+		Element: {
+			prototype: {
+				closest: function() {
+					Element.prototype.closest = function(css) {
+						var node = this;
+						while (node) {
+							if (node.matches(css))
+								return node;
+							else
+								node = node.parentElement;
+						}
+						return null;
+					};
+				}
+			}
+		}
+	}),
 	event: {},
 	passport: {},
+	$$$: (typeof($$$) == 'object' ? (function() {
+		if (document.querySelector('body') && ($$$.sdk() < 21))
+			document.querySelector('body').dataset.sdk = 'webview';
+		return $$$;
+	})() : null),
 	$$: function(id) {
 		return document.querySelectorAll(id);
 	},
@@ -21,7 +119,9 @@ var Qad={
 				el.preventDefault();
 				obj = el.target;
 			}else if (typeof(el) == 'string') {
-				if (el.indexOf('/') == 0) {
+				/* if (el.slice(0, 2) == './')
+					return document.evaluate(el, document.body, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+				else */ if (el.slice(0, 1) == '/') {
 					if (el == '/svg')
 						return Qad.$(document.createElementNS('http://www.w3.org/2000/svg','svg'));
 					else
@@ -30,7 +130,7 @@ var Qad={
 					iframe = el.split(' ');
 					if (iframe.length > 1 && document.querySelector(iframe[0]))
 						return Qad.$(document.querySelector(iframe[0]).contentDocument.querySelector(el.replace(iframe[0]+' ','')));
-				}else if (el.slice(0,1) == '$') {
+				}else if (el.slice(0, 1) == '$') {
 					el = el.slice(1).split('->');
 					var forms = document.forms;
 					for (var i in el)
@@ -40,14 +140,14 @@ var Qad={
 				obj = document.querySelector(el);
 			}else
 				obj = el;
-		}else{
+		}else if (typeof(el) == 'undefined') {
 			var vars = {};
 			var parts = location.search.replace(/[?&]+([^=&]+)([^&]*)/gi, function(m,key,value) {
 				vars[key] = (value.slice(0, 1) == '=' ? value.slice(1) : value);
 			});
 			return vars;
 		}
-		if (obj==null)
+		if (obj == null)
 			return false;
 		obj.add = function(el) {
 			obj.appendChild(el);
@@ -60,12 +160,16 @@ var Qad={
 			return obj;
 		}
 		obj.attr = function(key, value) {
-			if (typeof(value) == 'boolean' && value == false)
+			if (typeof(key) == 'object')
+				for (var i in key) {
+					obj.attr(i, key[i]);
+				}
+			else if (typeof(value) == 'boolean' && value == false)
 				obj.removeAttribute(key);
 			else if (typeof(value) == 'undefined')
 				return obj.getAttribute(key);
 			else
-				obj.setAttribute(key,value);
+				obj.setAttribute(key, value);
 			return obj;
 		}
 		obj.resize = function() {
@@ -95,6 +199,21 @@ var Qad={
 			};
 		}
 		obj.$ = function(html,offset) {
+			if ((typeof(html) == 'object') && (html.constructor.name == 'Array') && html[0]._) {
+				for (var i in html) {
+					var p = $('/'+html[i]._);
+					for (var j in html[i]) {
+						if (j == '_')
+							obj.add(p);
+						else if (j == '$')
+							p.$(html[i].$);
+						else if (j != '$')
+							p.attr(j, html[i][j]);
+					}
+				}
+				return obj;
+			}else if ((typeof(html) == 'object') && (html.constructor.name == 'Object') && html._)
+				return obj.$([html]);
 			if (obj.tagName == 'INPUT' || obj.tagName == 'TEXTAREA')
 				val = obj.value;
 			else
@@ -162,9 +281,9 @@ var Qad={
 				case 'scroll': {
 					if (obj.tagName == 'BODY')
 						obj = window;
-					obj.addEventListener('scroll', e => {
-						e.top = document.body.scrollTop;
-						e.down = document.body.scrollHeight - (document.documentElement.clientHeight + document.body.scrollTop);
+					obj.addEventListener('scroll', function(e) {
+						e.top = window.scrollY; //document.body.scrollTop;
+						e.down = document.body.scrollHeight - (document.documentElement.clientHeight + e.top);
 						e.pos = (e.top == 0 ? 'top' : (e.down == 0 ? 'down' : null));
 						f(e);
 					});
@@ -275,7 +394,26 @@ var Qad={
 			var key = function(d,key) {
 				if (t && key)
 					d[key] = JSON.parse(d[key]);
-				$key = (key ? d[key] : d);
+				$key = (key ? Object.assign(d[key], {
+					map: function(k, f) {
+						var res = '';
+						k.map(function(i) {
+							if (typeof(f) == 'function')
+								res += f(i);
+							else{
+								var t;
+								if (typeof(f) == 'string')
+									t = f.replace(new RegExp('\\$', 'g'), i);
+								else
+									for (var ii in i) {
+										t = f.replace(new RegExp('\\$'+ii, 'g'), i[ii]);
+									}
+								res += t || f;
+							}
+						});
+						return res;
+					}
+				}) : d);
 				obj.innerHTML += obj.shab.replace(/{(.*?)}/gim, function(m,v) {
 					if (!$key)
 						return;
@@ -307,7 +445,7 @@ var Qad={
 				delete $key;
 			}
 			if (!obj.shab) {
-				Qad.for(obj.querySelectorAll('[data-action][data-on]'), el => {
+				Qad.for(obj.querySelectorAll('[data-action][data-on]'), function(el) {
 					el.attr('data-on', false);
 				});
 				obj.shab = obj.innerHTML.replace(/data-src/g,'src');
@@ -322,12 +460,12 @@ var Qad={
 				return false;
 			if (obj.tagName == 'DIV' || obj.tagName == 'ARTICLE')
 				obj.style['display'] = 'block';
-			else
+			else if (obj.tagName != 'SCRIPT')
 				obj.style['display'] = 'table-row-group';
 			return true;
 		}
 		obj.find = function(e, all) {
-			return (all ? [].map.call(obj.querySelectorAll(e), el => {
+			return (all ? [].map.call(obj.querySelectorAll(e), function(el) {
 				return Qad.$(el);
 			}) : Qad.$(obj.querySelector(e)));
 		}
@@ -336,7 +474,7 @@ var Qad={
 			if (el = (e ? (
 				typeof(e) == 'string'
 				? obj.closest(e)
-				: e.reduce((r, e) => {
+				: e.reduce(function(r, e) {
 					if (!obj.closest(e))
 						return r;
 					return obj.closest(e);
@@ -346,23 +484,95 @@ var Qad={
 			else
 				return false;
 		}
-		if (typeof HTMLDialogElement != 'function' && obj.tagName == 'DIALOG' && !obj.hasAttribute('role'))
+		if ((obj.tagName == 'DIALOG') && (Qad.libs.indexOf('HTMLDialogElement') > -1) && !obj.hasAttribute('role'))
 			dialogPolyfill.registerDialog(obj);
 		return obj;
 	},
-	loop: (callback, params, time, loop, force_start) => {
+	config: function(key, options, sync) {
+		var self, id, f;
+		return new Promise(function(resolve, reject) {
+			self = Object.assign((localStorage.getItem(key) ? self = Qad.json(localStorage.getItem(key)) : options), f = {
+				clear: function() {
+					Qad.session.set(key);
+					localStorage.removeItem(key);
+				},
+				save: function(self) {
+					self._save = Math.round(new Date().getTime()/1000);
+					var cook = {};
+					for (var k in self) {
+						if (self[k] == null)
+							delete self[k];
+						else if (k.slice(0, 1) == '$')
+							cook[k.slice(1)] = self[k];
+					}
+					Qad.session.set(key, Qad.json(cook));
+					localStorage.setItem(key, Qad.json(self));
+					return self;
+				},
+				sync: (sync ? (function() {
+					if (id = (typeof(sync.id) == 'function') ? sync.id(self) : sync.id)
+						fetch(sync.base || '/service-worker.php', {
+							method: 'POST',
+							body: Qad.form({
+								method: 'sync',
+								action: 'load',
+								sync: key,
+								id: id,
+								type: sync.type,
+								app: !!Qad.$$$
+							})
+						}).then(function(res) {
+							return res.json();
+						}).then(function(e) {
+							resolve(((Object.keys(e).length > 0) ? Object.assign(e, f) : self));
+						}).catch(reject);
+					return function(self) {
+						return new Promise(function(resolve) {
+							self._sync = Math.round(new Date().getTime()/1000);
+							if (id = (typeof(sync.id) == 'function') ? sync.id(self) : sync.id)
+								fetch(sync.base || '/service-worker.php', {
+									method: 'POST',
+									body: Qad.form({
+										method: 'sync',
+										action: 'save',
+										sync: key,
+										id: id,
+										type: sync.type,
+										data: Qad.json(self),
+										app: !!Qad.$$$
+									})
+								}).then(resolve).catch(reject);
+							else
+								resolve();
+						});
+					};
+				})() : null)
+			});
+			if (!sync || !id)
+				resolve(self);
+		});
+	},
+	loop: function(callback, params, time, loop, force_start) {
 		var e = null;
-		(p => {
+		(function(p) {
 			if (loop == false)
-				setTimeout(() => callback(p), time);
+				setTimeout(function() {
+					callback(p);
+				}, time);
 			else{
-				e = setInterval(() => callback(p, () => clearInterval(e)), time);
+				e = setInterval(function() {
+					callback(p, function() {
+						clearInterval(e)
+					});
+				}, time);
 				if (force_start != false)
-					callback(p, () => clearInterval(e));
+					callback(p, function() {
+						clearInterval(e);
+					});
 			}
 		})(params);
 	},
-	clipboard: i => {
+	clipboard: function(i) {
 		var tmp = Qad.$('/input'),
 			focus = document.activeElement;
 		tmp.value = (
@@ -508,21 +718,24 @@ var Qad={
 		}
 		return debug;
 	},
-	json: (data, url) => {
+	json: function(data, url) {
 		if (typeof(data) == 'string')
 			data = JSON.parse(data);
 		else if (typeof(data) == 'object')
 			data = (url 
-				?
-					decodeURIComponent(Object.keys(data).map(k => {
+				? decodeURIComponent(Object.keys(data).map(function(k) {
+					if (typeof(data[k]) == 'object')
+						return Object.keys(data[k]).map(function(kk) {
+							return encodeURIComponent(k+'['+kk+']')+'='+encodeURIComponent(data[k][kk])
+						}).join('&');
+					else
 						return encodeURIComponent(k)+'='+encodeURIComponent(data[k])
-					}).join('&'))
-				:
-					JSON.stringify(data)
+				}).join('&')).replace(/#/g, '%23')
+				: JSON.stringify(data)
 			);
 		return data;
 	},
-	form: (object, form, prefix) => {
+	form: function(object, form, prefix) {
 		if (!form)
 			form = new FormData();
 		for (var i in object) {
@@ -530,9 +743,9 @@ var Qad={
 		}
 		return form;
 	},
-	replace: (search, replace, subject) => {
+	replace: function(search, replace, subject) {
 		if (search.constructor.name == 'Array')
-			search.map((s, i) => {
+			search.map(function(s, i) {
 				subject = subject.replace(s, (replace.constructor.name == 'Array' ? replace[i] : replace));
 			});
 		else
@@ -563,11 +776,11 @@ var Qad={
 			return false;
 	},
 	gcm: {
-		add: topic => {
-			return new Promise((resolve, reject) => {
+		add: function(topic) {
+			return new Promise(function(resolve, reject) {
 				Qad.sw.pushManager.subscribe({
 					userVisibleOnly: true
-				}).then(sub => {
+				}).then(function(sub) {
 					Qad.gcm._token = sub.endpoint.split('gcm/send/')[1];
 					if (topic)
 						fetch('/service-worker.php', {
@@ -577,7 +790,7 @@ var Qad={
 								topics: topic,
 								token: Qad.gcm._token
 							})
-						}).then(() => {
+						}).then(function() {
 							resolve({
 								token: Qad.gcm._token,
 								msg: 'Subscribed to "'+topic+'"'
@@ -588,9 +801,9 @@ var Qad={
 				}).catch(reject);
 			});
 		},
-		list: () => {
-			return new Promise((resolve, reject) => {
-				Qad.sw.pushManager.getSubscription().then(sub => {
+		list: function() {
+			return new Promise(function(resolve, reject) {
+				Qad.sw.pushManager.getSubscription().then(function(sub) {
 					if (sub && sub.endpoint) {
 						Qad.gcm._token = sub.endpoint.split('gcm/send/')[1];
 						fetch('/service-worker.php', {
@@ -599,19 +812,21 @@ var Qad={
 								gcm: 'list',
 								token: Qad.gcm._token
 							})
-						}).then(res => res.text()).then(resolve).catch(reject);
+						}).then(function(res) {
+							return res.text();
+						}).then(resolve).catch(reject);
 					}else
 						reject('no subscription');
 				});
 			});
 		},
-		remove: topic => {
-			return new Promise((resolve, reject) => {
-				Qad.gcm.list().then(topics => {
-					Qad.sw.pushManager.getSubscription().then(sub => {
-						sub.unsubscribe().then(() => {
+		remove: function(topic) {
+			return new Promise(function(resolve, reject) {
+				Qad.gcm.list().then(function(topics) {
+					Qad.sw.pushManager.getSubscription().then(function(sub) {
+						sub.unsubscribe().then(function() {
 							if (topic && topics)
-								topics.split(',').map(id => {
+								topics.split(',').map(function(id) {
 									if (id != topic)
 										Qad.gcm.add(id);
 								});
@@ -625,7 +840,7 @@ var Qad={
 	geo: {
 		id: {},
 		key: null,
-		init: id => {
+		init: function(id) {
 			if (typeof(google) == 'undefined' || typeof(google.maps) == 'undefined') {
 				s = Qad.$('/script');
 				s.src = 'https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=places&callback=document.'+id+(Qad.geo.key ? '&key='+Qad.geo.key : '');
@@ -634,10 +849,10 @@ var Qad={
 				document[id]();
 		},
 		me: function(id) {
-			document.me = () => {
+			document.me = function() {
 				if (id) {
 					ac = new google.maps.places.Autocomplete(Qad.$('#'+id),{types: ['geocode']});
-					ac.addListener('place_changed', () => {
+					ac.addListener('place_changed', function() {
 						var p = ac.getPlace();
 						document.dispatchEvent(new CustomEvent('geo.me',{'detail':{
 							'status': true,
@@ -649,10 +864,10 @@ var Qad={
 					});
 				}
 				if ((!id || !Qad.$('#'+id).value) && navigator.geolocation)
-					navigator.geolocation.getCurrentPosition(position => {
+					navigator.geolocation.getCurrentPosition(function(position) {
 						var latlng = new google.maps.LatLng(position.coords.latitude,position.coords.longitude);
 						var geocoder = new google.maps.Geocoder();
-						geocoder.geocode({'latLng': latlng}, (results, status) => {
+						geocoder.geocode({'latLng': latlng}, function(results, status) {
 							if (status == google.maps.GeocoderStatus.OK) {
 								if (results[1]) {
 									document.dispatchEvent(new CustomEvent('geo.me',{'detail':{
@@ -671,7 +886,7 @@ var Qad={
 									'error': status
 								}}));
 						});
-					}, e => {
+					}, function(e) {
 						if (e.code == 1)
 							e.title = 'PERMISSION_DENIED';
 						else if (e.code == 2)
@@ -692,7 +907,7 @@ var Qad={
 			}
 			Qad.geo.init('me');
 		},
-		distance: (a, b) => {
+		distance: function(a, b) {
 			var lat1 = a.lat * Math.PI / 180,
 				lat2 = b.lat * Math.PI / 180,
 				cl1 = Math.cos(lat1),
@@ -755,10 +970,10 @@ var Qad={
 			};
 			return new label(d);
 		},
-		coords: (address, callback) => {
-			document.coords = () => {
+		coords: function(address, callback) {
+			document.coords = function() {
 				var geocoder = new google.maps.Geocoder();
-				geocoder.geocode({'address': address}, (res, status) => {
+				geocoder.geocode({'address': address}, function(res, status) {
 					if (status == google.maps.GeocoderStatus.OK) {
 						if (status != google.maps.GeocoderStatus.ZERO_RESULTS) {
 							res.lat = res[0].geometry.location.lat().toString();
@@ -772,8 +987,8 @@ var Qad={
 			}
 			Qad.geo.init('coords');
 		},
-		maps: (address, zoom, id, callback) => {
-			document.maps = () => {
+		maps: function(address, zoom, id, callback) {
+			document.maps = function() {
 				var map = new google.maps.Map((
 						id
 						? (
@@ -801,14 +1016,14 @@ var Qad={
 						title: address.title
 					});
 				else
-					Qad.geo.coords(address, res => {
+					Qad.geo.coords(address, function(res) {
 						map.setCenter(res[0].geometry.location);
 						var marker = new google.maps.Marker({
 							position: res[0].geometry.location,
 							map: map,
 							title: address
 						});
-						google.maps.event.addListener(marker, 'click', () => {
+						google.maps.event.addListener(marker, 'click', function() {
 							window.open('https://www.google.ru/maps/place/'+res.lat+','+res.lng+'/@'+res.lat+','+res.lng+','+zoom+'z/');
 						});
 					});
@@ -818,16 +1033,16 @@ var Qad={
 			Qad.geo.init('maps');
 		}
 	},
-	rand: (min, max) => {
+	rand: function(min, max) {
 		return Math.floor(Math.random() * ((max ? max : 9) - (min ? min : 0) + 1)) + (min ? min : 0);
 	},
-	format: (data,type,add) => {
+	format: function(data,type,add) {
 		if (type == 'date' && !isNaN(data)) {
 			if (!data)
 				data = new Date(Date.now());
 			else if (typeof(date) != 'object')
 				data = new Date(1000*data);
-			d = () => {
+			d = function() {
 				var d = f(data.getDate()),
 					m = f(data.getMonth()+1),
 					y = f(data.getFullYear()%100),
@@ -835,7 +1050,7 @@ var Qad={
 					i = f(data.getMinutes());
 				return d+'.'+m+'.'+y+' '+h+':'+i;
 			}
-			f = n => {
+			f = function(n) {
 				return (n < 10) ? '0'+n : n;
 			}
 			var e = (Date.now()-data)/1000;
@@ -903,9 +1118,9 @@ var Qad={
 			}
 		}
 	},
-	up: function(id) {
+	up: function(id, p) {
 		var w = window.pageYOffset,
-			t = Qad.$((id ? '#'+id : 'body')).getBoundingClientRect().top,
+			t = Qad.$((id ? ((typeof(id) == 'string') ? '#'+id : id) : 'body')).getBoundingClientRect().top,
 			start = null;
 		if (id) {
 			if (Qad.$('header')) {
@@ -914,8 +1129,20 @@ var Qad={
 				else
 					t -= Qad.$('header').pos().height;
 			}
+			if (p)
+				t = t - p;
 			if (Qad.$('header nav.tabs') && !Qad.$('header[data-effect]'))
 				t -= Qad.$('nav.tabs').pos().height+5;
+		}
+		if ((typeof(id) == 'object') && Qad.$(id).parent('.scroll')) {
+			while (true) {
+				if (Qad.$(id).parent().classList.contains('scroll'))
+					break
+				else
+					id = Qad.$(id).parent();
+				break;
+			}
+			Qad.$(id).parent('.scroll').scrollTo((Qad.$(id).parent().offsetLeft - Qad.$(id).pos().width), (Qad.$(id).parent().offsetTop - Qad.$(id).pos().height));
 		}
 		requestAnimationFrame(step);
 		function step(time) {
@@ -930,19 +1157,30 @@ var Qad={
 		}
 	},
 	session: {
-		set: function(key,value,cookie) {
-			if (!value)
-				document.cookie = key+'=;path=/;expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-			else if (cookie) {
-				var expires = new Date();
-				expires.setTime(expires.getTime()+(1*24*60*60*1000));
-				document.cookie = key+'='+value+';path=/'+';expires='+expires.toUTCString();
-			}else
-				document.cookie = key+'='+value+';path=/'+';expires=0';
+		set: function(key, value, cookie) {
+			if (Qad.$$$) {
+				if (!value)
+					localStorage.removeItem('session_'+key);
+				else
+					localStorage.setItem('session_'+key, value);
+			}else{
+				if (!value)
+					document.cookie = key+'=;path=/;expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+				else if (cookie) {
+					var expires = new Date();
+					expires.setTime(expires.getTime()+(1*24*60*60*1000));
+					document.cookie = key+'='+value+';path=/'+';expires='+expires.toUTCString();
+				}else
+					document.cookie = key+'='+value+';path=/'+';expires=0';
+			}
 		},
 		get: function(key) {
-			var keyValue = document.cookie.match('(^|;) ?' + key + '=([^;]*)(;|$)');
-			return keyValue ? keyValue[2] : null;
+			if (Qad.$$$)
+				return localStorage.getItem('session_'+key);
+			else{
+				var keyValue = document.cookie.match('(^|;) ?' + key + '=([^;]*)(;|$)');
+				return keyValue ? keyValue[2] : null;
+			}
 		}
 	},
 	load: function(params) {
@@ -952,81 +1190,230 @@ var Qad={
 			params = Qad.json(params, true);
 		Qad.$('.load').src = 'server.php?'+params;
 	},
-	api: function(method, params, callback) {
+	redirect: function(url, c) {
+		if (typeof(url) != 'string')
+			url = url.href;
+		if (url == location.href)
+			return false;
+		if ((typeof(ajax) == 'function') || (typeof(c) == 'function')) {
+			history.pushState(null, null, url);
+			(c ? c(url) : ajax(url));
+		}else
+			location.href = url;
+		return false;
+	},
+	spinner: Object.assign(function(show) {
+		if (!show) {
+			if (Qad.spinner.st == false)
+				return;
+			if (Qad.$$$)
+				Qad.$$$.spinner(false);
+			else if (Qad.$('.clear'))
+				Qad.$('.clear').classList.remove('spinner');
+		}else{
+			if (Qad.spinner.st == true)
+				return;
+			if (Qad.$$$)
+				Qad.$$$.spinner(true);
+			else if (Qad.$('.clear'))
+				Qad.$('.clear').classList.add('spinner');
+		}
+		Qad.spinner.st = show;
+	}, { st: false }),
+	open: function(url) {
+		if (Qad.$$$)
+			Qad.$$$.open(url);
+		else
+			window.open(url, '_blank');
+	},
+	time: function() {
+		return Math.round(new Date().getTime()/1000);
+	},
+	api: function(method, params, callback, err) {
+		var id = '_'+Qad.rand(0, 100)+'_'+Qad.time();
 		if (method.indexOf('googleapis.com') != -1)
 			provider = 'google';
-		else if (method.indexOf('graph.facebook.com') != -1)                                                                    
-            provider = 'facebook';
 		else if (method.indexOf('api.vk.com') != -1)                                                                    
             provider = 'vk';
 		else
 			provider = 'default';
 		if (!params)
 			params = {}
-		params.callback = 'document.api.callback';
-		document.api = {};
-		document.api.method = method;
-		document.api.callback = (callback ? callback : () => {});
+		params.callback = 'Qad.api.'+id;
+		Qad.api[id] = (callback ? callback : function() {});
 		Qad.session.set('oauth-scope',null);
 		Qad.session.set('oauth-redirect',null);
-		document.api.oauth = function() {
+		if (Qad.session.get('oauth-token-'+provider))
+			params.access_token = Qad.session.get('oauth-token-'+provider);
+		Qad.api.oauth = function() {
 			Qad.session.set('oauth-token-'+provider,null);
 			Qad.session.set('oauth-scope',params.scope);
 			location.href = params.base+'?method='+provider+'&oauth-redirect='+location.href;
-		};
-		if (Qad.session.get('oauth-token-'+provider))
-			params.access_token = Qad.session.get('oauth-token-'+provider);
-		var script = Qad.$('/script');
-		script.src = method+'?'+Qad.json(params, true);
-		Qad.$('head').add(script);
+		}
+		Qad.$('head').add(Qad.$('/script').attr({
+			'data-api': id,
+			src: method+'?'+Qad.json(params, true)
+		}).on('error', ((typeof(err) == 'function') ? err : null)).on('load', function(e) {
+			(function(e) {
+				setTimeout(function() {
+					delete Qad.api[e.dataset.api];
+					e.remove();
+				}, 1000);
+			})(e.target);
+		}));
 	},
+	modules: Object.assign(function(scripts) {
+		var i = 0;
+		scripts = ((typeof(scripts) == 'string') ? [scripts] : scripts);
+		return new Promise(function(resolve, reject) {
+			scripts.forEach(function(id) {
+				var file = {
+					name: id.split('/').slice(-1).join(''),
+					path: id.split('/').slice(0, -1).join('/')
+				};
+				if (!file.path)
+					file.path = location.pwd.split('/page')[0]+'/data/modules';
+				if (Qad.$('script[qad-modules="'+file.name+'"]')) {
+					if (scripts.length == (++i))
+						resolve();
+				}else{
+					Qad.modules.list.push(file.name);
+					var script = Qad.$('/script');
+					script.src = file.path+'/'+file.name+(file.name.slice(-3) == '.js' ? '' : '.js');
+					script.async = false;
+					script.dataset.modules = file.name;
+					script.on('load', function(e) {
+						if (Qad.modules[file.name] && Qad.modules[file.name].module) {
+							Qad.modules[file.name].module.path = file.path;
+							if (Qad.modules[file.name].module.style == true)
+								Qad.$('body').add(Qad.$('/link').attr({href: file.path+'/'+file.name+'.css', type: 'text/css', rel: 'stylesheet'}));
+							if (Qad.modules[file.name].module.dependencies && Qad.modules[file.name].module.dependencies.length > 0)
+								Qad.modules(Qad.modules[file.name].module.dependencies).then(resolve);
+						}
+						if (scripts.length == (++i))
+							resolve(Qad.modules[file.name]);
+					}).on('error', function(e) {
+						if (scripts.length == (++i))
+							reject(e);
+					});
+					document.head.appendChild(script);
+				}
+			});
+		});
+	}, {
+		list: [],
+	}),
+	/* modules: Object.assign(function(scripts) {
+		scripts = ((typeof(scripts) == 'string') ? [scripts] : scripts);
+		Qad.modules.count[0] += scripts.length;
+		return new Promise(function(resolve, reject) {
+			scripts.map(function(id, i) {
+				var file = {
+					name: id.split('/').slice(-1).join(''),
+					path: id.split('/').slice(0, -1).join('/')
+				};
+				if (!file.path)
+					file.path = location.pwd.split('/page')[0]+'/data/modules';
+				if (Qad.$('script[qad-modules="'+file.name+'"]'))
+					Qad.modules.load(resolve);
+				else{
+					Qad.modules.list.push(file.name);
+					Qad.$('body').add(Qad.$('/script').attr({
+						async: false,
+						src: file.path+'/'+file.name+(file.name.slice(-3) == '.js' ? '' : '.js'),
+						'qad-modules': file.name
+					}).on('load', function(e) {
+						if (Qad.modules[file.name] && Qad.modules[file.name].module) {
+							Qad.modules[file.name].module.path = file.path;
+							if (Qad.modules[file.name].module.style == true)
+								Qad.$('body').add(Qad.$('/link').attr({href: file.path+'/'+file.name+'.css', type: 'text/css', rel: 'stylesheet'}));
+							if (Qad.modules[file.name].module.dependencies && Qad.modules[file.name].module.dependencies.length > 0)
+								Qad.modules(Qad.modules[file.name].module.dependencies).then(resolve);
+						}
+						Qad.modules.load(resolve);
+					}).on('error', reject));
+				}
+			});
+		});
+	}, {
+		count: [0, 0],
+		list: [],
+		load: function(f) {
+			if (Qad.modules.count[0] == (++Qad.modules.count[1]))
+				f();
+		}
+	}), */
 	speech: {
-		rec: (e, options) => {
+		rec: function(e, options) {
 			if (typeof(Qad._rec) == 'undefined') {
-				Qad._rec = Object.assign(new webkitSpeechRecognition(), {
-					lang: navigator.language,
-					onresult: event => {
-						var res = event['results'][0][0]['transcript'];
+				if (Qad.$$$) {
+					if (typeof(e) != 'function')
+						Qad.$(e).style['color'] = '#F44336';
+					window.callback = function(res) {
 						if (typeof(e) == 'function')
-							e(res, event['results']);
+							e(res);
 						else{
+							Qad.$(e).style['color'] = '#757575';
 							var input = Qad.$(e).parent().find('input');
 							input.value = res;
-							if (typeof(input.ondata) == 'function')
+							if ((typeof(input.ondata) == 'function') && (res != ''))
 								input.ondata(res, input);
 						}
-					},
-					onstart: () => {
-						if (typeof(e) != 'function')
-							Qad.$(e).style['color'] = '#F44336';
-					},
-					onend: () => {
-						if (typeof(e) != 'function')
-							Qad.$(e).style['color'] = '#757575';
-						delete Qad._rec;
 					}
-				}, options);
-				Qad._rec.start();
+					Qad.$$$.speech_rec();
+				}else{
+					Qad._rec = Object.assign(new webkitSpeechRecognition(), {
+						lang: navigator.language,
+						onresult: function(event) {
+							var res = event['results'][0][0]['transcript'];
+							if (typeof(e) == 'function')
+								e(res, event['results']);
+							else{
+								var input = Qad.$(e).parent().find('input');
+								input.value = res;
+								if (typeof(input.ondata) == 'function')
+									input.ondata(res, input);
+							}
+						},
+						onstart: function() {
+							if (typeof(e) != 'function')
+								Qad.$(e).style['color'] = '#F44336';
+						},
+						onend: function() {
+							if (typeof(e) != 'function')
+								Qad.$(e).style['color'] = '#757575';
+							delete Qad._rec;
+						}
+					}, options);
+					Qad._rec.start();
+				}
 			}else
 				Qad._rec.stop();
 		},
-		tts: (q, lang) => {
+		tts: function(q, lang) {
 			if (!q)
 				return;
 			var tts = speechSynthesis;
-			setTimeout(() => {
+			setTimeout(function() {
 				var utterance = new SpeechSynthesisUtterance(q);
-				tts.getVoices().map(voice => {
+				tts.getVoices().map(function(voice) {
 					if (voice.lang.match(lang || navigator.language))
 						utterance.voice = voice;
 				});
 				if (utterance.voice)
 					speechSynthesis.speak(utterance);
 				else
-					new Audio('/service-worker.php?tts='+Qad.json({
-						q: encodeURIComponent(q),
-						tl: lang || navigator.language
-					})).play();
+					fetch('/service-worker.php', {
+						method: 'POST',
+						body: Qad.form({
+							q: q,
+							tl: lang || navigator.language
+						}, null, 'tts')
+					}).then(function(res) {
+						return res.blob();
+					}).then(function(e) {
+						new Audio(window.URL.createObjectURL(e)).play();
+					});
 			});
 		}
 	},
@@ -1121,8 +1508,9 @@ var Qad={
 		upload: function(id) {
 			if (!id || id == 'null')
 				id = Qad.code.id;
-		    Qad.$('iframe[data-code='+id+']').contentWindow.focus();
-		    if (Qad.$('#'+id+' form').action) {
+		    Qad.$('iframe[data-code="'+id+'"]').contentWindow.focus();
+		    //if (Qad.$('#'+id+' form[target="file"]').action) {
+		    if (Qad.$('[id="'+id+'"] form[target="file"]').action) {
 		        if (!Qad.$('iframe[name=file]')) {
 		            file = Qad.$('/iframe');
 		            file.name = 'file';
@@ -1130,12 +1518,16 @@ var Qad={
 		            Qad.$('body').add(file);
 		        }
 		        Qad.$('iframe[name=file]').onload = function() {
-                    if (!Qad.$('iframe[name=file] body').$())
+                    if (!(res = Qad.$('iframe[name=file] body').$()))
                         return;
-					Qad.$('iframe[data-code='+id+']').contentWindow.document.execCommand('insertHTML', false, '<img src="'+Qad.$('iframe[name=file] body').$()+'" style="max-width: 100%" />');
+					if (['jpg', 'png', 'gif'].indexOf(res.split('.').slice(-1)[0]) != -1)
+						Qad.$('iframe[data-code="'+id+'"]').contentWindow.document.execCommand('insertHTML', false, '<img src="'+res+'" style="max-width: 100%" />');
+					else
+						Qad.$('iframe[data-code="'+id+'"]').contentWindow.document.execCommand('insertHTML', false, '<a href="'+res+'"><li><strong>'+res.split('/').slice(-1)[0]+'</strong></li></a>');
                     //Qad.$('iframe[data-code='+id+']').contentWindow.document.execCommand('insertImage', false, Qad.$('iframe[name=file] body').$());
                 }
-                Qad.$('#'+id+' form').submit();
+                Qad.$('[id="'+id+'"] form[target="file"]').submit();
+                //Qad.$('#'+id+' form[target="file"]').submit();
 		    }else{
     		    files = window.event.target.files;
     		    for (var i = 0, f; f = files[i]; i++) {
@@ -1143,32 +1535,32 @@ var Qad={
                     t = f;
                     reader.onload = function(e) {
                         if (t.type.match('image.*'))
-                            Qad.$('iframe[data-code='+id+']').contentWindow.document.execCommand('insertHTML', false, '<img src="'+e.target.result+'" style="max-width: 100%" />');
+                            Qad.$('iframe[data-code="'+id+'"]').contentWindow.document.execCommand('insertHTML', false, '<img src="'+e.target.result+'" style="max-width: 100%" />');
                             //Qad.$('iframe[data-code='+id+']').contentWindow.document.execCommand('insertImage', false, e.target.result);
                         else
-                            Qad.$('iframe[data-code='+id+']').contentWindow.document.execCommand('insertHTML', false, '<a href="'+e.target.result+'" download="'+escape(t.name)+'"><li><strong>'+escape(t.name)+'</strong> ('+(t.type ? t.type : 'n/a')+') - '+t.size+' ('+t.lastModifiedDate.toLocaleDateString()+')</li></a>');
+                            Qad.$('iframe[data-code="'+id+'"]').contentWindow.document.execCommand('insertHTML', false, '<a href="'+e.target.result+'" download="'+escape(t.name)+'"><li><strong>'+escape(t.name)+'</strong> ('+(t.type ? t.type : 'n/a')+') - '+t.size+' ('+t.lastModifiedDate.toLocaleDateString()+')</li></a>');
                     }
                     reader.readAsDataURL(f);
     		    }
 		    }
 		},
 		html: function() {
-			Qad.$('textarea[name='+Qad.code.id+']').hidden = (Qad.$('textarea[name='+Qad.code.id+']').hidden ? false : true);
-			Qad.$('iframe[data-code='+this.id+']').hidden = (Qad.$('iframe[data-code='+this.id+']').hidden ? false : true);
-			Qad.$('iframe[data-code='+this.id+'] body').$(Qad.$('textarea[name='+Qad.code.id+']').$());
+			Qad.$('textarea[name="'+Qad.code.id+'"]').hidden = (Qad.$('textarea[name="'+Qad.code.id+'"]').hidden ? false : true);
+			Qad.$('iframe[data-code="'+this.id+'"]').hidden = (Qad.$('iframe[data-code="'+this.id+'"]').hidden ? false : true);
+			Qad.$('iframe[data-code="'+this.id+'"] body').$(Qad.$('textarea[name="'+Qad.code.id+'"]').$());
 		},
 		format: function(type,attr,nofocus) {
             if (!nofocus)
-			    Qad.$('iframe[data-code='+this.id+']').contentWindow.focus();
-            Qad.$('iframe[data-code='+this.id+']').contentWindow.document.execCommand(type, null, attr);
+			    Qad.$('iframe[data-code="'+this.id+'"]').contentWindow.focus();
+            Qad.$('iframe[data-code="'+this.id+'"]').contentWindow.document.execCommand(type, null, attr);
 		},
 		text: function() {
-            Qad.$('textarea[name='+Qad.code.id+']').value = Qad.$('iframe[data-code='+Qad.code.id+'] body').$();
+            Qad.$('textarea[name="'+Qad.code.id+'"]').value = Qad.$('iframe[data-code="'+Qad.code.id+'"] body').$();
 		},
 		focus: function(id, force) {
 			if (force) {
 				Qad.code.id = id.name;
-				Qad.$('iframe[data-code='+code.id+']').contentWindow.focus();
+				Qad.$('iframe[data-code="'+code.id+'"]').contentWindow.focus();
 			}else
 				Qad.code.id = id;
 		},
@@ -1176,6 +1568,7 @@ var Qad={
 		    return '\
                 '+(this.file ? '<label>\
                     <i class="material-icons">attach_file</i>\
+					<form></form>\
                     <form target="file" method="post" '+(this.file==true ? '' : 'action="'+this.file+'"')+' enctype="multipart/form-data" hidden>\
                         <input type="file" name="upload" onchange="Qad.code.upload(\''+this.id+'\')" '+(this.accept ? 'accept="image/*"' : '')+' style="width:0px;padding:0;border:0;overflow:hidden;" />\
                     </form>\
@@ -1212,8 +1605,9 @@ var Qad={
             ';
         },
 		init: function(o) {
-		    for (k in o)
+		    for (k in o) {
 		        this[k] = o[k];
+			}
 		    html = Qad.$(this.el).$();
 		    this.id = Qad.$(this.el).id;
             Qad.$(this.el).$((this.button ? '<h2>'+this.button()+'</h2><br />' : '' )+'<iframe onmouseover="Qad.code.focus(\''+this.id+'\')" onmouseout="Qad.code.text(\''+this.id+'\')" frameborder="no" style="'+this.style+'" data-code="'+this.id+'"></iframe><br /><textarea name="'+this.id+'" style="margin-top:-10px;'+this.style+'" hidden>'+html+'</textarea>');
@@ -1221,7 +1615,7 @@ var Qad={
             Qad.$('iframe[data-code="'+this.id+'"]').contentDocument.write(html); 
             Qad.$('iframe[data-code="'+this.id+'"]').contentDocument.close();
             Qad.$('iframe[data-code="'+this.id+'"]').contentDocument.designMode = 'on';
-            Qad.$('iframe[data-code='+this.id+'] body').onblur = Qad.code.text;
+            Qad.$('iframe[data-code="'+this.id+'"] body').onblur = Qad.code.text;
 		}
 	},
 	slider: {
@@ -1345,22 +1739,30 @@ var Qad={
 				this.next();
 		}
 	},
-	notification: function(title,time,logo) {
-		if ("Notification" in window) {
+	notification: function(title,time) {
+		var notification = {
+			body: (typeof(title)!='string'?title.body:''),
+			icon: ((typeof(title) != 'string' && title.icon) ? title.icon : (Qad.$('link[rel="icon"]') ? Qad.$('link[rel="icon"]').href : '')),
+			dir: 'auto',
+			actions: (typeof(title)!='string'?title.actions:[])
+		}
+		if ($$.$$$)
+			$$.$$$.notification((typeof(title)=='string'?title:title.title), $$.json(notification));
+		else if ("Notification" in window) {
 			Notification.requestPermission(function (permission) {
 				if (permission === "granted") {
-					if (!logo && Qad.$('link[rel="icon"]'))
-						logo = Qad.$('link[rel="icon"]').href;
-					var notification = {
-						body: (typeof(title)!='string'?title.body:''),
-						icon: logo,
-						dir: 'auto',
-						actions: (typeof(title)!='string'?title.actions:[])
-					}
 					if (Qad.sw)
-						Qad.sw.showNotification((typeof(title)=='string'?title:title.title),notification);
-					else
-						new Notification((typeof(title)=='string'?title:title.title),notification);
+						notification.e = Qad.sw.showNotification((typeof(title)=='string'?title:title.title),notification);
+					else{
+						notification.e = new Notification((typeof(title)=='string'?title:title.title),notification);
+						if ((typeof(title) == 'object') && title.action)
+							notification.e.onclick = function(e) {
+								if ($$actions && $$actions[title.action])
+									$$actions[title.action](e);
+								else
+									location.href = title.action;
+							}
+					}
 				}
 			});
 		}
@@ -1377,14 +1779,30 @@ var Qad={
 			for (key in title.actions)
 				if (title.actions[key]['title']) {
 					var span = Qad.$('/span');
-					span.onclick = actions[title.actions[key].action];
+					//span.onclick = actions[title.actions[key].action];
+					span.dataset._action = title.actions[key].action;
+					span.onclick = function(e) {
+						if ($$actions && $$actions[e.target.dataset._action])
+							$$actions[e.target.dataset._action](e);
+						else
+							location.href = title.actions[key].action;
+					}
 					span.innerHTML = title.actions[key].title;
 					div.appendChild(span);
+				}
+			if (title.action)
+				div.onclick = function(e) {
+					if ($$actions && $$actions[title.action])
+						$$actions[title.action](e);
+					else
+						location.href = title.action;
 				}
 		}
 		Qad.$('body').add(div);
 		if (time) {
 			div.time = setTimeout(function() {
+				if (notification.e)
+					notification.e.close();
 				div.remove();
 				//Qad.$('#notification').remove();
 			},time);
@@ -1427,7 +1845,7 @@ var Qad={
 			return css;
 		}
 	},
-	gencss: function(css,file) {
+	gencss: function(css, file) {
 		if (Qad.session.get('theme-color'))
 			Qad.$('meta[name=theme-color]').content = '#'+Qad.session.get('theme-color');
 		else if (!css)
@@ -1441,393 +1859,557 @@ var Qad={
 			Qad.$('head').add(link);
 		}
 		var style = function() {
-			var style;
+			var el = Qad.$('link[rel="stylesheet/qad"]'),
+				style;
 			var xhr = new XMLHttpRequest();
-			xhr.open('GET', Qad.$('link[rel="stylesheet/qad"]').href);
+			xhr.open('GET', el.href);
 			xhr.onload = function () {
-				console.log(Qad.$('link[rel="stylesheet/qad"]'));
-				style = xhr.responseText;
-				if (location.origin == 'file://')
-					style = style.replace(/\@location/g,location.href.split('/page')[0]);
-				else if (Qad.$('link[rel="stylesheet/qad"]').href.indexOf('master') != -1)
-					style = style.replace(/\@location/g,Qad.$('link[rel="stylesheet/qad"]').href.split('data')[0]);
-				else
-					style = style.replace(/\@location/g,Qad.$('link[rel="stylesheet/qad"]').href.split('data')[0]);
-				var parts = style.replace(/@(.*?): (.*?);/gim, function(m,key,value) {
-					style = style.replace('@'+key+': '+value+';','');
-					if (value.indexOf('meta.') != -1)
-						value = Qad.$('meta[name="'+value.replace('meta.','')+'"]').content;
-					else if (value.indexOf('data-') != -1)
-						value = Qad.$('body').getAttribute(value);
-					style = style.replace(new RegExp('@'+key, 'g'), value);
-				});
-				style = Qad.compiler.css(style);
-				if (!window.requestFileSystem) {
-					add = Qad.$('/style');
-					add.innerHTML = style;
-					Qad.$('head').add(add);
-				}else
-					Qad.fs.add('style/'+css+'.css',style,function(e) {
+				var res = xhr.responseText;
+				for (var i=0; i<2; ++i) {
+					res = res.replace(/var\(--(.*?)\)/gim, function(str, key) {
+						var _el = Qad.$('meta[name="theme-'+key+'"]');
+						if (_el)
+							return _el.content;
+						else{
+							if ((_el = str.split(',')).length > 1)
+								return _el[1].slice(0, -1);
+							else
+								return str;
+						}
+					});
+				}
+				style = Qad.compiler.css(res).replace(/url\(..\//g, 'url('+location.href.split('/page')[0]+'/data/');
+				if (window.requestFileSystem)
+					Qad.fs.add('style/'+css+'.css', style, function(e) {
 						setTimeout(function() {
-							Qad.$('link[rel="stylesheet/qad"]').href = e.toURL;
-							Qad.$('link[rel="stylesheet/qad"]').rel = 'stylesheet';
+							Qad.$('link[rel="stylesheet/qad"]').attr({
+								href: e.toURL,
+								rel: 'stylesheet',
+								'data-qad': true
+							});
 						},500);
-					},null,function(){
+					}, null, function() {
 						add = Qad.$('/style');
 						add.innerHTML = style;
 						Qad.$('head').add(add);
 					});
+				else{
+					add = Qad.$('/style');
+					add.innerHTML = style;
+					Qad.$('head').add(add);
+				}
 			}
 			xhr.onerror = function() {
 				Qad.$('link[rel="stylesheet/qad"]').rel = 'stylesheet';
 			}
 			xhr.send();
 		}
-		Qad.fs.exist('style/'+css+'.css',function(e){
-			Qad.$('link[rel="stylesheet/qad"]').href = e.toURL();
-			Qad.$('link[rel="stylesheet/qad"]').rel = 'stylesheet';
-		},style);
+		Qad.fs.exist('style/'+css+'.css', function(e) {
+			var load = function() {
+				Qad.$('link[rel="stylesheet/qad"]').attr({
+					href: e.toURL(),
+					rel: 'stylesheet',
+					'data-qad': true
+				});
+			}
+			e.file(function(f) {
+				if ((Math.round(new Date().getTime()/1000.0) - 86400) > Math.round(f.lastModified/1000.0))
+					style();
+				else
+					load();
+			}, load);
+		}, style);
 	},
 	init: function(type, action) {
-		switch (type) {
-			case 'button#menu + nav': {
-				if (Qad.$('html').pos().width > 1366)
-					Qad.$('body').attr('data-menu',true);
-				else{
-					menu = function(e) {
-						if (e.x > 300)
-							Qad.$('button#menu').click();
-					}
-					Qad.$('button#menu').onclick = function() {
-						$('nav').attr('style',false);
-						if (Qad.$('body[data-menu]')) {
-							Qad.$('body').attr('data-menu',false);
-							Qad.$('html').on('mouse',null,'menu');
-						}else{
-							Qad.$('body').attr('data-menu',true);
-							Qad.$('html').on('mouse',menu,'menu');
-						}
-					}
-					Qad.$('html').on('swipe', function(e) {
-						if (
-							($(event.target) && $(event.target) === $('button#menu + nav')) ||
-							($(event.target).parent() && $(event.target).parent() === $('button#menu + nav')) ||
-							($(event.target).parent().parent() && $(event.target).parent().parent() === $('button#menu + nav')) ||
-							($(event.target).parent().parent().parent() && $(event.target).parent().parent().parent() === $('button#menu + nav')) ||
-							Qad.$('button#menu').disabled ||
-							!Qad.$('button#menu + nav')
-						)
-							return;
-						else if (e.swipe == 'move') {
-							if (e.sx < 10 && e.sx > 0 && e.x >= 300 && !Qad.$('body[data-menu]')) {
-								Qad.$('button#menu + nav').style['left'] = '0px';
-								Qad.$('button#menu').click();
-							}else if (e.x < 300 && (e.x - e.sx) > 50) {
-								if (e.sx > 10 && !Qad.$('body[data-menu]'))
-									return;
-								Qad.$('button#menu + nav').style['display'] = 'block';
-								Qad.$('button#menu + nav').style['left'] = (e.x-300)+'px';
-							}else if (e.x < 300 && (e.x - e.sx) < 50)
-								Qad.$('button#menu + nav').style['display'] = 'none';
-						}else{
-							if (e.sx < 50 && !Qad.$('body[data-menu]')) {
-								if (e.x > 100)
-									Qad.$('button#menu').click();
-								else
-									Qad.$('button#menu + nav').style['display'] = 'none';
-							}else if (e.x < 300 && Qad.$('body[data-menu]'))
-								Qad.$('button#menu').click();
-						}
-					});
-					/* Qad.$('html').on('swipe', function(e){
-						if (e.x<50 && e.swipe == 'right')
-							Qad.$('button#menu').click();
-					}); */
-				}
-				break;
-			}
-			case 'nav.tabs': {
-				var open = function(id) {
-					if (!Qad.$('nav.tabs a[href="#'+id+'"]'))
-						return false;
-					if (Qad.$('nav.tabs a.active'))
-						Qad.$('nav.tabs a.active').classList.remove('active');
-					if (Qad.$('div.tabs.active'))
-						Qad.$('div.tabs.active').classList.remove('active');
-					if (Qad.$('div.tabs#'+id))
-						Qad.$('div.tabs#'+id).classList.add('active');
-					Qad.$('nav.tabs a[href="#'+id+'"]').classList.add('active');
-					var s = location.search;
-					if (s.indexOf('tab') != -1)
-						location.search.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m) {
-							if (m.indexOf('tab') != -1)
-								s = s.replace(m,'');
+		if (!type) {
+			if (Qad.$('html[data-ajax]'))
+				Qad.init('ajax');
+			if (Qad.$('html[data-controller]'))
+				Qad.init('controller');
+			if (Qad.$('button#menu + nav'))
+				Qad.init('button#menu + nav');
+			if (Qad.$('nav.tabs'))
+				Qad.init('nav.tabs');
+			if (Qad.$('.menu'))
+				Qad.init('.menu');
+			if (Qad.$('ul.emoji'))
+				Qad.init('ul.emoji');
+			if (Qad.$('input[list][data-select]'))
+				Qad.init('input[list][data-select]');
+			if (Qad.$('.parallax img'))
+				Qad.init('.parallax img');
+			if (Qad.$('[data-action]'))
+				Qad.init('[data-action]');
+			if (Qad.$('dialog [data-close]'))
+				Qad.init('dialog [data-close]');
+			if (Qad.$('label.speech'))
+				Qad.init('label.speech');
+			if (Qad.$('#fullpage'))
+				Qad.init('#fullpage');
+			if (Qad.$('[contextmenu]'))
+				Qad.init('[contextmenu]');
+			if (Qad.$('[autocomplete="off"][readonly]'))
+				Qad.init('[autocomplete="off"][readonly]');
+			if (Qad.$('script[type="nodejs"][src]'))
+				Qad.init('script[type="nodejs"][src]');
+		}else{
+			switch (type) {
+				case 'ajax': {
+					Qad.for('html[data-ajax] a:not([target]):not([onclick]):not([data-action]):not([data-on])', function(el) {
+						el.attr({
+							'data-on': true,
+							onclick: 'return Qad.redirect(this);'
 						});
-					if (s.slice(0,1) == '&')
-						s = '?'+s.slice(1);
-					if (location.origin != 'file://' && location.origin.indexOf('chrome-extension')==-1)
-						history.pushState(null, null, (s!='' ? s+'&' : '?')+'tab='+id);
-					if (typeof(tabs) == 'function')
-						tabs(id);
+					});
+					break;
 				}
-				if (action)
-					open(action);
-				var i = 0;
-				Qad.for('nav.tabs a', function(el){
-					Qad.$(el).attr('data-index',i);
-					el.onclick = function(e){
-						if (el.href != '#' && el.href.indexOf('#') != -1) {
-							var id = el.href.split('#')[1];
-							if (Qad.$('div.tabs#'+id))
-								open(id);
-							if (Qad.$('#'+id))
-								Qad.up(id);
-							else
-								Qad.up();
-							e.preventDefault();
-						}
-					}
-					++i;
-				});
-				Qad.$('html').on('swipe', function(e){
-					if (e.sx < 50 || !Qad.$()['tab'])
-						return;
-					var a = Number(Qad.$('nav.tabs a[href="#'+Qad.$()['tab']+'"]').attr('data-index')),
-						m = $$.$$('nav.tabs a').length-1;
-					if (e.swipe == 'left' && a<m)
-						Qad.$$('nav.tabs a')[a+1].click();
-					else if (e.swipe == 'right' && a>0)
-						Qad.$$('nav.tabs a')[a-1].click();
-				});
-				break;
-			}
-			case '.menu': {
-				ul = function(e) {
-					if (!Qad.$('ul[open]') || Qad.$('ul[open]').attr('for') == e.target.id)
-						return;
-					pos = Qad.$('ul[open]').pos();
-					if ((e.y < pos.top || e.x < pos.left || e.y > pos.top+pos.height || e.x > pos.left+pos.width) && !Qad.$(e.target).attr('data-menu'))
-						Qad.$('#'+Qad.$('ul[open]').attr('for')).click();
-				}
-				Qad.for(type, function(el) {
-					if (el.tagName != 'UL')
-						el.onclick = function(e) {
-							if (Qad.$('ul[for='+el.id+']')) {
-								if (Qad.$('ul[for='+el.id+']').style['display'] == 'block') {
-									Qad.$('html').on('mouse',null,'ul');
-									Qad.$('ul[for='+el.id+']').style['display'] = '';
-									Qad.$('ul[for='+el.id+']').attr('open',false);
-								}else{
-									if (Qad.$('ul[open]'))
-										Qad.$('#'+Qad.$('ul[open]').attr('for')).click();
-									Qad.$('html').on('mouse',ul,'ul');
-									Qad.$('ul[for='+el.id+']').style['display'] = 'block';
-									Qad.$('ul[for='+el.id+']').attr('open',true);
+				case 'controller': {
+					$controller = [-1, 0, Qad.$$(['.menu[data-for]', '.content']), null, null, null, null, true];
+					Qad.$('html').on('key', null, 'controller').on('key', function(e) {
+						if (Qad.$('body[data-panel="true"]'))
+							return;
+						self = $controller;
+						self[7] = true;
+						switch (e.keyCode) {
+							case 8: {
+								Qad.$(e);
+								self[7] = false;
+								window.history.back();
+								break;
+							}
+							case 13: {
+								Qad.$(e);
+								self[7] = false;
+								if (self[5])
+									self[5].click();
+								break;
+							}
+							case 37: {
+								Qad.$(e);
+								if (self[3] && (self[1] > 0))
+									--self[1];
+								break;
+							}
+							case 38: {
+								Qad.$(e);
+								while (true) {
+									if (self[0] > -1) {
+										--self[0];
+										self[1] = 0;
+										if (self[2][self[0]] && self[2][self[0]].dataset.for && !Qad.$(self[2][self[0]]).attr('open'))
+											continue;
+									}
+									break;
 								}
+								break;
+							}
+							case 39: {
+								Qad.$(e);
+								if (self[3] && (self[1] < (self[4].length - 1)))
+									++self[1];
+								break;
+							}
+							case 40: {
+								Qad.$(e);
+								while (true) {
+									if (self[0] < self[2].length) {
+										++self[0];
+										self[1] = 0;
+										if (self[2][self[0]] && self[2][self[0]].dataset.for && !Qad.$(self[2][self[0]]).attr('open'))
+											continue;
+									}
+									break;
+								}
+								break;
+							}
+							default: {
+								if ($$controller && $$controller[e.keyCode])
+									self = Object.assign(self, $$controller[e.keyCode](e, self));
+								else
+									self[7] = false;
+								break;
+							}
+						}
+						if (Qad.$('[tabindex].focus'))
+							Qad.$('[tabindex].focus').classList.remove('focus');
+						if (self[7] && (self[3] = self[2][self[0]])) {
+							self[4] = Qad.$(self[3]).find('[tabindex]', true);
+							self[6] = self[5];
+							if (self[5] = self[4][self[1]]) {
+								var el;
+								if (el = self[5].parent('[hidden]'))
+									el.hidden = false;
+								if (el = self[5].parent('details'))
+									el.attr('open', true);
+								self[5].classList.add('focus');
+								if ((self[5] != self[6]) && !self[5].parent('dialog') && !self[5].parent('.menu[data-for]'))
+									Qad.up(self[5], 100);
+							}
+						}
+						//Qad.$('header').dataset.content = 'Отладка KeyCode: '+e.keyCode;
+					}, 'controller');
+					break;
+				}
+				case 'button#menu + nav': {
+					if (Qad.$('button#menu:not([data-on])'))
+						Qad.modules('panel').then(function() {
+							Qad.$('button#menu').on('click', Qad.modules.panel.open).dataset.on = true;;
+						});
+					break;
+				}
+				case 'nav.tabs': {
+					var open = function(id) {
+						if (!Qad.$('nav.tabs a[href="#'+id+'"]'))
+							return false;
+						if (Qad.$('nav.tabs a.active'))
+							Qad.$('nav.tabs a.active').classList.remove('active');
+						if (Qad.$('div.tabs.active'))
+							Qad.$('div.tabs.active').classList.remove('active');
+						if (Qad.$('div.tabs#'+id))
+							Qad.$('div.tabs#'+id).classList.add('active');
+						Qad.$('nav.tabs a[href="#'+id+'"]').classList.add('active');
+						var s = location.search;
+						if (s.indexOf('tab') != -1)
+							location.search.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m) {
+								if (m.indexOf('tab') != -1)
+									s = s.replace(m,'');
+							});
+						if (s.slice(0,1) == '&')
+							s = '?'+s.slice(1);
+						if (location.origin != 'file://' && location.origin.indexOf('chrome-extension')==-1)
+							history.pushState(null, null, (s!='' ? s+'&' : '?')+'tab='+id);
+						if (typeof(tabs) == 'function')
+							tabs(id);
+					}
+					if (action)
+						open(action);
+					var i = 0;
+					Qad.for('nav.tabs a', function(el){
+						Qad.$(el).attr('data-index',i);
+						el.onclick = function(e){
+							if (el.href != '#' && el.href.indexOf('#') != -1) {
+								var id = el.href.split('#')[1];
+								if (Qad.$('div.tabs#'+id))
+									open(id);
+								if (Qad.$('#'+id))
+									Qad.up(id);
+								else
+									Qad.up();
 								e.preventDefault();
 							}
 						}
-				});
-				Qad.for('.menu *', function(el) {
-					Qad.$(el).attr('data-menu',true);
-				});
-				break;
-			}
-			case 'ul.emoji': {
-				if (navigator.userAgent.match(/Android/i))
-					Qad.for('ul.emoji',function(el) {
-						Qad.$('#'+Qad.$(el).attr('for')).remove();
-						el.remove();
+						++i;
 					});
-				else{
-					var emoji = '';
-					for (var i=0; i<=3; ++i) {
-						for (var j=0; j<=15; ++j) {
-							emoji += '<li>&#x1f6'+i+''+
-								(j==10 ? 'A' : (j==11 ? 'B' : (j==12 ? 'C' : (j==13 ? 'D' : (j==14 ? 'E' : (j==15 ? 'F' : j))))))
-							+';</li>';
-						}
-					}
-					Qad.for('ul.emoji',function(el) {
-						if (Qad.$('[data-emoji="'+Qad.$(el).attr('for')+'"]')) {
-							Qad.$(el).$(emoji);
-							el.onclick = function() {
-								Qad.$('[data-emoji="'+Qad.$(this).attr('for')+'"]').$('~'+Qad.$(window.event.target).$());
-							}
-						}
+					Qad.$('html').on('swipe', function(e){
+						if (e.sx < 50 || !Qad.$()['tab'])
+							return;
+						var a = Number(Qad.$('nav.tabs a[href="#'+Qad.$()['tab']+'"]').attr('data-index')),
+							m = $$.$$('nav.tabs a').length-1;
+						if (e.swipe == 'left' && a<m)
+							Qad.$$('nav.tabs a')[a+1].click();
+						else if (e.swipe == 'right' && a>0)
+							Qad.$$('nav.tabs a')[a-1].click();
 					});
+					break;
 				}
-				break;
-			}
-			case 'input[list][data-select]': {
-				Qad.for(type, function(el) {
-					el.onchange = function() {
-						var optionFound = false,
-							datalist = this.list;
-						for (var j = 0; j < datalist.options.length; j++)
-							if (this.value == datalist.options[j].value) {
-								optionFound = true;
-								break;
+				case '.menu': {
+					Qad.for(':not(ul).menu', function(el) {
+						el.onclick = function(e) {
+							var menu = Qad.$('.menu[data-for][open]');
+							var hide = function() {
+								if (!menu)
+									return;
+								Qad.$('body').removeAttribute('data-menu');
+								menu.removeAttribute('open');
+								menu.style.left = '';
+								menu.style.top = '';
+								Qad.$('html').onclick = null;
 							}
-						if (optionFound)
-							this.setCustomValidity('');
-						else
-							this.setCustomValidity('Please select a valid value.');
-					}
-				});
-				break;
-			}
-			case '.parallax img': {
-				Qad.for(type, el => {
-					var parent = el.parent().pos(),
-						top = document.body.scrollTop,
-						height = window.innerHeight;
-					if (!(((top + height) >= parent.top) && ((parent.top  + parent.height >= top))))
-						return;
-					percent = (top + height - parent.top) / (parent.height + height);
-					el.style.transform = 'translate3D(-50%,'+Math.round(((el.pos().height - parent.height) * percent))+'px, 0)';
-				});
-				break;
-			}
-			case '[data-action]': {
-				Qad.for(type, e => {
-					e.f = '_'+e.dataset.action;
-					if (!e.dataset.on && typeof(window[e.f]) == 'function') {
-						e.dataset.on = true;
-						e.on('click', (ev) => {
-							window[e.f](ev);
-						}, 'action');
-					}
-				});
-				break;
-			}
-			case 'dialog [data-close]': {
-				Qad.for(type, e => {
-					e.on('click', () => {
-						e.parent('dialog').close();
-					});
-				});
-				break;
-			}
-			case 'label.speech': {
-				Qad.for(type, e => {
-					if (e.speech)
-						return;
-					e.speech = true;
-					var speech = Qad.$('/i');
-					speech.onclick = Qad.speech.rec;
-					e.add(speech);
-				});
-				break;
-			}
-			case '#fullpage': {
-				if (Qad.$('#fullpage .page')) {
-					Qad.$('body').style.overflow = 'hidden';
-					var fullpage = function(e) {
-						var obj = Qad.$('#fullpage'),
-							step = Qad.$(obj).find('.page').pos().height,
-							slength = (obj.style.transform ? parseInt(obj.style.transform.replace('translateY(', '')) : 0),
-							plength = parseInt(obj.offsetHeight / (Math.min(window.innerHeight, window.innerWidth) / step));
-						if (!obj.top)
-							obj.top = (obj.pos().top < 0 ? 0 : obj.pos().top);
-						if (e.key) {
-							if (['ArrowUp', 'PageUp'].indexOf(e.key) > -1) {
-								e.deltaY = -1;
-							}else if (['ArrowDown', 'PageDown'].indexOf(e.key) > -1) {
-								e.deltaY = 1;
-							}else if (['0','1','2','3','4','5','6','7','8','9'].indexOf(e.key) > -1 && Qad.$$('#fullpage .page')[e.key]) {
-								e = Qad.$$('.page')[e.key];
-							}else
-								return true;
+							if (menu)
+								return hide();
+							if (menu = Qad.$('.menu[data-for="'+el.id+'"]'))
+								menu.attr('open', true);
+							setTimeout(function() {
+								Qad.$('html').onclick = hide;
+							});
 						}
-						if (typeof(e.preventDefault) == 'function')
-							e.preventDefault();
-						if (e.deltaY) {
-							if (e.deltaY > 0 && Math.abs(slength) < (plength - plength / Qad.$(obj).querySelectorAll('.page').length))
-								slength = slength - step;
-							else if (e.deltaY < 0 && slength < 0)
-								slength = slength + step;
-						}else
-							slength = obj.top + Qad.$(e).pos().top * -1 + slength;
-						if (obj.hold != true) {
-							obj.hold = true;
-							obj.style.transform = 'translateY('+(slength < 0 ? slength : 0)+'px)';
-							setTimeout(() => {
+					});
+					/*
+					ul = function(e) {
+						if (!Qad.$('ul[open]') || Qad.$('ul[open]').dataset.for == e.target.id)
+							return;
+						pos = Qad.$('ul[open]').pos();
+						if ((e.y < pos.top || e.x < pos.left || e.y > pos.top+pos.height || e.x > pos.left+pos.width) && !Qad.$(e.target).attr('data-menu')) {
+							if ((e.target.tagName == 'LI') && e.target.parent().classList.contains('menu'))
+								e.target.click();
+							else
+								Qad.$('#'+Qad.$('ul[open]').dataset.for).click();
+						}
+					}
+					Qad.for(type, function(el) {
+						if (el.tagName != 'UL')
+							el.onclick = function(e) {
+								if (el.classList.contains('menu') && el.id && Qad.$('ul[data-for='+el.id+']')) {
+									if (Qad.$('ul[data-for='+el.id+']').style['display'] == 'block') {
+										Qad.$('html').on('mouse',null,'ul');
+										Qad.$('ul[data-for='+el.id+']').style['display'] = '';
+										Qad.$('ul[data-for='+el.id+']').attr('open', false);
+									}else{
+										if (Qad.$('ul[open]'))
+											Qad.$('#'+Qad.$('ul[open]').dataset.for).click();
+										Qad.$('html').on('mouse',ul,'ul');
+										Qad.$('ul[data-for='+el.id+']').style['display'] = 'block';
+										Qad.$('ul[data-for='+el.id+']').attr('open', true);
+									}
+									e.preventDefault();
+								}
+							}
+					});
+					Qad.for('.menu *', function(el) {
+						Qad.$(el).attr('data-menu',true);
+					});
+					*/
+					break;
+				}
+				case 'ul.emoji': {
+					if (navigator.userAgent.match(/Android/i))
+						Qad.for('ul.emoji',function(el) {
+							Qad.$('#'+Qad.$(el).dataset.for).remove();
+							el.remove();
+						});
+					else{
+						var emoji = '';
+						for (var i=0; i<=3; ++i) {
+							for (var j=0; j<=15; ++j) {
+								emoji += '<li>&#x1f6'+i+''+
+									(j==10 ? 'A' : (j==11 ? 'B' : (j==12 ? 'C' : (j==13 ? 'D' : (j==14 ? 'E' : (j==15 ? 'F' : j))))))
+								+';</li>';
+							}
+						}
+						Qad.for('ul.emoji',function(el) {
+							if (Qad.$('[data-emoji="'+Qad.$(el).dataset.for+'"]')) {
+								Qad.$(el).$(emoji);
+								el.onclick = function() {
+									Qad.$('[data-emoji="'+Qad.$(this).dataset.for+'"]').$('~'+Qad.$(window.event.target).$());
+								}
+							}
+						});
+					}
+					break;
+				}
+				case 'input[list][data-select]': {
+					Qad.for(type, function(el) {
+						el.onchange = function() {
+							var optionFound = false,
+								datalist = this.list;
+							for (var j = 0; j < datalist.options.length; j++)
+								if (this.value == datalist.options[j].value) {
+									optionFound = true;
+									break;
+								}
+							if (optionFound)
+								this.setCustomValidity('');
+							else
+								this.setCustomValidity('Please select a valid value.');
+						}
+					});
+					break;
+				}
+				case '.parallax img': {
+					Qad.for(type, function(el) {
+						var parent = el.parent().pos(),
+							top = window.scrollY, //document.body.scrollTop,
+							height = window.innerHeight;
+						if (!(((top + height) >= parent.top) && ((parent.top  + parent.height >= top))))
+							return;
+						percent = (top + height - parent.top) / (parent.height + height);
+						el.style.transform = 'translate3D(-50%,'+Math.round(((el.pos().height - parent.height) * percent))+'px, 0)';
+					});
+					break;
+				}
+				case '[data-action]': {
+					Qad.for(type, function(e) {
+						if (!e.dataset.on && (e.f = ((typeof(window['_'+e.dataset.action]) == 'function') ? '_'+e.dataset.action : (
+							(window.actions && (typeof(window.actions[e.dataset.action]) == 'function')) ? '__'+e.dataset.action : null
+						)))) {
+							e.dataset.on = true;
+							e.on('click', function(ev) {
+								if (e.dataset.action) {
+									if (window.actions && (e.f.indexOf('__') == 0) && (typeof(window.actions[e.f.slice(2)]) == 'function'))
+										window.actions[e.f.slice(2)](ev);
+									else if (typeof(window[e.f]) == 'function')
+										window[e.f](ev);
+								}
+							}, 'action');
+						}
+					});
+					break;
+				}
+				case 'dialog [data-close]': {
+					Qad.for(type, function(e) {
+						if (!e.dataset.on) {
+							e.dataset.on = true;
+							e.on('click', function() {
+								e.parent('dialog').close();
+							});
+						}
+					});
+					break;
+				}
+				case 'label.speech': {
+					Qad.for(type, function(e) {
+						if (e.speech)
+							return;
+						e.speech = true;
+						var speech = Qad.$('/i');
+						speech.onclick = Qad.speech.rec;
+						e.add(speech);
+					});
+					break;
+				}
+				case '#fullpage': {
+					if (Qad.$('#fullpage .page')) {
+						Qad.$('body').style.overflow = 'hidden';
+						var fullpage = function(e) {
+							var obj = Qad.$('#fullpage'),
+								step = Qad.$(obj).find('.page').pos().height,
+								slength = (obj.style.transform ? parseInt(obj.style.transform.replace('translateY(', '')) : 0),
+								plength = parseInt(obj.offsetHeight / (Math.min(window.innerHeight, window.innerWidth) / step));
+							if (!obj.top)
+								obj.top = (obj.pos().top < 0 ? 0 : obj.pos().top);
+							if (e.key) {
+								if (['ArrowUp', 'PageUp'].indexOf(e.key) > -1) {
+									e.deltaY = -1;
+								}else if (['ArrowDown', 'PageDown'].indexOf(e.key) > -1) {
+									e.deltaY = 1;
+								}else if (['0','1','2','3','4','5','6','7','8','9'].indexOf(e.key) > -1 && Qad.$$('#fullpage .page')[e.key]) {
+									e = Qad.$$('.page')[e.key];
+								}else
+									return true;
+							}
+							if (typeof(e.preventDefault) == 'function')
+								e.preventDefault();
+							if (e.deltaY) {
+								if (e.deltaY > 0 && Math.abs(slength) < (plength - plength / Qad.$(obj).querySelectorAll('.page').length))
+									slength = slength - step;
+								else if (e.deltaY < 0 && slength < 0)
+									slength = slength + step;
+							}else
+								slength = obj.top + Qad.$(e).pos().top * -1 + slength;
+							if (obj.hold != true) {
+								obj.hold = true;
+								obj.style.transform = 'translateY('+(slength < 0 ? slength : 0)+'px)';
+								setTimeout(function() {
+									var i = 0;
+									Qad.for('#fullpage .page', function(el) {
+										if (el.pos().top == obj.top) {
+											if (Qad.$$('#navpage input')[i])
+												Qad.$$('#navpage input')[i].checked = true;
+											else if (Qad.$('#navpage input:checked'))
+												Qad.$('#navpage input:checked').checked = false;
+										}else
+											++i;
+									});
+									obj.hold = false;
+								}, 1000);
+							}
+						}
+						Qad.$('html').on('key', fullpage);
+						Qad.$('#fullpage').addEventListener('touchstart', function(e) {
+							sX = e.changedTouches[0].pageX;
+							sY = e.changedTouches[0].pageY;
+							stT = new Date().getTime();
+						});
+						Qad.$('#fullpage').addEventListener('touchmove', function(e) {
+							e.preventDefault()
+						});
+						Qad.$('#fullpage').addEventListener('touchend', function(e) {
+							var dY = e.changedTouches[0].pageY - sY;
+							if (((new Date().getTime() - stT) <= 500) && (Math.abs(dY) >= 100 && Math.abs(e.changedTouches[0].pageX - sX) <= 50)) {
+								e.key = (dY < 0 ? 'ArrowDown' : 'ArrowUp');
+								fullpage(e);
+							}
+						});
+						Qad.$('#fullpage').addEventListener('wheel', fullpage);
+						if (Qad.$('#navpage input'))
+							Qad.$('#navpage').on('click', function(e) {
 								var i = 0;
-								Qad.for('#fullpage .page', el => {
-									if (el.pos().top == obj.top) {
-										if (Qad.$$('#navpage input')[i])
-											Qad.$$('#navpage input')[i].checked = true;
-										else if (Qad.$('#navpage input:checked'))
-											Qad.$('#navpage input:checked').checked = false;
-									}else
+								Qad.for('#navpage input', function(el) {
+									if (el == e.target)
+										fullpage(Qad.$$('#fullpage .page')[i]);
+									else
 										++i;
 								});
-								obj.hold = false;
-							}, 1000);
-						}
-					}
-					Qad.$('html').on('key', fullpage);
-					Qad.$('#fullpage').addEventListener('touchstart', e => {
-						sX = e.changedTouches[0].pageX;
-						sY = e.changedTouches[0].pageY;
-						stT = new Date().getTime();
-					});
-					Qad.$('#fullpage').addEventListener('touchmove', e => e.preventDefault());
-					Qad.$('#fullpage').addEventListener('touchend', e => {
-						var dY = e.changedTouches[0].pageY - sY;
-						if (((new Date().getTime() - stT) <= 500) && (Math.abs(dY) >= 100 && Math.abs(e.changedTouches[0].pageX - sX) <= 50)) {
-							e.key = (dY < 0 ? 'ArrowDown' : 'ArrowUp');
-							fullpage(e);
-						}
-					});
-					Qad.$('#fullpage').addEventListener('wheel', fullpage);
-					if (Qad.$('#navpage input'))
-						Qad.$('#navpage').on('click', e => {
-							var i = 0;
-							Qad.for('#navpage input', el => {
-								if (el == e.target)
-									fullpage(Qad.$$('#fullpage .page')[i]);
-								else
-									++i;
 							});
-						});
+					}
+					break;
 				}
-				break;
-			}
-			case '[contextmenu]': {
-				Qad.for(type, el => {
-					el.oncontextmenu = e => {
-						e.preventDefault();
-						var menu = Qad.$('menu[open]');
-						var hide = () => {
-							if (!menu)
+				case '[contextmenu]': {
+					Qad.for(type, function(el) {
+						el.oncontextmenu = function(e) {
+							e.preventDefault();
+							var menu = Qad.$('menu[open]');
+							var hide = function() {
+								if (!menu)
+									return;
+								Qad.$('body').removeAttribute('data-menu');
+								menu.removeAttribute('open');
+								menu.style.left = '';
+								menu.style.top = '';
+								Qad.$('html').onclick = null;
+							}
+							if (menu)
+								hide();
+							Qad.$('body').attr('data-menu', true);
+							var menu = Qad.$('menu#'+el.attr('contextmenu'));
+							Qad.for(menu.querySelectorAll('menuitem'), function(item) {
+								item.root = el;
+							});
+							if (menu.attr('width'))
+								menu.style.width = menu.attr('width')+'px';
+							menu.style.left = (e.pageX - 10)+'px';
+							menu.style.top = (e.pageY - 10)+'px';
+							menu.attr('open', true);
+							Qad.$('html').onclick = hide;
+						};
+					});
+					break;
+				}
+				case '[autocomplete="off"][readonly]': {
+					Qad.for('[autocomplete="off"][readonly]', function(el) {
+						el.onfocus = function() {
+							if (!this.hasAttribute('readonly'))
 								return;
-							Qad.$('body').removeAttribute('data-menu');
-							menu.removeAttribute('open');
-							menu.style.left = '';
-							menu.style.top = '';
-							Qad.$('html').onclick = null;
+							this.removeAttribute('readonly');
+							this.blur();
+							this.focus();
 						}
-						if (menu)
-							hide();
-						Qad.$('body').attr('data-menu', true);
-						var menu = Qad.$('menu#'+el.attr('contextmenu'));
-						Qad.for(menu.querySelectorAll('menuitem'), item => {
-							item.root = el;
+					});
+					break;
+				}
+				case 'script[type="nodejs"][src]': {
+					Qad.for('script[type="nodejs"][src]', function(el) {
+						fetch(el.src).then(function(res) {
+							return res.text();
+						}).then(function(res) {
+							el.attr('src', false);
+							Qad.$('body').add(
+								Qad.$('/script').$(
+									t = Qad.replace([
+										/\/\*(.|[\r\n])*?\*\//g,
+										'#!/usr/bin/env node',
+										/\(typeof\(module\) == 'object'\) \? 'node' : /g,
+									], '', res.replace(/node:(?: |)function[\s\S]*error:(?: |)function/g, 'error:\ function')).trim()
+								)
+							);
+							Qad.init();
 						});
-						if (menu.attr('width'))
-							menu.style.width = menu.attr('width')+'px';
-						menu.style.left = (e.pageX - 10)+'px';
-						menu.style.top = (e.pageY - 10)+'px';
-						menu.attr('open', true);
-						Qad.$('html').onclick = hide;
-					};
-				});
-				break;
-			}
-			default: {
-				console.error('No find type:' +type);
+					});
+					break;
+				}
+				default: {
+					console.error('No find type:' +type);
+				}
 			}
 		}
 	}
@@ -1837,7 +2419,8 @@ window.onpopstate = function() {
 	location.reload();
 }
 */
-window.onerror = Qad.debug().error;
+if (!window.onerror)
+	window.onerror = Qad.debug().error;
 window.addEventListener('load',function() {
 	if (!navigator.cookieEnabled && location.origin != 'file://' && location.origin.indexOf('chrome-extension')==-1) {
 		location.href = '/?browser';
@@ -1853,6 +2436,7 @@ window.addEventListener('load',function() {
 		return;
 	}
 	location.pwd = locarray.join('/').slice(0,-1);
+	location.qr = 'https://chart.googleapis.com/chart?chs=177x177&cht=qr&chl='+encodeURIComponent(location.href)+'&chld=L|1&choe=UTF-8';
 	if (Qad.$('meta[name="passport"]') && Qad.session.get('passport::'+Qad.$('meta[name="passport"]').content.split(',')[2])) {
 		Qad.passport = JSON.parse(decodeURIComponent(Qad.session.get('passport::'+Qad.$('meta[name="passport"]').content.split(',')[2])));
 		if (!Qad.passport.type)
@@ -1863,13 +2447,13 @@ window.addEventListener('load',function() {
 		top.location.href = Qad.$('meta[name="passport"]').content.split(',')[1];
 		return;
 	}
-	if (Qad.$()['actions'] && typeof(actions)!='undefined')
-		actions[Qad.$()['actions']]();
+	if (Qad.$()['actions'] && typeof($$actions)!='undefined')
+		$$actions[Qad.$()['actions']]();
 	window.requestFileSystem = window.requestFileSystem || window.webkitRequestFileSystem;
 	if (typeof(console) !=="undefined" && console.log)
 		console.info("%c Сюда вставлять не что не надо, иначе откроете доступ к своему аккаунту!",'color:red;font-weight:bold;font-style:italic;font-size:16px;');
 	if (Qad.$('html[data-clearcache]'))
-		Qad.$('html[data-clearcache]').on('key', (e) => {
+		Qad.$('html[data-clearcache]').on('key', function(e) {
 			if (e.ctrlKey && e.altKey && e.keyCode == 82) {
 				alert('Server cache clear');
 				$$.fs.remove('style/');
@@ -1877,8 +2461,6 @@ window.addEventListener('load',function() {
 			}else if (e.ctrlKey && e.shiftKey && e.keyCode == 82)
 				alert('Client cache clear');
 		}, 'cache');
-	if (Qad.$('button#menu + nav'))
-		Qad.init('button#menu + nav');
 	if (Qad.$('link[rel="stylesheet/qad"]')) {
 		if (!Qad.$('meta[name=theme-color]')) {
 			color = Qad.$('/meta');
@@ -1887,27 +2469,18 @@ window.addEventListener('load',function() {
 			Qad.$('head').add(color);
 		}
 		Qad.gencss();
+	}else{
+		if (Qad.$('body[data-sdk="webview"]') && Qad.$('link[href="../../data/qad/qad.css"]')) {
+			Qad.$('link[href="../../data/qad/qad.css"]').rel = 'stylesheet/qad';
+			Qad.gencss();
+		}else if (Qad.$('link[rel="stylesheet"][data-qad]'))
+			Qad.$('head').add(Qad.$('/style').attr('id', 'theme-color').css({
+				':root': {
+					'--color': (Qad.$('meta[name=theme-color]').content || '#4285F4')+' !important'
+				}
+			}));
 	}
-	if (Qad.$('nav.tabs'))
-		Qad.init('nav.tabs');
-	if (Qad.$('.menu'))
-		Qad.init('.menu');
-	if (Qad.$('ul.emoji'))
-		Qad.init('ul.emoji');
-	if (Qad.$('input[list][data-select]'))
-		Qad.init('input[list][data-select]');
-	if (Qad.$('.parallax img'))
-		Qad.init('.parallax img');
-	if (Qad.$('[data-action]'))
-		Qad.init('[data-action]');
-	if (Qad.$('dialog [data-close]'))
-		Qad.init('dialog [data-close]');
-	if (Qad.$('label.speech'))
-		Qad.init('label.speech');
-	if (Qad.$('#fullpage'))
-		Qad.init('#fullpage');
-	if (Qad.$('[contextmenu]'))
-		Qad.init('[contextmenu]');
+	Qad.init();
 	inc = document.querySelectorAll('#button-float button');
 	if (inc.length > 0) {
 		document.onkeydown = function(e) {
@@ -1932,15 +2505,6 @@ window.addEventListener('load',function() {
 			}
 		}
 	}
-	if (typeof HTMLDialogElement != 'function') {
-		var script = Qad.$('/script'),
-			link = Qad.$('/link');
-		script.src = 'https://cdnjs.cloudflare.com/ajax/libs/dialog-polyfill/0.4.4/dialog-polyfill.js';
-		link.href = 'https://cdnjs.cloudflare.com/ajax/libs/dialog-polyfill/0.4.4/dialog-polyfill.css';
-		link.rel = 'stylesheet';
-		Qad.$('head').add(script);
-		Qad.$('head').add(link);
-	}
 	if (Qad.$('meta[name="analytics"]')) {
 		if (!Qad.$('script[data-analytics]'))
 			(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
@@ -1953,10 +2517,10 @@ window.addEventListener('load',function() {
 		}
 	}
 	if (Qad.$('html').lang) {
-		document.translate = () => {
+		document.translate = function() {
 			if (Qad.$('#google_translate') && Qad.$('#google_translate').$() == '')
 				Qad.$('#google_translate').$('&#xE8E2').attr('class','material-icons');
-			Qad.for('.material-icons', el => {
+			Qad.for('.material-icons', function(el) {
 				el.classList.add('notranslate');
 			});
 			if (Qad.$('footer'))
@@ -1969,7 +2533,7 @@ window.addEventListener('load',function() {
 				gaTrack: true,
 				gaId: Qad.$('meta[name="analytics"]').content
 			}, 'google_translate');
-			setTimeout(() => {
+			setTimeout(function() {
 				if (!Qad.$('iframe.goog-te-menu-frame'))
 					return;
 				var color = Qad.$('meta[name="theme-color"]').content;
@@ -1980,13 +2544,18 @@ window.addEventListener('load',function() {
 					'border-radius': '0.125rem',
 					'box-shadow': '0 2px 2px 0 rgba(0,0,0,.14),0 3px 1px -2px rgba(0,0,0,.2),0 1px 5px 0 rgba(0,0,0,.12)'
 				});
+				Qad.$('iframe.goog-te-menu-frame body').add($('/style').attr('id', 'theme-color').css({
+					':root': {
+						'--color': color
+					}
+				}));
 				Qad.$('iframe.goog-te-menu-frame body').add($('/style').css({
 					'::-webkit-scrollbar': {
 						width: '5px',
 						height: '5px'
 					},
 					'::-webkit-scrollbar-thumb': {
-						background: color,
+						background: 'var(--color)',
 						'border-radius': '10px'
 					},
 					'.goog-te-menu2': {
@@ -1996,10 +2565,10 @@ window.addEventListener('load',function() {
 						'overflow-x': 'auto'
 					},
 					'.goog-te-menu2-item div, .goog-te-menu2-item:link div': {
-						color: color
+						color: 'var(--color)'
 					},
 					'.goog-te-menu2-item:hover div': {
-						background: color,
+						background: 'var(--color)',
 						color: 'fff'
 					}
 				}));
@@ -2008,12 +2577,12 @@ window.addEventListener('load',function() {
 		Qad.$('head').add($('/script').attr('src', '//translate.google.com/translate_a/element.js?cb=document.translate'));
 	}
 	if (navigator.serviceWorker && !Qad.$('html[dev]')) {
-		navigator.serviceWorker.register('/service-worker.js?'+location.pathname, {scope: location.pathname}).then(_sw => {
+		navigator.serviceWorker.register('/service-worker.js?'+location.pathname, {scope: location.pathname}).then(function(_sw) {
 			console.log('◕‿◕', _sw.status = (_sw.installing ? 'installing' : (_sw.waiting ? 'installed' : (_sw.active ? 'active' : 'hmmm'))));
 			Qad.sw = _sw;
 			if (typeof(sw) == 'function')
 				sw(_sw);
-		}, () => {
+		}, function() {
 			console.log('ಠ_ಠ');
 		});
 	}else if (Qad.$('html[dev]') && Qad.$()['dev'])
@@ -2034,7 +2603,7 @@ window.addEventListener('load',function() {
 				Qad.$('header + .clear:not(.onload)').classList.add('onload');
 		}
 	}
-	Qad.for('a[target="_blank"]', el => {
+	Qad.for('a[target="_blank"]', function(el) {
 		el.rel = 'noopener';
 	});
 	window.ononline();
@@ -2054,7 +2623,8 @@ window.addEventListener('message',function(e) {
 });
 window.onscroll = function() {
 	Qad.for('[data-effect]:not([data-preloadeffect])',function(el) {
-		var scroll = document.documentElement.clientHeight + document.body.scrollTop - Qad.$(el).pos().top;
+		//var scroll = document.documentElement.clientHeight + document.body.scrollTop - Qad.$(el).pos().top;
+		var scroll = document.documentElement.clientHeight + window.scrollY - Qad.$(el).pos().top;
 		if (-50 < scroll && 50 > scroll && Qad.$(el).pos().top > document.documentElement.clientHeight) {
 			Qad.$(el).attr('data-preloadeffect',Qad.$(el).attr('data-effect'));
 			Qad.$(el).attr('data-effect',false);
@@ -2063,16 +2633,18 @@ window.onscroll = function() {
 			}, 1)
 		}
 	});
-	Qad.for('header.tabs nav.tabs a', el => {
+	Qad.for('header.tabs nav.tabs a', function(el) {
 		var id = el.href.replace(location.href, '');
 		if (id == '#')
 			id = '';
-		if (document.body.scrollTop == 0 && ((id == '') || ((location.file == 'index.html') && (id == '?index')))) {
+		//if (document.body.scrollTop == 0 && ((id == '') || ((location.file == 'index.html') && (id == '?index')))) {
+		if (window.scrollY == 0 && ((id == '') || ((location.file == 'index.html') && (id == '?index')))) {
 			if (Qad.$('header.tabs nav.tabs a.active'))
 				Qad.$('header.tabs nav.tabs a.active').classList.remove('active');
 			el.classList.add('active');
 		}else if (id.slice(0, 1) == '#' && Qad.$(id)) {
-			var scroll = document.body.scrollTop + Qad.$('header').pos().height;
+			//var scroll = document.body.scrollTop + Qad.$('header').pos().height;
+			var scroll = window.scrollY + Qad.$('header').pos().height;
 			if (((scroll + 54) >= Qad.$(id).pos().top) && ((Qad.$(id).pos().top  + Qad.$(id).pos().height >= scroll))) {
 				if (Qad.$('header.tabs nav.tabs a.active'))
 					Qad.$('header.tabs nav.tabs a.active').classList.remove('active');
@@ -2083,15 +2655,19 @@ window.onscroll = function() {
 	if (Qad.$('.parallax img'))
 		Qad.init('.parallax img');
 }
-window.ononline = window.onoffline = () => {
-	Qad.for('[data-online]', el => {
+window.ononline = window.onoffline = function() {
+	Qad.for('[data-online]', function(el) {
 		el.hidden = !navigator.onLine;
 	});
-	Qad.for('[data-offline]', el => {
+	Qad.for('[data-offline]', function(el) {
 		el.hidden = navigator.onLine;
 	});
+	if (typeof(navigator.upOnline) == 'function') {
+		navigator.upOnline();
+		delete navigator.upOnline;
+	}
 }
 if (!Qad.$('html[qad-noglobal]')) {
-	var $$ = Qad;
-	var $ = $$.$;
+	var $$ = Qad,
+		$ = $$.$;
 }
