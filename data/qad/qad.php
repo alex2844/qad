@@ -821,7 +821,7 @@ class Qad {
 			}
 		}
 		if ($sql == 'create') {
-			if (!file_exists(self::$config['db_name'].'.sqlite') || self::$config['db_driver'] != 'sqlite') {
+			// if (!file_exists(self::$config['db_name'].'.sqlite') || self::$config['db_driver'] != 'sqlite') {
 				$arr = [];
 				if (!empty($param['triggers']) && in_array('time', $param['triggers']))
 					$param['columns']['time_create'] = $param['columns']['time_update'] = "default (cast(strftime('%s', 'now') as int))";
@@ -833,7 +833,8 @@ class Qad {
 				self::db('create table if not exists '.$param['table'].' ('.implode(', ', $arr).')');
 				if (!empty($param['columns']['time_update']))
 					self::db('create trigger if not exists time after update on '.$param['table'].' begin update '.$param['table'].' set time_update = (cast(strftime("%s", "now") as int)) where id = NEW.id; end;');
-			}else if (isset($param['autoclean']))
+			// }else
+			if (isset($param['autoclean']))
 				self::db('delete from '.$param['table'].' where "date" <= datetime("now", "-'.$param['autoclean'].'")');
 			return;
 		}else if ($sql == 'insert') {
