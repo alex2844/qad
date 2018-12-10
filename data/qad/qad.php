@@ -5,7 +5,7 @@ Qad Framework (qad.php)
 -----------------------------------------------------
 https://qwedl.com/
 -----------------------------------------------------
-Copyright (c) 2016-2017 Alex Smith
+Copyright (c) 2016-2018 Alex Smith
 =====================================================
 */
 header('Content-Type: text/html; charset=utf-8');
@@ -37,7 +37,8 @@ class Qad {
 			self::$debug['time'] = self::_microtime();
 		}
 	}
-	public function err($errno=null, $errmsg=null, $filename=null, $linenum=null, $vars=null) {
+	//public function err($errno=null, $errmsg=null, $filename=null, $linenum=null, $vars=null) {
+	public static function err($errno=null, $errmsg=null, $filename=null, $linenum=null, $vars=null) {
 		$log = ($errmsg ? [
 			$errmsg.' ('.$errno.')',
 			$filename.' ('.$linenum.')'
@@ -54,7 +55,7 @@ class Qad {
 		$time = $time_arr[1]+$time_arr[0];
 		return (!$start ? $time : sprintf('%.5f sec.', $time-$start));
 	}
-	private function _parseServer($socket, $response) {
+	private static function _parseServer($socket, $response) {
 		$responseServer = '';
 		while (@substr($responseServer, 3, 1) != ' ') {
 			if (!($responseServer = fgets($socket, 256)))
@@ -124,6 +125,8 @@ class Qad {
 				}
 				if ($error)
 					exit;
+				else
+					return $_SERVER['PHP_AUTH_USER'];
 			}
 		}
 	}
@@ -150,17 +153,12 @@ class Qad {
 		$_SESSION['passport'.($key!=''?'::'.$key:'')] = md5($passport);
 		return $passport;
 	}
-	public function csrf($check=false) {
-		if ($check) {
-			if (hash_equals($_SESSION['csrf'], $_REQUEST['csrf']))
-				return true;
-			else
-				return false;
-		}else{
-			if (empty($_SESSION['csrf']))
-				$_SESSION['csrf'] = bin2hex(random_bytes(32));
-			return '<input type="hidden" name="csrf" value="'.$_SESSION['csrf'].'" />';
-		}
+	public static function csrf($check=false) {
+		return (
+			$check
+			? (isset($_REQUEST['csrf']) && isset($_SESSION['csrf']) && isset($_SESSION['csrf_']) && ((time() - $_SESSION['csrf_']) >= 10) && hash_equals($_SESSION['csrf'], $_REQUEST['csrf']))
+			: '<input type="hidden" name="csrf" value="'.(empty($_SESSION['csrf']) ? ($_SESSION['csrf'] = bin2hex(($_SESSION['csrf_'] = time()).random_bytes(32))) : $_SESSION['csrf']).'" />'
+		);
 	}
 	public function upload($path, $file, $accept='*/*') {
 		$result = [];
@@ -185,6 +183,24 @@ class Qad {
 		echo '<pre id="dump">';
 		print_r($a);
 		echo '</pre>';
+	}
+	public static function location($p=null) {
+		$protocol = (isset($_SERVER['SERVER_PROTOCOL']) ? ((strtolower(substr($_SERVER['SERVER_PROTOCOL'], 0, 5)) == 'https') ? 'https:' : 'http:') : 'file:');
+        if (isset($_SERVER['SERVER_PORT']) && ($_SERVER['SERVER_PORT'] == 443))
+            $protocol = 'https:';
+        else if (isset($_SERVER['HTTPS']) && (($_SERVER['HTTPS'] == 'on') || ($_SERVER['HTTPS'] == '1')))
+            $protocol = 'https:';
+        else if ((!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && ($_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https')) || (!empty($_SERVER['HTTP_X_FORWARDED_SSL']) && ($_SERVER['HTTP_X_FORWARDED_SSL'] == 'on')))
+            $protocol = 'https:';
+		$res = [
+			'protocol' => $protocol,
+			'port' => (isset($_SERVER['SERVER_PORT']) ? $_SERVER['SERVER_PORT'] : null),
+			'pathname' => (isset($_SERVER['SCRIPT_NAME']) ? $_SERVER['SCRIPT_NAME'] : __DIR__),
+			'host' => $_SERVER['HTTP_HOST'],
+			'href' => (isset($_SERVER['REQUEST_URI']) ? $protocol.'//'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'] : ''),
+			'server' => $_SERVER
+		];
+		return ($p ? $res[$p] : $res);
 	}
 	public static function debug($i=null) {
 		self::$debug['status'] = true;
@@ -353,7 +369,7 @@ class Qad {
 		}
 		return $shab;
 	}
-	public function mail($to, $subject, $message, $headers='') {
+	public static function mail($to, $subject, $message, $headers='') {
 		if (empty(self::$config['smtp_from']) || empty(self::$config['smtp_user']) || empty(self::$config['smtp_pass']))
 			return 'no config';
 		if (empty(self::$config['smtp_host']))
@@ -444,10 +460,27 @@ class Qad {
 				return false;
 		}
 	}
+	public static function tree($els=[], $parent=0) {
+		$br = [];
+		foreach ($els as $el) {
+			$o = (gettype($el) == 'object');
+			if (($o ? (isset($el->parent) ? $el->parent : 0) : (isset($el['parent']) ? $el['parent'] : 0)) == $parent) {
+				$ch = self::tree($els, ($o ? $el->id : $el['id']));
+				if ($ch) {
+					if ($o)
+						$el->children = $ch;
+					else
+						$el['children'] = $ch;
+				}
+				$br[] = $el;
+			}
+		}
+		return $br;
+	}
 	public static function cache($exec, $name='', $prefix='') {
 		if (!empty($prefix))
 			$prefix .= '_';
-		$clear = (empty(self::$config['cache_clear']) ? 86400 : self::$config['cache_clear']);
+		$clear = (empty(self::$config['ttl']) ? (empty(self::$config['cache_clear']) ? 86400 : self::$config['cache_clear']) : self::$config['ttl']);
 		switch($exec) {
 			case 'json': {
 				if (file_exists(dirname(__DIR__).'/../upload/cache/') && !empty($name)) {
@@ -514,7 +547,8 @@ class Qad {
 					return $name;
 				$file[] = '/upload/cache/'.$prefix.md5(getcwd().$file[0]).'.'.$file[1];
 				self::$cache = dirname(__DIR__).'/..'.$file[2];
-				if (!(file_exists(self::$cache) && (time()-$clear)<filemtime(self::$cache)))
+				//if (!(file_exists(self::$cache) && (time()-$clear)<filemtime(self::$cache)))
+				if (!file_exists(self::$cache))
 					copy($name, self::$cache);
 				return $file[2];
 				break;
@@ -550,7 +584,88 @@ class Qad {
 			}
 		}
 	}
-	public static function fetch($url, $options=[], $then='text', $prefix=null) {
+	public static function fetch($url, $opts=[], $then='text', $prefix='fetch') {
+		$self = (object) [
+			'url' => $url,
+			'opts' => [
+				//'follow_location' => false,
+				//'ignore_errors' => true,
+				'protocol_version' => '1.1',
+				'method' => (!empty($opts['method']) ? strtoupper($opts['method']) : 'GET'),
+				'header' => (!empty($opts['header']) ? implode("\r\n", $opts['header']) : ((isset($opts['body']) || isset($opts['xml'])) ? 'Content-type: application/x-www-form-urlencoded' : '')),
+			],
+			'status' => null, 'body' => null, 'cache' => null,
+			'headers' => [], 'cookie' => [], 'errors' => []
+		];
+		$query = (empty($opts['body']) ? '' : ((gettype($opts['body']) == 'string') ? $opts['body'] : http_build_query($opts['body'])));
+		if ($self->opts['method'] == 'GET' && !empty($query))
+			$self->url .= '?'.$query;
+		else
+			$self->opts['content'] = $query;
+		if (((!empty($opts['cache']) && ($opts['cache'] != 'no-cache')) || empty($opts['cache'])) && ($self->cache = dirname(__DIR__).'/../upload/cache/'.$prefix.'_'.md5(http_build_query(array_merge(['url' => $url], $opts))).'.cache') && file_exists($self->cache))
+			$self->body = file_get_contents($self->cache);
+		else{
+			if (isset($opts['referer']))
+				$self->opts['header'] .= "\r\n".'Referer: '.$opts['referer'];
+			if (!empty($opts['user_agent']))
+				$self->opts['user_agent'] = $opts['user_agent'];
+			if (!empty($opts['timeout']))
+				$self->opts['timeout'] = $opts['timeout'];
+			if (!empty($opts['proxy'])) {
+				$self->opts['proxy'] = 'tcp://'.$opts['proxy'];
+				$self->opts['request_fulluri'] = true;
+			}
+			if (!empty($opts['cookie'])) {
+				if (gettype($opts['cookie']) == 'string')
+					foreach (explode(';', $opts['cookie']) as $cook) {
+						$self->cookie[explode('=', ($cook = trim($cook)))[0]] = $cook;
+					}
+				else
+					$self->cookie = array_merge($self->cookie, $opts['cookie']);
+			}
+			if (count($self->cookie) > 0)
+				$self->opts['header'] = (($self->opts['header'] == '') ? '' : $self->opts['header']."\r\n").'Cookie: '.implode('; ', $self->cookie);
+			try {
+				$self->body = file_get_contents($self->url, false, stream_context_create(['http' => $self->opts]));
+			} catch(\Exception $ex) {
+				$self->errors[] = $ex->getMessage();
+			}
+			if (isset($http_response_header))
+				foreach ($http_response_header as $h) {
+					if ($self->body && stristr($h, 'content-encoding') && stristr($h, 'gzip')) {
+						try {
+							$self->body = gzdecode($self->body);
+						} catch(\Exception $ex) {
+							$self->errors[] = $ex->getMessage();
+						}
+					}else if (preg_match('@Set-Cookie: (([^=]+)=[^;]+)@i', $h, $match))
+						$self->cookie[$match[2]] = $match[1];
+					else if (preg_match('@Location: (.*)@i', $h, $match))
+						$self->url = str_replace([':80', ':443'], '', $match[1]);
+					$h = preg_split('/:\s*/', $h);
+					if (isset($h[1]))
+						$self->headers[strtolower($h[0])] = implode(':', array_slice($h, 1));
+					else if (preg_match('#HTTP/[0-9\.]+\s+([0-9]+)#', $h[0], $h[1]))
+						$self->status = intval($h[1][1]);
+				}
+			if (!empty($self->cache) && !empty($self->body))
+				file_put_contents($self->cache, $self->body);
+		}
+		if (self::$debug['status']) {
+			self::$debug['fetch'][] = $self;
+			error_log(sprintf(self::$color['green'], print_r($self, true)));
+		}
+		return (empty($then) ? $self : (($then == 'text') ? $self->body : (
+			($then == 'json') ? json_decode($self->body) : (
+				($then == 'array') ? json_decode($self->body, true) : (
+					($then == 'header') ? [$url, (isset($http_response_header) ? $http_response_header : null), $self->body] : (
+						($then == 'obj') ? $self : null
+					)
+				)
+			)
+		)));
+	}
+	/* public static function fetch($url, $options=[], $then='text', $prefix='fetch') {
 		if (self::$debug['status'])
 			$debug = self::_microtime();
 		if (!empty($options['file'])) {
@@ -580,6 +695,7 @@ class Qad {
 		);
 		if ((!empty($options['cache']) && $options['cache'] == 'no-cache') || !$res = self::cache('json', $url.$query, $prefix)) {
 			$opts = ['http' => [
+				'protocol_version' => '1.1',
 				'method' => (empty($options['method']) ? 'GET' : strtoupper($options['method'])),
 				'header' => (empty($options['header']) ? 'Content-type: application/x-www-form-urlencoded' : (
 					gettype($options['header']) == 'string'
@@ -588,6 +704,8 @@ class Qad {
 				)),
 				'user_agent' => (empty($options['user_agent']) ? '' : $options['user_agent'])
 			]];
+			if (!empty($options['timeout']))
+				$opts['http']['timeout'] = $options['timeout'];
 			if (isset($options['proxy'])) {
 				$opts['http']['proxy'] = 'tcp://'.$options['proxy'][0];
 				$opts['http']['request_fulluri'] = true;
@@ -659,7 +777,7 @@ class Qad {
 				)
 			)
 		));
-	}
+	} */
 	public static function is_arr($arr, $children=null) {
 		if (gettype($arr) != 'array')
 			return false;
@@ -688,16 +806,33 @@ class Qad {
 				self::$config['db_driver'] = $param['driver'];
 			if ($param['path'])
 				self::$config['db_name'] = $param['path'].'/'.(isset($param['prefix']) ? $param['prefix'].'_' : '').(isset($param['file']) ? $param['file'] : $param['table']);
+			if (!empty($param['where'])) {
+				if (gettype($param['where']) == 'array') {
+					$where = [null, [], []];
+					foreach ($param['where'] as $k=>$v) {
+						if (empty($param['where'][$k]))
+							continue;
+						$where[1][$k] = $param['where'][$k];
+						$where[2][] = $k.(in_array($k, ['time_create', 'time_update']) ? ' = cast(:'.$k.' as int)' : ' = :'.$k);
+					}
+					$where = ['where '.implode(' and ', $where[2]), $where[1], null];
+				}else
+					$where = ['where '.$param['where'], null, null];
+			}
 		}
 		if ($sql == 'create') {
 			if (!file_exists(self::$config['db_name'].'.sqlite') || self::$config['db_driver'] != 'sqlite') {
 				$arr = [];
+				if (!empty($param['triggers']) && in_array('time', $param['triggers']))
+					$param['columns']['time_create'] = $param['columns']['time_update'] = "default (cast(strftime('%s', 'now') as int))";
 				foreach ($param['columns'] as $k=>$v) {
 					$arr[] = $k.' '.$v;
 				}
 				if (isset($param['autoclean']) && self::$config['db_driver'] == 'sqlite')
 					self::db('PRAGMA auto_vacuum = 1');
 				self::db('create table if not exists '.$param['table'].' ('.implode(', ', $arr).')');
+				if (!empty($param['columns']['time_update']))
+					self::db('create trigger if not exists time after update on '.$param['table'].' begin update '.$param['table'].' set time_update = (cast(strftime("%s", "now") as int)) where id = NEW.id; end;');
 			}else if (isset($param['autoclean']))
 				self::db('delete from '.$param['table'].' where "date" <= datetime("now", "-'.$param['autoclean'].'")');
 			return;
@@ -717,15 +852,25 @@ class Qad {
 			$arr = [];
 			$values = [];
 			foreach ($param['columns'] as $k=>$v) {
-				if (empty($data[$k]))
+				if (!isset($data[$k]))
 					continue;
-				$arr[$k] = $data[$k];
+				$arr[$k] = (empty($data[$k]) ? null : $data[$k]);
 				if ($k != 'id')
 					$values[] = $k.' = :'.$k;
 			}
 			return self::db('update '.$param['table'].' set '.implode(', ', $values).' where id = :id', $arr);
-		}else if ($param && (isset($param['driver']) || isset($param['path'])))
-			unset($param['driver'], $param['path'], $param['table'], $param['columns'], $param['autoclean'], $param['prefix'], $param['file']);
+		}else if ($sql == 'count')
+			return self::db('select count(id) as count from '.$param['table'].' '.(empty($where) ? '' : $where[0]), (empty($where) ? null : $where[1]))->fetch()->count;
+		else if ($sql == 'select')
+			return self::db(implode(' ', [
+				'select '.(empty($param['select']) ? '*' : $param['select']),
+				'from '.$param['table'],
+				(empty($where) ? '' : $where[0]),
+				(empty($param['order']) ? '' : 'order by '.$param['order']),
+				(empty($param['limit']) ? '' : 'limit '.$param['limit'])
+			]), ((gettype($exec) == 'array') ? $exec : (empty($where) ? null : $where[1])));
+		else if ($param && (isset($param['driver']) || isset($param['path'])))
+			unset($param['driver'], $param['path'], $param['table'], $param['columns'], $param['autoclean'], $param['prefix'], $param['file'], $param['triggers']);
 		try {
 			if (empty(self::$sql)) {
 				if (self::$config['db_driver'] == 'mysql')
@@ -849,11 +994,77 @@ class Qad {
 		}
 		return ob_get_clean();
 	}
+	public static function array2object($a) {
+		return array_map(function($k, $v) {
+			return ['k' => $k, 'v' => $v];
+		}, array_keys($a), $a);
+	}
+	public function rest($class) {
+		if (!$class)
+			$class = get_class();
+		if (self::params('method') || !empty($class::$method)) {
+			$rArray = (array) self::params();
+			$method = self::params('method', (!empty($class::$method) ? $class::$method : null));
+			if ($callback = self::params('callback', (!empty($class::$callback) ? $class::$callback : null)))
+				header('Content-Type: application/x-javascript; charset=utf-8');
+			else
+				header('Content-Type: application/json; charset=utf-8');
+			if (method_exists($class, $method)) {
+				$ref = new ReflectionMethod($class, $method);
+				if ($ref->isPublic()) {
+					$pCount = count(($params = $ref->getParameters()));
+					$pArray = [];
+					$paramStr = '';
+					$i = 0;
+					foreach ($params as $param) {
+						$paramStr .= ($n = strtolower($param->getName()));
+						$pArray[$n] = ($param->isOptional() ? $param->getDefaultValue() : null);
+						if ($i != $pCount-1)
+							$paramStr .= ', ';
+						++$i;
+					}
+					foreach ($pArray as $key => $val) {
+						if (isset($rArray[($n = strtolower($key))]))
+							$pArray[$n] = ((isset($pArray[$n]) && gettype($pArray[$n]) == 'array') ? json_decode($rArray[$n], true) : $rArray[$n]);
+					}
+					if ((count($pArray) == $pCount) && !in_array(null, $pArray, true)) {
+						$response = call_user_func_array([$class, $method], $pArray);
+						if ((gettype($response) == 'array') || (gettype($response) == 'object')) {
+							if (isset($_GET['__amp_source_origin']))
+								$response = ['items' => [[
+									$method => (empty($_GET['replace']) ? $response : str_replace(($replace = json_decode($_GET['replace']))[0], $replace[1], $response))
+								]]];
+							echo (isset($callback) ? $callback.'('.json_encode($response).');' : json_encode($response));
+						}else if (isset($callback))
+							echo $callback.'("'.addslashes($response).'");';
+						else if (isset($response)) {
+							header('Content-Type: text/html; charset=utf-8');
+							echo $response;
+						}
+					}else{
+						if (isset($callback))
+							echo $callback.'('.json_encode(['error' => 'Required parameter(s) for '.$method.': '.$paramStr]).');';
+						else
+							echo json_encode(['error' => 'Required parameter(s) for '.$method.': '.$paramStr]);
+					}
+				}else
+					echo json_encode(['error' => 'No access to the method.']);
+			}else
+				echo (isset($callback) ? $callback.'('.json_encode(['error' => 'The method '.$method.' does not exist.']).');' : json_encode(['error' => 'The method '.$method.' does not exist.']));
+		}else{
+			header('Content-Type: application/json');
+			if (isset($_GET['__amp_source_origin']))
+				echo json_encode(['items' => [['error' => 'No method was requested.']]]);
+			else
+				echo json_encode(['error' => 'No method was requested.']);
+		}
+	}
+	/*
 	public function rest($serviceClass) {
 		/*
 		if (stristr($_SERVER['SCRIPT_FILENAME'], '/api/') === FALSE)
 			return;
-		 */
+		 * /
 		if (self::params('method') || !empty($serviceClass::$method)) {
 			$rArray = (array) self::params();
 			$method = self::params('method', (!empty($serviceClass::$method) ? $serviceClass::$method : null));
@@ -916,6 +1127,7 @@ class Qad {
 			echo json_encode(['error' => 'No method was requested.']);
 		}
 	}
+	 */
 }
 $qad = new Qad();
 set_error_handler('Qad::err');

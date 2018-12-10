@@ -24,21 +24,36 @@ except KeyError:
 	echo $res;
 }
 function qad_min() {
-	for file in `find $1 -type f -name "*.js"`; do
-		sed -r ':a;$!{N;ba};s|/\*[^*]*\*+([^/*][^*]*\*+)*/||' $file | sed -e '/^$/d' -e ':a; /\\$/N; s/\\\n//; ta' -e "s|/\*\(\\\\\)\?\*/|/~\1~/|g" -e "s|/\*[^*]*\*\+\([^/][^*]*\*\+\)*/||g" -e "s|^//.*$||" -e "s|/\*[^*]*\*\+\([^/][^*]*\*\+\)*/||g" -e "s|/\~\(\\\\\)\?\~/|/*\1*/|g" -e "s|\s\+| |g" -e "s| \([{;,>]\)|\1|g" -e "s|\([{;,>]\) |\1|g" > $file'.qad';
-		mv $file'.qad' $file;
-		echo 'Qad_min: '$file;
-	done
-	for file in `find $1 -type f -name "*.css"`; do
-		cat $file | sed -e "s|/\*\(\\\\\)\?\*/|/~\1~/|g" -e "s|/\*[^*]*\*\+\([^/][^*]*\*\+\)*/||g" -e "s|\([^:/]\)//.*$|\1|" -e "s|^//.*$||" | tr '\n' ' ' | sed -e "s|/\*[^*]*\*\+\([^/][^*]*\*\+\)*/||g" -e "s|/\~\(\\\\\)\?\~/|/*\1*/|g" -e "s|\s\+| |g" -e "s| \([{;,>]\)|\1|g" -e "s|\([{;,>]\) |\1|g" > $file'.qad';
-		mv $file'.qad' $file;
-		echo 'Qad_min: '$file;
-	done
-	for file in `find $1 -type f -name "*.html"`; do
-		cat $file | sed -e "s|/\*\(\\\\\)\?\*/|/~\1~/|g" -e "s|/\*[^*]*\*\+\([^/][^*]*\*\+\)*/||g" -e "s|\([^:/]\)//.*$|\1|" -e "s|^//.*$||" | tr '\n' ' ' | sed -e "s|/\*[^*]*\*\+\([^/][^*]*\*\+\)*/||g" -e "s|/\~\(\\\\\)\?\~/|/*\1*/|g" -e "s|\s\+| |g" > $file'.qad';
-		mv $file'.qad' $file;
-		echo 'Qad_min: '$file;
-	done
+	pwd=`pwd`;
+	cd $1;
+	if [ -e "data/qad/qad_cli.js" ]; then
+		cd data;
+		if [ -e "../../../../../node_modules" ]; then
+			mv ../../../../../node_modules ./;
+		else
+			npm install;
+		fi
+		npm run min;
+		mv node_modules ../../../../../;
+	else
+		cd $pwd;
+		for file in `find $1 -type f -name "*.js" -not -path "*/node_modules/*"`; do
+			sed -r ':a;$!{N;ba};s|/\*[^*]*\*+([^/*][^*]*\*+)*/||' $file | sed -e '/^$/d' -e ':a; /\\$/N; s/\\\n//; ta' -e "s|/\*\(\\\\\)\?\*/|/~\1~/|g" -e "s|/\*[^*]*\*\+\([^/][^*]*\*\+\)*/||g" -e "s|^//.*$||" -e "s|/\*[^*]*\*\+\([^/][^*]*\*\+\)*/||g" -e "s|/\~\(\\\\\)\?\~/|/*\1*/|g" -e "s|\s\+| |g" -e "s| \([{;,>]\)|\1|g" -e "s|\([{;,>]\) |\1|g" > $file'.qad';
+			mv $file'.qad' $file;
+			echo 'Qad_min: '$file;
+		done
+		for file in `find $1 -type f -name "*.css"`; do
+			cat $file | sed -e "s|/\*\(\\\\\)\?\*/|/~\1~/|g" -e "s|/\*[^*]*\*\+\([^/][^*]*\*\+\)*/||g" -e "s|\([^:/]\)//.*$|\1|" -e "s|^//.*$||" | tr '\n' ' ' | sed -e "s|/\*[^*]*\*\+\([^/][^*]*\*\+\)*/||g" -e "s|/\~\(\\\\\)\?\~/|/*\1*/|g" -e "s|\s\+| |g" -e "s| \([{;,>]\)|\1|g" -e "s|\([{;,>]\) |\1|g" > $file'.qad';
+			mv $file'.qad' $file;
+			echo 'Qad_min: '$file;
+		done
+		for file in `find $1 -type f -name "*.html"`; do
+			cat $file | sed -e "s|/\*\(\\\\\)\?\*/|/~\1~/|g" -e "s|/\*[^*]*\*\+\([^/][^*]*\*\+\)*/||g" -e "s|\([^:/]\)//.*$|\1|" -e "s|^//.*$||" | tr '\n' ' ' | sed -e "s|/\*[^*]*\*\+\([^/][^*]*\*\+\)*/||g" -e "s|/\~\(\\\\\)\?\~/|/*\1*/|g" -e "s|\s\+| |g" > $file'.qad';
+			mv $file'.qad' $file;
+			echo 'Qad_min: '$file;
+		done
+	fi
+	cd $pwd;
 }
 
 if [ "$1" == "install" ]; then
@@ -171,15 +186,16 @@ if [ ! -z "$os" ]; then
 			tar xvf android-sdk*.tgz
 			rm android-sdk*.tgz
 			cd android-sdk-linux/
-			wget https://services.gradle.org/distributions/gradle-2.14.1-bin.zip
+			#wget https://services.gradle.org/distributions/gradle-2.14.1-bin.zip
+			wget https://services.gradle.org/distributions/gradle-4.8-bin.zip
 			unzip gradle*.zip
 			rm gradle*.zip
 			mv gradle* gradle
 			ls
 			echo 'export ANDROID_HOME='$(pwd)'/' >> ~/.bashrc
-			echo 'export PATH=${PATH}:$ANDROID_HOME/gradle/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/tools:$ANDROID_HOME/build-tools/25.0.0/' >> ~/.bashrc
+			echo 'export PATH=${PATH}:$ANDROID_HOME/gradle/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/tools:$ANDROID_HOME/build-tools/27.0.3/' >> ~/.bashrc
 			source ~/.bashrc
-			./tools/android update sdk --all --filter android-25,build-tools-25.0.0 --no-ui
+			./tools/android update sdk --all --filter android-26,android-27,build-tools-27.0.3 --no-ui
 		fi
 		cd ~/.config/
 		if [ -e "/usr/bin/unzip" ] || [ -e "/usr/local/bin/unzip" ]; then
@@ -207,21 +223,27 @@ if [ ! -z "$os" ]; then
 					fi
 				done
 			fi
+			cp $dir/../../data/package.json ~/.config/qad/app/src/main/assets/www/data/;
 			cp -r $dir/../../data/qad ~/.config/qad/app/src/main/assets/www/data/;
 			cp -r $dir/../../data/fonts ~/.config/qad/app/src/main/assets/www/data/;
 			cp -r $dir/../../data/images ~/.config/qad/app/src/main/assets/www/data/;
 			cp -r $dir/../../page/$1 ~/.config/qad/app/src/main/assets/www/page/;
-			qad_min ~/.config/qad/app/src/main/assets/www/;
+			if [ ! -e "$dir/../../page/$1/default.js" ]; then
+				qad_min ~/.config/qad/app/src/main/assets/www/;
+			fi
 			rm ~/.config/qad/app/src/main/assets/www/page/$1/*.php;
 			rm ~/.config/qad/app/src/main/assets/www/data/qad/*.php;
 			rm ~/.config/qad/app/src/main/assets/www/data/qad/*.sh;
+			rm ~/.config/qad/app/src/main/assets/www/data/qad/qad_cli.js;
+			rm ~/.config/qad/app/src/main/assets/www/data/package.json;
 			if [ -e "$dir/../../page/$1/libs" ]; then
 				cp -r $dir/../../page/$1/libs ~/.config/qad/app/;
 				rm -r ~/.config/qad/app/src/main/assets/www/page/$1/libs;
 			fi
 			if [ -e "$dir/../../page/$1/MainActivity.java" ]; then
-				cp -r $dir/../../page/$1/MainActivity.java ~/.config/qad/app/src/main/java/com/example/app/;
-				rm ~/.config/qad/app/src/main/assets/www/page/$1/MainActivity.java;
+				#cp -r $dir/../../page/$1/MainActivity.java ~/.config/qad/app/src/main/java/com/example/app/;
+				#rm ~/.config/qad/app/src/main/assets/www/page/$1/MainActivity.java;
+				cp $dir/../../page/$1/*.java ~/.config/qad/app/src/main/java/com/example/app/;
 			fi
 			ls;
 		else
@@ -232,9 +254,11 @@ if [ ! -z "$os" ]; then
 		cp app/src/main/assets/www/page/$1/qad-icons.zip app/src/main/;
 		cd ~/.config/qad/app/src/main/;
 		unzip -o qad-icons.zip;
-		rm icon.png qad-icons.zip;
+		mv icon.png res/drawable/ic_splash.png;
+		rm qad-icons.zip;
+		#rm icon.png qad-icons.zip;
 		cd ~/.config/qad/;
-		rm app/src/main/assets/www/page/$1/qad-icons.zip;
+		rm -f app/src/main/assets/www/page/$1/qad-icons.zip app/src/main/assets/www/page/$1/ficon.png app/src/main/assets/www/page/$1/robots.txt app/src/main/assets/www/page/$1/cron.*;
 		sed '0,/local = "";/s/local = "";/local = "file:\/\/\/android_asset\/www\/page\/'$1'\/index.html";/' -i app/src/main/java/com/example/app/MainActivity.java;
 		sed -r 's/applicationId ".*"/applicationId "'$domain'.'$company'.'$1'"/g' app/build.gradle  > app/build.gen.gradle;
 		mv app/build.gen.gradle app/build.gradle;
@@ -264,6 +288,12 @@ if [ ! -z "$os" ]; then
 			sed -r 's/@color/'$color'/g' app/src/main/assets/www/data/qad/qad.css  > app/src/main/assets/www/data/qad/qad.gen.css;
 			mv app/src/main/assets/www/data/qad/qad.gen.css app/src/main/assets/www/data/qad/qad.css;
 		fi
+		#sed -r 's/src: url(..\/fonts\/MaterialIcons-Regular.eot);//g' app/src/main/assets/www/data/qad/qad.css > app/src/main/assets/www/data/qad/qad.gen.css;
+		#mv app/src/main/assets/www/data/qad/qad.gen.css app/src/main/assets/www/data/qad/qad.css;
+		#sed -r "s/url(..\/fonts\/MaterialIcons-Regular.woff) format('woff'),//g" app/src/main/assets/www/data/qad/qad.css > app/src/main/assets/www/data/qad/qad.gen.css;
+		#mv app/src/main/assets/www/data/qad/qad.gen.css app/src/main/assets/www/data/qad/qad.css;
+		rm app/src/main/assets/www/data/fonts/MaterialIcons-Regular.eot app/src/main/assets/www/data/fonts/MaterialIcons-Regular.woff app/src/main/assets/www/page/$1/*.java;
+		rm app/src/main/assets/www/data/modules/*.mp3
 		if [ ! -z "$4" ]; then
 			if [ "$4" == "new" ] || [ "$4" == "key" ]; then
 				sed -r 's/\/\/ signingConfig/signingConfig/g' app/build.gradle  > app/build.gen.gradle;
@@ -277,9 +307,9 @@ if [ ! -z "$os" ]; then
 				fi
 				mv app/build.gen.gradle app/build.gradle;
 			fi
-			gradle build && apk="app/build/outputs/apk/app-release.apk";
+			gradle build && apk="app/build/outputs/apk/release/app-release.apk";
 		else
-			gradle build && apk="app/build/outputs/apk/app-debug.apk";
+			gradle build && apk="app/build/outputs/apk/debug/app-debug.apk";
 		fi
 		if [ "`adb devices | grep device | wc -l`" != "1" ] && [ ! -z "$apk" ]; then
 			adb install -r $apk;
@@ -308,12 +338,18 @@ if [ ! -z "$os" ]; then
 		if [ -z "$os" ] || [ "$(echo $os | grep -io "android")" = "android" ]; then
 			if [ ! -z "$apk" ]; then
 				if [ ! -z "$4" ]; then
-					mv app/build/outputs/apk/app-release.apk app/build/outputs/apk/android-$date.apk;
+					mv app/build/outputs/apk/release/app-release.apk app/build/outputs/apk/android-$date.apk;
 				else
-					mv app/build/outputs/apk/app-debug.apk app/build/outputs/apk/android-$date.apk;
+					mv app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/android-$date.apk;
 				fi
 				gdrive upload -p $df 'app/build/outputs/apk/android-'$date'.apk';
 			fi
+		fi
+	else
+		if [ ! -z "$4" ]; then
+			#DOWNLOAD_PATH=$(xdg-user-dir DOWNLOAD);
+			#cp app/build/outputs/apk/release/app-release.apk $DOWNLOAD_PATH/android-$date.apk;
+			cp app/build/outputs/apk/release/app-release.apk ~/Downloads/android-$date.apk;
 		fi
 	fi
 fi
