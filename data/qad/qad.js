@@ -1793,9 +1793,20 @@ var Qad = {
 		    }
 		},
 		html: function() {
-			Qad.$('textarea[name="'+Qad.code.id+'"]').hidden = (Qad.$('textarea[name="'+Qad.code.id+'"]').hidden ? false : true);
+			var t = (Qad.$('textarea[name="'+Qad.code.id+'"]') || Qad.$('textarea[data-name="'+Qad.code.id+'"]'));
+			t.hidden = (t.hidden ? false : true);
+			// Qad.$('textarea[name="'+Qad.code.id+'"]').hidden = (Qad.$('textarea[name="'+Qad.code.id+'"]').hidden ? false : true);
 			Qad.$('iframe[data-code="'+this.id+'"]').hidden = (Qad.$('iframe[data-code="'+this.id+'"]').hidden ? false : true);
-			Qad.$('iframe[data-code="'+this.id+'"] body').$(Qad.$('textarea[name="'+Qad.code.id+'"]').$());
+			Qad.$('iframe[data-code="'+this.id+'"] body').$(t.$());
+		},
+		iframe: function() {
+			var el = Qad.$('iframe[data-code="'+this.id+'"]');
+			Qad.prompt('Вставьте html код iframe, или ссылку на подключаемую страницу').then(function(e) {
+				if (!e)
+					return;
+				el.contentWindow.focus();
+				el.contentWindow.document.execCommand('insertHTML', false, (e.match('<iframe') ? e : '<iframe width="100%" height="315" src="'+e+'" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>'));
+			});
 		},
 		format: function(type,attr,nofocus) {
             if (!nofocus)
@@ -1812,7 +1823,7 @@ var Qad = {
 			}else
 				Qad.code.id = id;
 		},
-		button: function() {
+		button: function(id) {
 		    return '\
                 '+(this.file ? '<label>\
                     <i class="material-icons" onclick="event.target.parentNode.dataset.ev = 1">attach_file</i>\
@@ -1842,13 +1853,14 @@ var Qad = {
                     <i class="material-icons">format_color_fill</i>\
                     <input type="color" onchange="Qad.code.format(\'backColor\',this.value)" style="width:0px;padding:0;border:0;overflow:hidden;" />\
                 </label>\
-                <i onclick="Qad.code.format(\'bold\')" class="material-icons">format_bold</i>\
-                <i onclick="Qad.code.format(\'italic\')" class="material-icons">format_italic</i>\
-                <i onclick="Qad.code.format(\'underline\')" class="material-icons">format_underlined</i>\
-                <i onclick="Qad.code.format(\'justifyRight\')" class="material-icons">format_align_right</i>\
-                <i onclick="Qad.code.format(\'justifyCenter\')" class="material-icons">format_align_center</i>\
-                <i onclick="Qad.code.format(\'justifyLeft\')" class="material-icons">format_align_left</i>\
-                <i onclick="Qad.code.html()" class="material-icons">code</i>\
+                <i onclick="Qad.code.id = \''+id+'\'; Qad.code.format(\'bold\')" class="material-icons">format_bold</i>\
+                <i onclick="Qad.code.id = \''+id+'\'; Qad.code.format(\'italic\')" class="material-icons">format_italic</i>\
+                <i onclick="Qad.code.id = \''+id+'\'; Qad.code.format(\'underline\')" class="material-icons">format_underlined</i>\
+                <i onclick="Qad.code.id = \''+id+'\'; Qad.code.format(\'justifyRight\')" class="material-icons">format_align_right</i>\
+                <i onclick="Qad.code.id = \''+id+'\'; Qad.code.format(\'justifyCenter\')" class="material-icons">format_align_center</i>\
+                <i onclick="Qad.code.id = \''+id+'\'; Qad.code.format(\'justifyLeft\')" class="material-icons">format_align_left</i>\
+                <i onclick="Qad.code.id = \''+id+'\'; Qad.code.iframe()" class="material-icons">insert_invitation</i>\
+                <i onclick="Qad.code.id = \''+id+'\'; Qad.code.html()" class="material-icons">code</i>\
             ';
         },
 		init: function(o) {
@@ -1857,7 +1869,7 @@ var Qad = {
 			}
 		    html = Qad.$(this.el).$();
 		    this.id = (this.el.id || this.el.dataset.id);
-            Qad.$(this.el).$((this.button ? '<h2>'+this.button()+'</h2><br />' : '' )+'<iframe onmouseover="Qad.code.focus(\''+this.id+'\')" onmouseout="Qad.code.text(\''+this.id+'\')" frameborder="no" style="'+this.style+'" data-code="'+this.id+'"></iframe><br /><textarea '+(this.el.id ? 'name="'+this.id+'"' : 'data-name="'+this.id+'"')+' style="margin-top:-10px;'+this.style+'" hidden>'+html+'</textarea>');
+            Qad.$(this.el).$((this.button ? '<h2>'+this.button(this.id)+'</h2><br />' : '' )+'<iframe onmouseover="Qad.code.focus(\''+this.id+'\')" onmouseout="Qad.code.text(\''+this.id+'\')" frameborder="no" style="'+this.style+'" data-code="'+this.id+'"></iframe><br /><textarea '+(this.el.id ? 'name="'+this.id+'"' : 'data-name="'+this.id+'"')+' style="margin-top:-10px;'+this.style+'" hidden>'+html+'</textarea>');
             Qad.$('iframe[data-code="'+this.id+'"]').contentDocument.open(); 
             Qad.$('iframe[data-code="'+this.id+'"]').contentDocument.write(html); 
             Qad.$('iframe[data-code="'+this.id+'"]').contentDocument.close();
