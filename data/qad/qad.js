@@ -1808,6 +1808,23 @@ var Qad = {
 				el.contentWindow.document.execCommand('insertHTML', false, (e.match('<iframe') ? e : '<iframe width="100%" height="315" src="'+e+'" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>'));
 			});
 		},
+		link: function() {
+			var el = Qad.$('iframe[data-code="'+this.id+'"]');
+			Qad.prompt('URL адрес').then(function(u) {
+				if (!u)
+					return;
+				Qad.prompt('Заголовок').then(function(t) {
+					if (!t)
+						return;
+					Qad.prompt(['Ссылка', 'Кнопка'], null, 'radio').then(function(s) {
+						if (!s)
+							return;
+						el.contentWindow.focus();
+						el.contentWindow.document.execCommand('insertHTML', false, '<a href="'+u+'">'+((s == 1) ? '<button>'+t+'</button>' : t)+'</a>');
+					});
+				});
+			});
+		},
 		format: function(type,attr,nofocus) {
             if (!nofocus)
 			    Qad.$('iframe[data-code="'+this.id+'"]').contentWindow.focus();
@@ -1859,6 +1876,7 @@ var Qad = {
                 <i onclick="Qad.code.id = \''+id+'\'; Qad.code.format(\'justifyRight\')" class="material-icons">format_align_right</i>\
                 <i onclick="Qad.code.id = \''+id+'\'; Qad.code.format(\'justifyCenter\')" class="material-icons">format_align_center</i>\
                 <i onclick="Qad.code.id = \''+id+'\'; Qad.code.format(\'justifyLeft\')" class="material-icons">format_align_left</i>\
+                <i onclick="Qad.code.id = \''+id+'\'; Qad.code.link()" class="material-icons">insert_link</i>\
                 <i onclick="Qad.code.id = \''+id+'\'; Qad.code.iframe()" class="material-icons">insert_invitation</i>\
                 <i onclick="Qad.code.id = \''+id+'\'; Qad.code.html()" class="material-icons">code</i>\
             ';
