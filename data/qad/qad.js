@@ -119,10 +119,11 @@ var Qad = {
 		if (document.querySelector('body') && ($$$.sdk() < 21))
 			document.querySelector('body').dataset.sdk = 'webview';
 		window.addEventListener('error', function(message, source, lineno) {
-			$$$.addLog(JSON.stringify({
-				message: (source ? message : (message.stack ? message.stack.split('\n')[0] : message)),
-				source: (source ? source.split('/').slice(-1)[0].split('.')[0]+':'+lineno : (message.stack ? message.stack.split('\n').slice(1).join('\n') : source))
-			}));
+			if (typeof(lineno) != 'undefined')
+				$$$.addLog(JSON.stringify({
+					message: (source ? message : (message.stack ? message.stack.split('\n')[0] : message)),
+					source: (source ? source.split('/').slice(-1)[0].split('.')[0]+':'+lineno : (message.stack ? message.stack.split('\n').slice(1).join('\n') : source))
+				}));
 		});
 		return $$$;
 	})() : null),
@@ -485,7 +486,8 @@ var Qad = {
 				Qad.for(obj.querySelectorAll('[data-action][data-on]'), function(el) {
 					el.attr('data-on', false);
 				});
-				obj.shab = obj.innerHTML; //.replace(/data-src/g,'src');
+				if ((obj.shab = obj.innerHTML) && (localStorage.getItem('qad_lazyload_off') == 'true'))
+					obj.shab = obj.shab.replace(/data-src/g, 'src');
 			}
 			obj.innerHTML = '';
 			if (d.response)
@@ -552,9 +554,17 @@ var Qad = {
 					Qad.controller.find(obj.find('[tabindex]'));
 				}
 				if (!obj.onclose) {
-					Qad.$('body').style.overflow = 'hidden';
+					if (Qad.$$$) {
+						document.body.scroll_ = window.scrollY;
+						document.body.style.position = 'fixed';
+					}
+					document.body.style.overflow = 'hidden';
 					obj.onclose = function() {
-						Qad.$('body').style.overflow = '';
+						document.body.style.overflow = '';
+						if (Qad.$$$) {
+							document.body.style.position = '';
+							window.scrollTo(0, document.body.scroll_);
+						}
 						obj.onclose = null;
 						if (obj._tmp)
 							obj.remove();
@@ -566,7 +576,7 @@ var Qad = {
 		return obj;
 	},
 	config: function(key, options, sync) {
-		var self, id, f;
+		var self, id, f, u;
 		return new Promise(function(resolve, reject) {
 			self = Object.assign((localStorage.getItem(key) ? self = Qad.json(localStorage.getItem(key)) : options), f = {
 				reload: function() {
@@ -612,6 +622,10 @@ var Qad = {
 							resolve(((Object.keys(e).length > 0) ? Object.assign(e, f) : self));
 						}).catch(reject);
 					return function(self) {
+						if (!window.onbeforeunload)
+							u = !!(window.onbeforeunload = function() {
+								return true;
+							});
 						return new Promise(function(resolve) {
 							self._sync = Math.round(new Date().getTime()/1000);
 							self.save(self);
@@ -627,9 +641,16 @@ var Qad = {
 										time: self._sync,
 										data: Qad.json(self),
 									})
-								}).then(resolve).catch(reject);
-							else
+								}).then(function() {
+									if (u)
+										window.onbeforeunload = null;
+									resolve();
+								}).catch(reject);
+							else{
+								if (u)
+									window.onbeforeunload = null;
 								resolve();
+							}
 						});
 					};
 				})() : null)
@@ -743,7 +764,7 @@ var Qad = {
 	ads: function() {
 		Qad.for('.ads', function(el, i) {
 			if (el.dataset.directadvert)
-				Qad.$('head').add($('/script').attr({
+				Qad.$('head').add(Qad.$('/script').attr({
 					async: true,
 					charset: 'windows-1251',
 					src: 'https://code.directadvert.ru/data/'+el.dataset.directadvert+'.js?async=1&div='+(el.id = (el.id || ['div', 'ads', i, el.dataset.directadvert].join('_')))+'&t='+Math.random()
@@ -757,7 +778,10 @@ var Qad = {
 					e.target.remove();
 				});
 			else if (el.dataset.iframe)
-				el.empty().add($('/iframe').attr('src', el.dataset.iframe+'&t='+Math.random()));
+				el.empty().add(Qad.$('/iframe').attr('data-src', el.dataset.iframe+'&t='+Math.random()).on('load', function(e) {
+					if (e.target.src && (e.target.src != location.href) && e.target.contentDocument)
+						e.target.style.height = (!e.target.contentDocument.body.innerText ? '0px' : '');
+				}));
 		});
 	},
 	debug: function(args) {
@@ -1520,7 +1544,8 @@ var Qad = {
 				};
 				if (!file.path)
 					file.path = location.pwd.split('/page')[0]+'/data/modules';
-				if (Qad.$('script[qad-modules="'+file.name+'"]')) {
+				// if (Qad.$('script[qad-modules="'+file.name+'"]')) {
+				if (Qad.$('script[data-modules="'+file.name+'"]')) {
 					if (scripts.length == (++i))
 						resolve();
 				}else{
@@ -1751,6 +1776,7 @@ var Qad = {
 		el: null,
 		id: null,
 		file: null,
+		code: null,
 		accept: null,
 		style: 'min-height:150px;width:98%;margin-left:5px',
 		upload: function(id) {
@@ -1877,8 +1903,11 @@ var Qad = {
                 <i onclick="Qad.code.id = \''+id+'\'; Qad.code.format(\'justifyCenter\')" class="material-icons">format_align_center</i>\
                 <i onclick="Qad.code.id = \''+id+'\'; Qad.code.format(\'justifyLeft\')" class="material-icons">format_align_left</i>\
                 <i onclick="Qad.code.id = \''+id+'\'; Qad.code.link()" class="material-icons">insert_link</i>\
-                <i onclick="Qad.code.id = \''+id+'\'; Qad.code.iframe()" class="material-icons">insert_invitation</i>\
-                <i onclick="Qad.code.id = \''+id+'\'; Qad.code.html()" class="material-icons">code</i>\
+                '+(this.code ? '\
+					<i onclick="Qad.code.id = \''+id+'\'; Qad.code.iframe()" class="material-icons">insert_invitation</i>\
+					<i onclick="Qad.code.id = \''+id+'\'; Qad.code.html()" class="material-icons">code</i>\
+				' : '')+'\
+                '+(this.title ? '<span data-left>'+this.title+'</span>' : '')+'\
             ';
         },
 		init: function(o) {
@@ -2288,7 +2317,7 @@ var Qad = {
 				}
 				case '[data-src]': {
 					var els = [].slice.call(Qad.$$('[data-src]:not([data-on])'));
-					if ('IntersectionObserver' in window) {
+					if (('IntersectionObserver' in window) && !(localStorage.getItem('qad_lazyload_off') == 'true')) {
 						var lazyObserver = new IntersectionObserver(function(entries, observer) {
 							entries.forEach(function(entry) {
 								if (entry.isIntersecting) {
@@ -2950,6 +2979,15 @@ window.addEventListener('load',function() {
 			Qad.sw = _sw;
 			if (typeof(sw) == 'function')
 				sw(_sw);
+			if ((navigator.userAgent.match(/iPad/i) || navigator.userAgent.match(/iPhone/i) || navigator.userAgent.match(/iPod/i)) && Qad.$('[rel="icon"]') && Qad.$('footer') && (localStorage.getItem('qad_notification-bookmark-ios_'+location.pathname.split('/').slice(0, -1).join('_')) != 'true'))
+				Qad.$('footer').find('next').add(Qad.$('/div').attr('id', 'notification-bookmark-ios').add([
+					Qad.$('/div').$('<img src="'+Qad.$('[rel="icon"]').href+'" /><b>Установить приложение</b>:<br> Нажмите сохранить, затем <br> <b>"На экран Домой"</b>').add([
+						Qad.$('/span').$('X').on('click', function() {
+							Qad.$('#notification-bookmark-ios').remove();
+							localStorage.setItem('qad_notification-bookmark-ios_'+location.pathname.split('/').slice(0, -1).join('_'), 'true');
+						})
+					])
+				]), true);
 		}, function() {
 			console.log('ಠ_ಠ');
 		});

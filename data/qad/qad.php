@@ -778,9 +778,9 @@ class Qad {
 			)
 		));
 	} */
-	public static function is_arr($arr, $children=null) {
+	public static function is_arr($arr, $children=null, $def=null) {
 		if (gettype($arr) != 'array')
-			return false;
+			return $def; //false;
 		if ($children) {
 			foreach ($children as $v) {
 				if (!(strripos($v, '*') === false)) {
@@ -792,7 +792,7 @@ class Qad {
 				}else if (isset($arr[$v]))
 					$arr = $arr[$v];
 				else{
-					return null;
+					return $def;
 					break;
 				}
 			}

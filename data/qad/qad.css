@@ -129,6 +129,10 @@ a {
 	text-decoration: none;
 	color: var(--color);
 }
+h2 a {
+	text-decoration: none;
+	color: var(--tcolor);
+}
 .material-icons:not([hidden]), :not(menuitem):not(li)[data-action]:not([data-webfont]):not([hidden]) {
 	font-family: 'Material Icons';
 	font-weight: normal;
@@ -285,11 +289,11 @@ html header:not(.h1):after {
 	align-items: center;
 }
 html header.h1 h1 {
+	text-align: left;
 	margin: 0;
 	text-transform: inherit;
 	font-weight: inherit;
-
-	width:100%;
+	width: 100%;
 	font-size: 20px;
 	color: var(--tcolor, #fff);
 	position: fixed;
@@ -576,6 +580,7 @@ section {
 	max-width: 980px;
 }
 #banners {
+	color: #757575;
 	background: #fff;
 	border-bottom: 1px solid #e4e4e4;
 	display: flex;
@@ -1351,7 +1356,7 @@ input[readonly] {
 	color: transparent;
 }
 */
-.input input[placeholder]::placeholder {
+.input input[placeholder]::placeholder, .input textarea[placeholder]::placeholder {
 	color: rgba(0, 0, 0, 0.26);
 }
 .input input:not([readonly]),
@@ -1373,7 +1378,7 @@ label.input {
 label.input:not([class*=_]) {
 	width: 200px;
 }
-label.input.w {
+label.input.w, label.switch.w {
 	width: 100%;
 	/* padding: 5px; */
 }
@@ -1660,6 +1665,57 @@ blockquote cite {
 	bottom: 0;
 	z-index: 1;
 }
+#notification-bookmark-ios {
+	position: fixed;
+	z-index: 1;
+	width: 100%;
+	left: 0;
+	bottom: 20px;
+	color: #757575;
+}
+#notification-bookmark-ios:after {
+	position: absolute;
+	content: "";
+	margin-left: -20px;
+	left: 50%;
+	width: 0;
+	height: 0;
+	border-left: 20px solid transparent;
+	border-right: 20px solid transparent;
+	border-top: 20px solid #fff;
+}
+#notification-bookmark-ios div {
+	overflow: hidden;
+	position: relative;
+	width: 214px;
+	margin: 0 auto;
+	padding: 1em 1.5em 1em .5em;
+	border-radius: 8px;
+	box-shadow: 0 2px 2px 0 rgba(0,0,0,.14), 0 3px 1px -2px rgba(0,0,0,.2), 0 1px 5px 0 rgba(0,0,0,.12);
+	font-style: normal;
+	font-variant: normal;
+	font-weight: 400;
+	font-stretch: normal;
+	font-size: .75em;
+	line-height: normal;
+	font-family: sans-serif;
+	background-color: #fff;
+}
+#notification-bookmark-ios img {
+	float: left;
+	width: 55px;
+	height: 55px;
+	margin: -2px 7px 3px 5px;
+	box-shadow: 0 2px 5px rgba(0,0,0,.4);
+}
+#notification-bookmark-ios span {
+	position: absolute;
+	top: 5px;
+	right: 5px;
+	width: 16px;
+	height: 16px;
+	font-size: 14px;
+}
 hr {
 	background-color: rgba(0,0,0,.1);
 	height: 1px;
@@ -1691,7 +1747,6 @@ hr {
 }
 body[data-touch="false"] [data-tooltip]:not(.spinner):hover:after, body[data-touch="true"] [data-tooltip]:not(.spinner):active:after {
 	content: attr(data-tooltip);
-	left: 20%;
 	padding: 5px 15px;
 	position: absolute;
 	background: rgba(97,97,97,.9);
@@ -1708,6 +1763,12 @@ body[data-touch="false"] [data-tooltip]:not(.spinner):hover:after, body[data-tou
 	z-index: 1;
 	overflow: hidden;
 	text-overflow: ellipsis;
+}
+body[data-touch="false"] [data-tooltip]:not(.spinner):not([data-right]):hover:after, body[data-touch="true"] [data-tooltip]:not(.spinner):not([data-right]):active:after {
+	left: 20%;
+}
+body[data-touch="false"] [data-tooltip][data-right]:not(.spinner):hover:after, body[data-touch="true"] [data-tooltip][data-right]:not(.spinner):active:after {
+	right: 0;
 }
 #button-float [data-tooltip]:hover:after {
 	left: -200%;
