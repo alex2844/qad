@@ -778,6 +778,142 @@ class Qad {
 			)
 		));
 	} */
+	public static function json_parse($str) {
+		$str = trim(preg_replace([
+			'#^\s*//(.+)$#m', '#^\s*/\*(.+)\*/#Us', '#/\*(.+)\*/\s*$#Us'
+		], '', $str));
+		switch (strtolower($str)) {
+		case 'true':
+			return true;
+		case 'false':
+			return false;
+		case 'null':
+			return null;
+		default:
+			$m = [];
+		if (is_numeric($str)) {
+			return (((float)$str == (integer)$str) ? (integer)$str : (float)$str);
+		}else if (preg_match('/^("|\').*(\1)$/s', $str, $m) && $m[1] == $m[2]) {
+			$delim = substr($str, 0, 1);
+			$utf8 = '';
+			$strlen_chrs = strlen(($chrs = substr($str, 1, -1)));
+			for ($c = 0; $c < $strlen_chrs; ++$c) {
+				$substr_chrs_c_2 = substr($chrs, $c, 2);
+				$ord_chrs_c = ord($chrs{$c});
+				switch (true) {
+					case $substr_chrs_c_2 == '\b':
+						$utf8 .= chr(0x08);
+						++$c;
+					break;
+					case $substr_chrs_c_2 == '\t':
+						$utf8 .= chr(0x09);
+						++$c;
+					break;
+					case $substr_chrs_c_2 == '\n':
+						$utf8 .= chr(0x0A);
+						++$c;
+					break;
+					case $substr_chrs_c_2 == '\f':
+						$utf8 .= chr(0x0C);
+						++$c;
+					break;
+					case $substr_chrs_c_2 == '\r':
+						$utf8 .= chr(0x0D);
+						++$c;
+					break;
+					case $substr_chrs_c_2 == '\\"':
+					case $substr_chrs_c_2 == '\\\'':
+					case $substr_chrs_c_2 == '\\\\':
+					case $substr_chrs_c_2 == '\\/':
+						if (($delim == '"' && $substr_chrs_c_2 != '\\\'') || ($delim == "'" && $substr_chrs_c_2 != '\\"'))
+							$utf8 .= $chrs{++$c};
+					break;
+					case ($ord_chrs_c >= 0x20) && ($ord_chrs_c <= 0x7F):
+						$utf8 .= $chrs{$c};
+					break;
+					case ($ord_chrs_c & 0xE0) == 0xC0:
+						$utf8 .= substr($chrs, $c, 2);
+						++$c;
+					break;
+					case ($ord_chrs_c & 0xF0) == 0xE0:
+						$utf8 .= substr($chrs, $c, 3);
+						$c += 2;
+					break;
+					case ($ord_chrs_c & 0xF8) == 0xF0:
+						$utf8 .= substr($chrs, $c, 4);
+						$c += 3;
+					break;
+					case ($ord_chrs_c & 0xFC) == 0xF8:
+						$utf8 .= substr($chrs, $c, 5);
+						$c += 4;
+					break;
+					case ($ord_chrs_c & 0xFE) == 0xFC:
+						$utf8 .= substr($chrs, $c, 6);
+						$c += 5;
+					break;
+				}
+			}
+			return $utf8;
+		}else if (preg_match('/^\[.*\]$/s', $str) || preg_match('/^\{.*\}$/s', $str)) {
+			if ($str{0} == '[') {
+				$stk = array(3);
+				$arr = [];
+			}else{
+				$stk = array(4);
+				$obj = new stdClass();
+			}
+			array_push($stk, ['what'  => 1, 'where' => 0, 'delim' => false]);
+			$chrs = trim(preg_replace([
+				'#^\s*//(.+)$#m', '#^\s*/\*(.+)\*/#Us', '#/\*(.+)\*/\s*$#Us'
+			], '', substr($str, 1, -1)));
+			if ($chrs == '')
+				return ((reset($stk) == 3) ? $arr : $obj);
+			$strlen_chrs = strlen($chrs);
+			for ($c = 0; $c <= $strlen_chrs; ++$c) {
+				$top = end($stk);
+				$substr_chrs_c_2 = substr($chrs, $c, 2);
+				if (($c == $strlen_chrs) || (($chrs{$c} == ',') && ($top['what'] == 1))) {
+					$slice = substr($chrs, $top['where'], ($c - $top['where']));
+					array_push($stk, array('what' => 1, 'where' => ($c + 1), 'delim' => false));
+					if (reset($stk) == 3)
+						array_push($arr, self::json_parse($slice));
+					else if (reset($stk) == 4) {
+						$parts = [];
+						if (preg_match('/^\s*(["\'].*[^\\\]["\'])\s*:\s*(\S.*),?$/Uis', $slice, $parts))
+							$obj->{self::json_parse($parts[1])} = self::json_parse($parts[2]);
+						else if (preg_match('/^\s*(\w+)\s*:\s*(\S.*),?$/Uis', $slice, $parts))
+							$obj->{$parts[1]} = self::json_parse($parts[2]);
+					}
+				}else if ((($chrs{$c} == '"') || ($chrs{$c} == "'")) && ($top['what'] != 2))
+					array_push($stk, array('what' => 2, 'where' => $c, 'delim' => $chrs{$c}));
+				else if (($chrs{$c} == $top['delim']) && ($top['what'] == 2) && ((strlen(substr($chrs, 0, $c)) - strlen(rtrim(substr($chrs, 0, $c), '\\'))) % 2 != 1))
+					array_pop($stk);
+				else if (($chrs{$c} == '[') && in_array($top['what'], array(1, 3, 4)))
+					array_push($stk, array('what' => 3, 'where' => $c, 'delim' => false));
+				else if (($chrs{$c} == ']') && ($top['what'] == 3))
+					array_pop($stk);
+				else if (($chrs{$c} == '{') && in_array($top['what'], array(1, 3, 4)))
+					array_push($stk, array('what' => 4, 'where' => $c, 'delim' => false));
+				elseif (($chrs{$c} == '}') && ($top['what'] == 4))
+					array_pop($stk);
+				elseif (($substr_chrs_c_2 == '/*') && in_array($top['what'], array(1, 3, 4))) {
+					array_push($stk, array('what' => 5, 'where' => $c, 'delim' => false));
+					$c++;
+				}else if (($substr_chrs_c_2 == '*/') && ($top['what'] == 5)) {
+					array_pop($stk);
+					$c++;
+					for ($i = $top['where']; $i <= $c; ++$i) {
+						$chrs = substr_replace($chrs, ' ', $i, 1);
+					}
+				}
+			}
+			if (reset($stk) == 3)
+				return $arr;
+			else if (reset($stk) == 4)
+				return $obj;
+			}
+		}
+	}
 	public static function is_arr($arr, $children=null, $def=null) {
 		if (gettype($arr) != 'array')
 			return $def; //false;
