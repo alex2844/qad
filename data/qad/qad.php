@@ -14,7 +14,6 @@ class Qad {
 	public static $config;
 	public static $cache;
 	public static $sql;
-	public static $nosql;
 	public static $document;
 	private static $debug = [
 		'status' => false
@@ -938,9 +937,19 @@ class Qad {
 	}
 	public static function db($sql='', $param=null, $exec=true) {
 		if ($param && (isset($param['driver']) || isset($param['path']))) {
-			if ($param['driver'])
-				self::$config['db_driver'] = $param['driver'];
-			if ($param['path'])
+			if (isset($param['driver'])) {
+				if ((self::$config['db_driver'] = $param['driver']) == 'mysql') {
+					if (isset($param['file']))
+						self::$config['db_name'] = $param['file'];
+					if (empty(self::$config['db_host']))
+						self::$config['db_host'] = 'localhost';
+					if (isset($param['auth'])) {
+						self::$config['db_login'] = $param['auth'][0];
+						self::$config['db_password'] = $param['auth'][1];
+					}
+				}
+			}
+			if (isset($param['path']))
 				self::$config['db_name'] = $param['path'].'/'.(isset($param['prefix']) ? $param['prefix'].'_' : '').(isset($param['file']) ? $param['file'] : $param['table']);
 			if (!empty($param['where'])) {
 				if (gettype($param['where']) == 'array') {
@@ -962,6 +971,8 @@ class Qad {
 				if (!empty($param['triggers']) && in_array('time', $param['triggers']))
 					$param['columns']['time_create'] = $param['columns']['time_update'] = "default (cast(strftime('%s', 'now') as int))";
 				foreach ($param['columns'] as $k=>$v) {
+					if (self::$config['db_driver'] == 'mysql')
+						$v = preg_replace('/autoincrement/i', 'AUTO_INCREMENT', $v);
 					$arr[] = $k.' '.$v;
 				}
 				if (isset($param['autoclean']) && self::$config['db_driver'] == 'sqlite')
@@ -1007,11 +1018,14 @@ class Qad {
 				(empty($param['limit']) ? '' : 'limit '.$param['limit'])
 			]), ((gettype($exec) == 'array') ? $exec : (empty($where) ? null : $where[1])));
 		else if ($param && (isset($param['driver']) || isset($param['path'])))
-			unset($param['driver'], $param['path'], $param['table'], $param['columns'], $param['autoclean'], $param['prefix'], $param['file'], $param['triggers']);
+			unset($param['driver'], $param['path'], $param['auth'], $param['table'], $param['columns'], $param['autoclean'], $param['prefix'], $param['file'], $param['triggers']);
 		try {
 			if (empty(self::$sql)) {
 				if (self::$config['db_driver'] == 'mysql')
-					self::$sql = new PDO('mysql:host='.self::$config['db_host'].';dbname='.self::$config['db_name'], $config['db_login'], $config['db_password'], array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8"));
+					self::$sql = new PDO('mysql:host='.self::$config['db_host'].';dbname='.self::$config['db_name'], self::$config['db_login'], self::$config['db_password'], [
+						// PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8'
+						1002 => 'SET NAMES utf8'
+					]);
 				else if (self::$config['db_driver'] == 'sqlite') {
 					self::$sql = new PDO('sqlite:'.(
 						file_exists(self::$config['db_name'].'.sqlite')
