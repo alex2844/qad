@@ -1409,8 +1409,8 @@ var Qad = {
 		Qad.$('.load').src = 'server.php?'+params;
 	},
 	redirect: function(url, c) {
-		if (event)
-			event.preventDefault(event.stopPropagation());
+		if (window.event)
+			window.event.preventDefault(window.event.stopPropagation());
 		if (Qad.$('.menu[open]'))
 			Qad.$('.menu[open]').click()
 		if (typeof(url) != 'string')
@@ -1492,6 +1492,8 @@ var Qad = {
 		var id = '_'+Qad.rand(0, 100)+'_'+Qad.time();
 		if (method.indexOf('googleapis.com') != -1)
 			provider = 'google';
+		else if (method.indexOf('graph.facebook.com') != -1)                                                                    
+            provider = 'facebook';
 		else if (method.indexOf('api.vk.com') != -1)                                                                    
             provider = 'vk';
 		else
@@ -1513,7 +1515,9 @@ var Qad = {
 			loader: Qad.$('head').add(Qad.$('/script').attr({
 				'data-api': id,
 				src: method+'?'+Qad.json(params, true)
-			}).on('error', ((typeof(err) == 'function') ? err : null)).on('load', function(e) {
+			}).on('error', function(e) {
+				((typeof(err) == 'function') ? err(e) : null);
+			}).on('load', function(e) {
 				(function(e) {
 					setTimeout(function() {
 						if (!Qad.api.list[e.dataset.api])
@@ -1869,9 +1873,9 @@ var Qad = {
 		button: function(id) {
 		    return '\
                 '+(this.file ? '<label>\
-                    <i class="material-icons" onclick="event.target.parentNode.dataset.ev = 1">attach_file</i>\
+                    <i class="material-icons" onclick="window.event.target.parentNode.dataset.ev = 1">attach_file</i>\
                     <form target="file" method="post" '+(this.file==true ? '' : 'action="'+this.file+'"')+' enctype="multipart/form-data" hidden>\
-                        <input onclick="return (event.target.parentNode.dataset.ev ? event.target.parentNode.removeAttribute(\'data-ev\') : false)" type="file" name="upload" onchange="Qad.code.upload(\''+this.id+'\')" '+(this.accept ? 'accept="image/*"' : '')+' style="width:0px;padding:0;border:0;overflow:hidden;" />\
+                        <input onclick="return (window.event.target.parentNode.dataset.ev ? window.event.target.parentNode.removeAttribute(\'data-ev\') : false)" type="file" name="upload" onchange="Qad.code.upload(\''+this.id+'\')" '+(this.accept ? 'accept="image/*"' : '')+' style="width:0px;padding:0;border:0;overflow:hidden;" />\
                     </form>\
                 </label>' : '')+'\
                 <label>\
@@ -2633,7 +2637,7 @@ var Qad = {
 							});
 						_input.onkeydown = function(e) {
 							if (([13, 9].indexOf(e.keyCode) > -1) || ([',', ';'].indexOf(e.key) > -1))
-								event.preventDefault(el.addTag(e));
+								window.event.preventDefault(el.addTag(e));
 						}
 						_input.onblur = function(e) {
 							el.addTag(e);
