@@ -584,6 +584,28 @@ class Qad {
 		}
 	}
 	public static function fetch($url, $opts=[], $then='text', $prefix='fetch') {
+		if (!empty($opts['form'])) // ['mode' => ['body' => 'do_check'], 'chkfile' => ['file' => 'Screenshot.png']]
+			$opts = array_merge($opts, [
+				'method' => 'post',
+				'header' => array_merge((isset($opts['header']) ? $opts['header'] : []), [
+					'Content-Type: multipart/form-data; boundary='.($b = '--------------------------'.microtime(true))
+				]),
+				'body' => (implode('', array_map(function($k, $v) use ($b) {
+					$data = '--'.$b."\r\n";
+					if (isset($v['file'])) {
+						$data .= 'Content-Disposition: form-data; name="'.$k.'"; filename="'.basename($v['file']).'"'."\r\n";
+						if (file_exists($v['file'])) {
+							$data .= 'Content-Type: '.mime_content_type($v['file'])."\r\n";
+							$v['body'] = file_get_contents($v['file']);
+						}else
+							$v['body'] = '';
+					}else
+						$data .= 'Content-Disposition: form-data; name="'.$k.'"'."\r\n";
+					$data .= 'Content-Length: '.strlen($v['body'])."\r\n\r\n".$v['body']."\r\n";
+					return $data;
+				}, array_keys($opts['form']), $opts['form'])).'--'.$b."--\r\n"),
+				'cache' => 'no-cache'
+			]);
 		$self = (object) [
 			'url' => $url,
 			'opts' => [
@@ -991,10 +1013,12 @@ class Qad {
 			foreach ($param['columns'] as $k=>$v) {
 				if (empty($data[$k]))
 					continue;
-				$arr[$k] = $data[$k];
-				$values[] = ':'.$k;
+				$arr[($values[] = $k)] = $data[$k];
+				// $arr[$k] = $data[$k];
+				// $values[] = ':'.$k;
 			}
-			return self::db('insert into '.$param['table'].' ('.implode(', ', array_flip($arr)).') values ('.implode(', ', $values).')', $arr);
+			return self::db('insert into '.$param['table'].' ('.implode(', ', $values).') values ('.implode(', ', preg_filter('/^/', ':', $values)).')', $arr);
+			// return self::db('insert into '.$param['table'].' ('.implode(', ', array_flip($arr)).') values ('.implode(', ', $values).')', $arr);
 		}else if ($sql == 'update') {
 			$data = (array) $param['data'];
 			$arr = [];

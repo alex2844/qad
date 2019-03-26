@@ -74,6 +74,7 @@ elif [ "$1" == "update" ]; then
 	wget -O qad.js https://github.com/alex2844/qad/raw/master/data/qad/qad.js;
 	wget -O qad.php https://github.com/alex2844/qad/raw/master/data/qad/qad.php;
 	wget -O qad.sh https://github.com/alex2844/qad/raw/master/data/qad/qad.sh;
+	wget -O qad_cli.js https://github.com/alex2844/qad/raw/master/data/qad/qad_cli.js;
 	exit;
 elif [ "$1" == "dev" ]; then
 	cd ../../;
@@ -253,12 +254,14 @@ if [ ! -z "$os" ]; then
 		fi
 		cp app/src/main/assets/www/page/$1/qad-icons.zip app/src/main/;
 		cd ~/.config/qad/app/src/main/;
-		unzip -o qad-icons.zip;
-		mv icon.png res/drawable/ic_splash.png;
+		# NEW YEAR ICON
+		#unzip -o qad-icons.zip;
+		#mv icon.png res/drawable/ic_splash.png;
+		# NEW YEAR ICON
 		rm qad-icons.zip;
 		#rm icon.png qad-icons.zip;
 		cd ~/.config/qad/;
-		rm -f app/src/main/assets/www/page/$1/qad-icons.zip app/src/main/assets/www/page/$1/ficon.png app/src/main/assets/www/page/$1/robots.txt app/src/main/assets/www/page/$1/cron.*;
+		rm -f app/src/main/assets/www/page/$1/qad-icons.zip app/src/main/assets/www/page/$1/ficon.psd app/src/main/assets/www/page/$1/ficon.png app/src/main/assets/www/page/$1/robots.txt app/src/main/assets/www/page/$1/cron.*;
 		sed '0,/local = "";/s/local = "";/local = "file:\/\/\/android_asset\/www\/page\/'$1'\/index.html";/' -i app/src/main/java/com/example/app/MainActivity.java;
 		sed -r 's/applicationId ".*"/applicationId "'$domain'.'$company'.'$1'"/g' app/build.gradle  > app/build.gen.gradle;
 		mv app/build.gen.gradle app/build.gradle;
