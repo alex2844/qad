@@ -1046,7 +1046,7 @@ class Qad {
 				(empty($param['limit']) ? '' : 'limit '.$param['limit'])
 			]), ((gettype($exec) == 'array') ? $exec : (empty($where) ? null : $where[1])));
 		else if ($param && (isset($param['driver']) || isset($param['path'])))
-			unset($param['driver'], $param['path'], $param['auth'], $param['table'], $param['columns'], $param['autoclean'], $param['prefix'], $param['file'], $param['triggers']);
+			unset($param['driver'], $param['path'], $param['auth'], $param['table'], $param['columns'], $param['links'], $param['indexes'], $param['autoclean'], $param['prefix'], $param['file'], $param['triggers']);
 		try {
 			if (empty(self::$sql)) {
 				if (self::$config['db_driver'] == 'mysql')
