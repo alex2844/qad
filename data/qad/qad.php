@@ -195,7 +195,7 @@ class Qad {
 			'protocol' => $protocol,
 			'port' => (isset($_SERVER['SERVER_PORT']) ? $_SERVER['SERVER_PORT'] : null),
 			'pathname' => (isset($_SERVER['SCRIPT_NAME']) ? $_SERVER['SCRIPT_NAME'] : __DIR__),
-			'host' => $_SERVER['HTTP_HOST'],
+			'host' => (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : null),
 			'href' => (isset($_SERVER['REQUEST_URI']) ? $protocol.'//'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'] : ''),
 			'server' => $_SERVER
 		];
@@ -997,7 +997,11 @@ class Qad {
 						$v = preg_replace('/autoincrement/i', 'AUTO_INCREMENT', $v);
 					$arr[] = $k.' '.$v;
 				}
-				if (isset($param['autoclean']) && self::$config['db_driver'] == 'sqlite')
+				if (!empty($param['indexes']) && (self::$config['db_driver'] == 'mysql'))
+					foreach ($param['indexes'] as $v) {
+						$arr[] = $v[0].' '.$v[0].'_'.implode('_', $v[1]).' ('.implode(', ', $v[1]).')';
+					}
+				if (isset($param['autoclean']) && (self::$config['db_driver'] == 'sqlite'))
 					self::db('PRAGMA auto_vacuum = 1');
 				self::db('create table if not exists '.$param['table'].' ('.implode(', ', $arr).')');
 				if (!empty($param['columns']['time_update']))
