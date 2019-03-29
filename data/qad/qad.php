@@ -9,7 +9,11 @@ Copyright (c) 2016-2018 Alex Smith
 =====================================================
 */
 header('Content-Type: text/html; charset=utf-8');
-session_start();
+ini_set('session.use_strict_mode', 1);
+if (file_exists(dirname(__DIR__).'/../upload/sessions'))
+	ini_set('session.save_path', dirname(__DIR__).'/../upload/sessions');
+if (empty(session_id()))
+	session_start();
 class Qad {
 	public static $config;
 	public static $cache;
