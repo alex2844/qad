@@ -839,7 +839,8 @@ label.tags > span {
 	box-shadow: none;
 }
 .card button:not([disabled]), .card .button {
-	color: var(--color, #fff);
+	color: #fff;
+	color: var(--color);
 }
 .card button[disabled]{
 	color: buttonface;

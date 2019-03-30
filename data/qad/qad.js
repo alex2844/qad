@@ -2378,6 +2378,8 @@ var Qad = {
 						el.onclick = function(e){
 							if (el.href != '#' && el.href.indexOf('#') != -1) {
 								var id = el.href.split('#')[1];
+								if (!id)
+									return;
 								if (Qad.$('div.tabs#'+id))
 									open(id);
 								if (Qad.$('#'+id))
