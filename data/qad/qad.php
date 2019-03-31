@@ -1146,8 +1146,12 @@ class Qad {
 		if (method_exists($controller[3], ucfirst($controller[1]).'Action'))
 			echo call_user_func([$controller[3], ucfirst($controller[1]).'Action'], $_GET);
 		else{
-			header('HTTP/1.1 404 Not Found');
-			header('Status: 404 Not Found');
+			if (function_exists('error_page')) {
+				error_page('404');
+			}else{
+				header('HTTP/1.1 404 Not Found');
+				header('Status: 404 Not Found');
+			}
 			exit;
 		}
 		if (method_exists($controller[3], 'onload'))
