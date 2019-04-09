@@ -1043,6 +1043,7 @@ class Qad {
 			return self::db(implode(' ', [
 				'select '.(empty($param['select']) ? '*' : $param['select']),
 				'from '.$param['table'],
+				(empty($param['join']) ? '' : (isset($param['join'][1]) ? $param['join'][1].' ' : '').'join '.implode((isset($param['join'][1]) ? ' '.$param['join'][1] : '').' join ', $param['join'][0])),
 				(empty($where) ? '' : $where[0]),
 				(empty($param['order']) ? '' : 'order by '.$param['order']),
 				(empty($param['limit']) ? '' : 'limit '.$param['limit'])
@@ -1146,9 +1147,9 @@ class Qad {
 		if (method_exists($controller[3], ucfirst($controller[1]).'Action'))
 			echo call_user_func([$controller[3], ucfirst($controller[1]).'Action'], $_GET);
 		else{
-			if (function_exists('error_page')) {
+			if (function_exists('error_page'))
 				error_page('404');
-			}else{
+			else{
 				header('HTTP/1.1 404 Not Found');
 				header('Status: 404 Not Found');
 			}
