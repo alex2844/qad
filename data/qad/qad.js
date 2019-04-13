@@ -2147,8 +2147,8 @@ var Qad = {
 				Qad.init('.menu');
 			if (Qad.$('ul.emoji'))
 				Qad.init('ul.emoji');
-			if (Qad.$('select[placeholder]'))
-				Qad.init('select[placeholder]');
+			if (Qad.$('select[placeholder]:not([data-on])'))
+				Qad.init('select[placeholder]:not([data-on])');
 			if (Qad.$('input[list][data-select]'))
 				Qad.init('input[list][data-select]');
 			if (Qad.$('.parallax img'))
@@ -2490,14 +2490,14 @@ var Qad = {
 					}
 					break;
 				}
-				case 'select[placeholder]': {
+				case 'select[placeholder]:not([data-on])': {
 					Qad.for(type, function(el) {
 						var o = new Option(el.attr('placeholder'), '');
-						o.disabled = o.selected = o.hidden = true;
+						el.dataset.on = o.disabled = o.selected = o.hidden = true;
 						el.options.add(o, false);
-						el.onchange = function(e) {
-							e.target.removeAttribute('placeholder', e.target.options[0].remove());
-						}
+						el.on('change', function(e) {
+							el.removeAttribute('placeholder', el.options[0].remove(), el.on('change'));
+						});
 					});
 					break;
 				}
