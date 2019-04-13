@@ -2147,6 +2147,8 @@ var Qad = {
 				Qad.init('.menu');
 			if (Qad.$('ul.emoji'))
 				Qad.init('ul.emoji');
+			if (Qad.$('select[placeholder]'))
+				Qad.init('select[placeholder]');
 			if (Qad.$('input[list][data-select]'))
 				Qad.init('input[list][data-select]');
 			if (Qad.$('.parallax img'))
@@ -2486,6 +2488,17 @@ var Qad = {
 							}
 						});
 					}
+					break;
+				}
+				case 'select[placeholder]': {
+					Qad.for(type, function(el) {
+						var o = new Option(el.attr('placeholder'), '');
+						o.disabled = o.selected = o.hidden = true;
+						el.options.add(o, false);
+						el.onchange = function(e) {
+							e.target.removeAttribute('placeholder', e.target.options[0].remove());
+						}
+					});
 					break;
 				}
 				case 'input[list][data-select]': {

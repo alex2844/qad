@@ -1364,6 +1364,9 @@ input[readonly] {
 	color: transparent;
 }
 */
+select[placeholder]:not(:focus) {
+	color: rgba(0, 0, 0, 0.26);
+}
 .input input[placeholder]::placeholder, .input textarea[placeholder]::placeholder {
 	color: rgba(0, 0, 0, 0.26);
 }
