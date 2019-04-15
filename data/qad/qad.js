@@ -2492,6 +2492,8 @@ var Qad = {
 				}
 				case 'select[placeholder]:not([data-on])': {
 					Qad.for(type, function(el) {
+						if (el.value)
+							return el.removeAttribute('placeholder');
 						var o = new Option(el.attr('placeholder'), '');
 						el.dataset.on = o.disabled = o.selected = o.hidden = true;
 						el.options.add(o, false);
