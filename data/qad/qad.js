@@ -2498,7 +2498,8 @@ var Qad = {
 						el.dataset.on = o.disabled = o.selected = o.hidden = true;
 						el.options.add(o, false);
 						el.on('change', function(e) {
-							el.removeAttribute('placeholder', el.options[0].remove(), el.on('change'));
+							if (el.attr('placeholder'))
+								el.removeAttribute('placeholder', el.options[0].remove(), el.on('change'));
 						});
 					});
 					break;
