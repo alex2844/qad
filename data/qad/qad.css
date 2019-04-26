@@ -85,6 +85,10 @@ button:not([disabled]) {
 .card.error *, .ads.error, dialog.error {
 	background-color: #F44336;
 }
+.card.warning *, dialog.warning {
+	background-color: #ffc107;
+	color: #000 !important;
+}
 .card.done *, dialog.done {
 	background-color: #4CAF50;
 }
@@ -1376,6 +1380,7 @@ select[placeholder]:not(:focus) {
 	select,
 	textarea {
 		border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+		padding-bottom: 5px;
 }
 label.input {
 	position: relative;
@@ -1410,6 +1415,7 @@ label.input > span {
 	select:focus,
 	textarea:focus {
 		border-bottom: 2px solid var(--color);
+		padding-bottom: 4px;
 }
 input.label {
 	margin-left: 10px;
@@ -1431,7 +1437,11 @@ input.label {
 		pointer-events: none;
 		color: rgba(0, 0, 0, 0.26);
 }
-.input input[pattern]:focus:invalid + span {
+.input input[pattern]:invalid + span, .input input[pattern]:valid + span {
+	font-size: 12px;
+	top: 0;
+}
+.input input[pattern]:invalid + span {
 	color: #F44336;
 }
 .input input[pattern]:focus:valid + span {
@@ -2075,6 +2085,22 @@ footer [data-right] {
 	50% {
 		opacity: 0;
 		transform: scale3d(.3, .3, .3);
+	}
+	to {
+		opacity: 0;
+	}
+}
+@keyframes show {
+	from, 50% {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+@keyframes hide {
+	from, 50% {
+		opacity: 1;
 	}
 	to {
 		opacity: 0;
