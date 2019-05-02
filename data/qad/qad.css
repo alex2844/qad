@@ -1564,6 +1564,8 @@ input[type='radio']:checked:after {
 	height: 20px;
 	opacity: 0;
 	z-index: 0;
+	z-index: 1;
+	cursor: pointer;
 }
 .switch span {
 	padding: 0 0 0 44px;
