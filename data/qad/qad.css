@@ -846,7 +846,7 @@ label.tags > span {
 	color: #fff;
 	color: var(--color);
 }
-.card button[disabled]{
+.card button[disabled], .card .button[disabled] {
 	color: buttonface;
 }
 .card button{
