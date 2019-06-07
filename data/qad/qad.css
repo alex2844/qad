@@ -697,6 +697,20 @@ dialog button:not([data-color]):hover, dialog button:not([data-color]):focus, di
 	background: 0 !important;
 	box-shadow: none !important;
 }
+form > fieldset {
+	border: 0;
+	margin: 0;
+	padding: 0;
+}
+fieldset {
+	border-radius: 0.125rem;
+	border: 1px solid #c0c0c0;
+	border: 1px solid rgba(0, 0, 0, 0.05);
+	margin: 10px 2px;
+}
+fieldset legend {
+	font-weight: bold;
+}
 table, .card, .ads:not([data-iframe]) {
 	/* display: inline-block; */
 	background-color: #fff;
@@ -846,7 +860,7 @@ label.tags > span {
 	color: #fff;
 	color: var(--color);
 }
-.card button[disabled], .card .button[disabled] {
+.card button[disabled], .card .button[disabled], fieldset[disabled] button:not([disabled]), fieldset[disabled] .button:not([disabled]) {
 	color: buttonface;
 }
 .card button{
@@ -910,7 +924,7 @@ summary:hover {
 summary::-webkit-details-marker {
 	display: none;
 }
-details[disabled] {
+details[disabled], .card .button[disabled], fieldset[disabled] .button:not([disabled]) {
 	pointer-events: none;
 }
 details:not([disabled]) summary:after {
