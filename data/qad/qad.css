@@ -1166,13 +1166,13 @@ nav.tabs a.active {
 	color: var(--tcolor, #fff);
 	border-bottom: 2px solid var(--tcolor, #fff);
 }
-div#header-panel *:nth-child(1) {
+#header-panel *:nth-child(1) {
 	position: absolute;
 	top: 11px;
 	left: 11px;
 	cursor: pointer;
 }
-div#header-panel *:nth-child(2) {
+#header-panel *:nth-child(2) {
 	position: absolute;
 	top: 10px;
 	left: 55px;
@@ -1180,13 +1180,13 @@ div#header-panel *:nth-child(2) {
 	width: calc(100% - 66px);
 	border: none;
 }
-div#header-panel *:nth-child(3) {
+#header-panel *:nth-child(3) {
 	position: absolute;
 	top: 11px;
 	right: 11px;
 	cursor: pointer;
 }
-div#header-panel {
+#header-panel {
 	border-radius: 2px;
 	position: fixed;
 	z-index: 3;
