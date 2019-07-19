@@ -1399,11 +1399,9 @@ select[placeholder]:not(:focus) {
 label.input {
 	position: relative;
 	padding: 20px 0 8px;
+}
+label.input:not([hidden]) {
 	display: inline-block;
-	/*
-	padding: 20px 0 0;
-	display: block;
-	*/
 }
 label.input:not([class*=_]) {
 	width: 200px;
