@@ -478,7 +478,7 @@ class Qad {
 		}
 		return $br;
 	}
-	public static function cache($exec, $name='', $prefix='') {
+	public static function cache($exec, $name='', $prefix='', $crypt=true) {
 		if (!empty($prefix))
 			$prefix .= '_';
 		$clear = (empty(self::$config['ttl']) ? (empty(self::$config['cache_clear']) ? 86400 : self::$config['cache_clear']) : self::$config['ttl']);
@@ -486,7 +486,7 @@ class Qad {
 			case 'json': {
 				if (file_exists(dirname(__DIR__).'/../upload/cache/') && !empty($name)) {
 					if (empty(self::$cache)) {
-						self::$cache = dirname(__DIR__).'/../upload/cache/'.$prefix.md5(getcwd().(!empty($name) ? $name : '')).'_json.cache';
+						self::$cache = dirname(__DIR__).'/../upload/cache/'.$prefix.($crypt ? md5(getcwd().(!empty($name) ? $name : '')) : $name).'_json.cache';
 						if (file_exists(self::$cache) && (time()-$clear)<filemtime(self::$cache)) {
 							$name = self::$cache;
 							self::$cache = null;
