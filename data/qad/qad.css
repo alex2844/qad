@@ -1449,9 +1449,10 @@ input.label {
 		pointer-events: none;
 		color: rgba(0, 0, 0, 0.26);
 }
-.input input[pattern]:invalid + span, .input input[pattern]:valid + span {
-	font-size: 12px;
-	top: 0;
+.input input[pattern]:invalid + span, .input input[pattern]:valid + span,
+.input input[type="date"] + span {
+	font-size: 12px !important;
+	top: 0 !important;
 }
 .input input[pattern]:invalid + span {
 	color: #F44336;
