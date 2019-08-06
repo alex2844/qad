@@ -2151,6 +2151,8 @@ var Qad = {
 				Qad.init('select[placeholder]:not([data-on])');
 			if (Qad.$('input[list][data-select]'))
 				Qad.init('input[list][data-select]');
+			if (Qad.$('details summary input'))
+				Qad.init('details summary input');
 			if (Qad.$('.parallax img'))
 				Qad.init('.parallax img');
 			if (Qad.$('[data-action]'))
@@ -2519,6 +2521,21 @@ var Qad = {
 							else
 								this.setCustomValidity('Please select a valid value.');
 						}
+					});
+					break;
+				}
+				case 'details summary input': {
+					Qad.for('details summary input, details summary textarea', function(el) {
+						el.addEventListener('keydown', function(e) {
+							if ((e.keyCode == 32) && (['INPUT', 'TEXTAREA'].indexOf((e.el = document.activeElement).tagName) > -1)) {
+								e.preventDefault();
+								var start = e.el.selectionStart;
+								var end = e.el.selectionEnd;
+								e.el.value = e.el.value.substring(0, start) + e.key + e.el.value.substring(end, e.el.value.length);
+								e.el.selectionStart = e.el.selectionEnd = start + e.key.length;
+								e.el.focus();
+							}
+						});
 					});
 					break;
 				}
