@@ -941,7 +941,7 @@ details:not([disabled]) summary:after {
 details.span summary:after {
 	margin-top: 2px;
 }
-details[open] summary:after {
+details[open] > summary:after {
 	content: '\e316';
 }
 details > p {
@@ -949,7 +949,8 @@ details > p {
 	margin: 0;
 }
 li details summary {
-	color: initial;
+	/* color: initial; */
+	color: inherit;
 	padding: 0 16px 0 0;
 	text-transform: none;
 }
@@ -996,7 +997,6 @@ ul.tree li {
 	border-left: 1px solid #ccc;
 }
 .tree details summary:after {
-	top: -16px;
 	left: -22px;
 }
 .tree li span {
