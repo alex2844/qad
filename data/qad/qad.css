@@ -972,6 +972,41 @@ ul li {
 	min-height: 38px;
 	padding: 16px;
 }
+ul.tree li {
+	min-height: 0;
+}
+.tree li {
+	position: relative;
+	margin: 0 0 0 .5em;
+	padding: 0 0 0 1.2em;
+}
+.tree.b li:not(:last-child) {
+	border-left: 1px solid #ccc;
+}
+.tree.b li:before {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 1.1em;
+	height: .5em;
+	border-bottom: 1px solid #ccc;
+}
+.tree.b li:last-child:before {
+	border-left: 1px solid #ccc;
+}
+.tree details summary:after {
+	top: -16px;
+	left: -22px;
+}
+.tree li span {
+	font-size: inherit;
+	letter-spacing: normal;
+	color: inherit;
+}
+.tree li span:hover {
+	font-weight: bold;
+}
 ul.menu li {
 	min-height: 0;
 	font-size: 14px;
@@ -1105,6 +1140,9 @@ table:not([hidden]) {
 }
 tbody > tr:hover, ul li:hover, ul li.focus, button.focus, .chip.focus {
 	background: #eee !important;
+}
+ul.tree li:hover {
+	background: inherit !important;
 }
 button.focus {
 	color: var(--color) !important;
